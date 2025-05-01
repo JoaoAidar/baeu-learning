@@ -1,0 +1,113 @@
+<h2>Página 1</h2>
+<p>Lista de Usuários:</p>
+
+<table border="1" id="usersTable">
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Nome</th>
+      <th>Email</th>
+      <th>Ações</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="4">Carregando usuários...</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="formTitle">Criar Novo Usuário</h3>
+<form id="userForm">
+  <input type="hidden" id="userId">
+  <label>Nome: <input type="text" id="name" required></label>
+  <label>Email: <input type="email" id="email" required></label>
+  <button type="submit">Salvar</button>
+  <button type="button" onclick="resetForm()">Cancelar</button>
+</form>
+
+<script>
+  async function fetchUsers() {
+    try {
+      const response = await fetch('/users');
+      if (!response.ok) throw new Error('Erro ao buscar usuários');
+
+      const users = await response.json();
+      const tableBody = document.querySelector('#usersTable tbody');
+      tableBody.innerHTML = '';
+
+      if (users.length > 0) {
+        users.forEach(user => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${user.id}</td>
+            <td>${user.name}</td>
+            <td>${user.email}</td>
+            <td>
+              <button onclick="loadUser(${user.id}, '${user.name}', '${user.email}')">Editar</button>
+              <button onclick="deleteUser(${user.id})">Excluir</button>
+            </td>
+          `;
+          tableBody.appendChild(row);
+        });
+      } else {
+        tableBody.innerHTML = '<tr><td colspan="4">Nenhum usuário encontrado.</td></tr>';
+      }
+    } catch (error) {
+      console.error(error);
+      document.querySelector('#usersTable tbody').innerHTML =
+        '<tr><td colspan="4">Erro ao carregar usuários.</td></tr>';
+    }
+  }
+
+  async function deleteUser(id) {
+    if (!confirm('Tem certeza que deseja excluir este usuário?')) return;
+    try {
+      const response = await fetch(`/users/${id}`, { method: 'DELETE' });
+      if (!response.ok) throw new Error('Erro ao excluir usuário');
+      fetchUsers();
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao excluir usuário');
+    }
+  }
+
+  function loadUser(id, name, email) {
+    document.getElementById('userId').value = id;
+    document.getElementById('name').value = name;
+    document.getElementById('email').value = email;
+    document.getElementById('formTitle').textContent = 'Editar Usuário';
+  }
+
+  function resetForm() {
+    document.getElementById('userId').value = '';
+    document.getElementById('name').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('formTitle').textContent = 'Criar Novo Usuário';
+  }
+
+  document.getElementById('userForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('userId').value;
+    const name = document.getElementById('name').value;
+    const email = document.getElementById('email').value;
+
+    try {
+      const method = id ? 'PUT' : 'POST';
+      const url = id ? `/users/${id}` : '/users';
+      const response = await fetch(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email })
+      });
+      if (!response.ok) throw new Error('Erro ao salvar usuário');
+      resetForm();
+      fetchUsers();
+    } catch (error) {
+      console.error(error);
+      alert('Erro ao salvar usuário');
+    }
+  });
+
+  fetchUsers();
+</script>
