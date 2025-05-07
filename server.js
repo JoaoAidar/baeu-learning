@@ -3,6 +3,9 @@ const express = require('express');
 const app = express();
 const db = require('./config/db');
 const path = require('path');
+const cors = require('cors');
+
+app.use(cors());
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -18,6 +21,13 @@ db.connect()
 
     const frontendRoutes = require('./routes/frontRoutes');
     app.use('/', frontendRoutes);
+
+
+    const lessonRoutes = require("./routes/lessonRoutes");
+    const exerciseRoutes = require("./routes/exerciseRoutes");
+
+    app.use("/api/lessons", lessonRoutes);
+    app.use("/api/exercises", exerciseRoutes);
 
     // Middleware para lidar com erros de rota não encontrada
     app.use((req, res, next) => {
