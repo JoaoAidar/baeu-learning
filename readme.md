@@ -1,83 +1,105 @@
-# Boilerplate MVC em Node.js com PostgreSQL
+# Projeto Individual (COMP Parte 1): Estruturando a Base do Projeto
 
-Este projeto é um boilerplate básico para uma aplicação Node.js seguindo o padrão MVC (Model-View-Controller), utilizando PostgreSQL como banco de dados.
+## Objetivo
 
-## Requisitos
+Configurar o ambiente de desenvolvimento, organizar o projeto com base no padrão MVC e criar uma aplicação básica com Node.js utilizando o framework Express.js.
 
-- Node.js (versão X.X.X)
-- PostgreSQL (versão X.X.X)
+## Entrega
 
-## Instalação
+* Submissão individual.
+* O projeto deve estar hospedado em um repositório público no GitHub, bem como uma documentação `WAD.md`.
+* `README` explicativo.
 
-1. **Clonar o repositório:**
+## Prazo de Entrega
 
-```bash
-   git clone https://github.com/seu-usuario/seu-projeto.git
-   cd seu-projeto
+Até sexta-feira da **semana 3** do módulo.
+
+---
+
+## Descrição do Sistema Escolhido
+
+Este projeto é a base do MVP **BaeU Learning**, uma plataforma web de aprendizado de coreano que utiliza inteligência artificial para gerar decks personalizados de flashcards (no estilo Anki) com foco em compreensão gramatical, vocabulário e tradução contextual. O sistema será expandido nas próximas fases para oferecer funcionalidades como quizzes dinâmicos e feedback inteligente.
+
+---
+
+## Estrutura do Projeto (Padrão MVC)
+
+```
+baeu-learning/
+│
+├── config/                # Configurações do banco de dados
+│   └── database.js
+├── controllers/           # Lógica de controle das requisições
+│   └── UserController.js
+├── models/                # Estrutura dos dados
+│   └── User.js
+├── routes/                # Rotas da aplicação
+│   └── index.js
+├── services/              # Serviços auxiliares
+│   └── userService.js
+├── views/                 # Templates EJS
+│   └── index.ejs
+├── public/
+│   ├── scripts/           # Scripts JavaScript públicos
+│   ├── styles/            # Arquivos CSS
+│   └── assets/            # Imagens e fontes
+├── tests/                 # Testes automatizados
+│   └── example.test.js
+├── modelo-banco.png       # Diagrama relacional do banco de dados
+├── .env.example           # Variáveis de ambiente
+├── .gitignore             # Arquivos ignorados pelo Git
+├── jest.config.js         # Configuração do Jest
+├── package.json           # Dependências do Node.js
+├── package-lock.json
+├── server.js              # Inicialização do servidor
+└── readme.md              # Este arquivo
 ```
 
-2. **Instalar as dependências:**
-    
+---
+
+## Como Executar o Projeto Localmente
+
+1. **Clone o repositório:**
+
+```bash
+git clone https://github.com/seu-usuario/baeu-learning.git
+cd baeu-learning
+```
+
+2. **Instale as dependências:**
+
 ```bash
 npm install
 ```
-    
-3. **Configurar o arquivo `.env`:**
-    
-Renomeie o arquivo `.env.example` para `.env` e configure as variáveis de ambiente necessárias, como as configurações do banco de dados PostgreSQL.
-    
 
-Configuração do Banco de Dados
-------------------------------
+3. **Configure o ambiente:**
 
-1. **Criar banco de dados:**
-    
-    Crie um banco de dados PostgreSQL com o nome especificado no seu arquivo `.env`.
-    
-2. **Executar o script SQL de inicialização:**
-    
+* Copie `.env.example` para `.env` e configure os dados de ambiente se necessário.
+
+4. **Inicie o servidor:**
+
 ```bash
-npm run init-db
+npm start
 ```
-    
-Isso criará a tabela `users` no seu banco de dados PostgreSQL com UUID como chave primária e inserirá alguns registros de exemplo.
-    
 
-Funcionalidades
----------------
+> O servidor estará disponível em `http://localhost:3000`.
 
-* **Padrão MVC:** Estrutura organizada em Model, View e Controller.
-* **PostgreSQL:** Banco de dados relacional utilizado para persistência dos dados.
-* **UUID:** Utilização de UUID como chave primária na tabela `users`.
-* **Scripts com `nodemon`:** Utilização do `nodemon` para reiniciar automaticamente o servidor após alterações no código.
-* **Testes:** Inclui estrutura básica para testes automatizados.
+---
 
-Scripts Disponíveis
--------------------
+## Funcionalidades Atuais
 
-* `npm start`: Inicia o servidor Node.js.
-* `npm run dev`: Inicia o servidor com `nodemon`, reiniciando automaticamente após alterações no código.
-* `npm run test`: Executa os testes automatizados.
-* `npm run test:coverage`: Executa os testes e gera um relatório de cobertura de código.
+* Estrutura em MVC completa
+* Roteamento funcional com Express
+* Primeira rota renderizando página EJS
+* Modelo inicial de usuário (User)
+* Diagrama relacional do banco no repositório (`modelo-banco.png`)
+* Teste unitário de exemplo (`example.test.js` com Jest)
 
-Estrutura de Diretórios
------------------------
+---
 
-* **`config/`**: Configurações do banco de dados e outras configurações do projeto.
-* **`controllers/`**: Controladores da aplicação (lógica de negócio).
-* **`models/`**: Modelos da aplicação (definições de dados e interações com o banco de dados).
-* **`routes/`**: Rotas da aplicação.
-* **`tests/`**: Testes automatizados.
-* **`views/`**: Views da aplicação (se aplicável).
+## Próximos Passos
 
-Contribuição
-------------
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir um issue ou enviar um pull request.
-
-Licença
--------
-
-Este projeto está licenciado sob a Licença MIT.
-
-Este README.md fornece uma visão geral clara do boilerplate, incluindo instruções de instalação, configuração do banco de dados, funcionalidades principais, scripts disponíveis, estrutura de diretórios, como contribuir e informações de licença. Certifique-se de personalizar as seções com detalhes específicos do seu projeto conforme necessário.
+* Conectar o banco de dados Supabase
+* Criar as views dinâmicas para gerenciamento de decks
+* Implementar API de IA para geração de cards
+* Melhorar estilização da interface
