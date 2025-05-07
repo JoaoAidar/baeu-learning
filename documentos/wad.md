@@ -1,116 +1,103 @@
-# WAD.md — Documentação da Aplicação Web
+WAD.md - Projeto BaeU Learning
+## 1. Introdução
 
-## 📌 Introdução
-
-Este documento descreve a estrutura e funcionamento do projeto **BaeU Learning**, desenvolvido como parte da disciplina COMP (Parte 1). O objetivo principal é configurar e estruturar uma aplicação web seguindo o padrão **MVC (Model-View-Controller)** utilizando **Node.js** com o framework **Express.js**.
-
-**BaeU Learning** é uma plataforma voltada para o aprendizado do idioma coreano por meio de decks de estudo gerados com auxílio de inteligência artificial, oferecendo práticas de tradução, vocabulário e gramática contextualizada.
+O **BaeU Learning** é uma aplicação web MVP voltada para o aprendizado de coreano, oferecendo lições interativas e exercícios de múltipla escolha, tradução e construção de frases em estilo Anki. Esta documentação descreve a estrutura, o modelo de dados e as instruções para configuração do projeto, seguindo o padrão **MVC (Model-View-Controller)**.
 
 ---
 
-## 🗂️ Estrutura do Projeto
+## 2. Modelo de Dados
 
-O projeto foi organizado com base no padrão **MVC**, separando claramente as responsabilidades entre modelos, controladores e visualizações. Abaixo, a estrutura de pastas:
+O banco de dados utiliza um modelo relacional para gerenciar usuários, lições, exercícios e resultados.
 
-```
-baeu-learning/
-│
-├── config/                # Configurações (ex: conexão com o banco)
-│   └── database.js
-├── controllers/           # Controladores (lógica de negócio)
-│   └── UserController.js
-├── models/                # Modelos de dados
-│   └── User.js
-├── routes/                # Definições de rotas
-│   └── index.js
-├── services/              # Serviços auxiliares (ex: lógica de IA)
-│   └── userService.js
-├── views/                 # Templates EJS (HTML dinâmico)
-│   └── index.ejs
-├── public/
-│   ├── scripts/           # Scripts JavaScript públicos
-│   ├── styles/            # Arquivos CSS
-│   └── assets/            # Imagens, ícones e fontes
-├── tests/                 # Testes automatizados com Jest
-│   └── example.test.js
-├── modelo-banco.png       # Diagrama relacional do banco de dados
-├── .env.example           # Exemplo de variáveis de ambiente
-├── .gitignore             # Arquivos ignorados pelo Git
-├── jest.config.js         # Configuração do Jest
-├── package.json           # Dependências e scripts
-├── server.js              # Inicialização do servidor
-└── readme.md              # Documentação geral
-```
+### Entidades principais
+
+* **Users**: cadastro e informações dos usuários.
+* **Lessons**: lições disponíveis para estudo.
+* **Exercises**: tipos de exercício atrelados a cada lição (multiple\_choice, translate, listen).
+* **UserProgress**: registro de progresso do usuário em cada lição.
+* **Submissions**: respostas enviadas pelos usuários e resultado (correto/incorreto).
+
+### Diagrama Relacional
+
+Insira aqui a imagem `modelo-banco.png`, exportada do seu diagrama ER.
 
 ---
 
-## 🧠 Modelo de Dados
+## 3. Estrutura do Projeto
 
-Para esta primeira etapa, foi definido um modelo inicial com foco na entidade **Usuário**, que será essencial para o controle de acesso e personalização dos decks. Futuramente, novas entidades serão adicionadas, como **Decks**, **Cartões**, **Sessões de Estudo**, entre outras.
+```
+TODO
+```
 
-### 📄 Diagrama Relacional
-
-![modelo-banco.png](./modelo-banco.png)
-
-**Entidades iniciais:**
-
-* **User**
-
-  * id (PK)
-  * nome
-  * email
-  * senha
-  * idioma\_nativo
-  * objetivo\_de\_aprendizado
-  * criado\_em
+**Observação:** A pasta `frontend` está localizada diretamente dentro de `baeu-learning`.
 
 ---
 
-## 🚀 Instruções para Execução Local
+## 4. Como Executar o Projeto Localmente
 
-1. **Clone o repositório:**
+### 4.1 Backend
 
-```bash
-git clone https://github.com/seu-usuario/baeu-learning.git
-cd baeu-learning
-```
+1. Acesse o diretório do backend:
 
-2. **Instale as dependências:**
+   ```bash
+   cd baeu-learning/backend
+   ```
+2. Instale as dependências:
 
-```bash
-npm install
-```
+   ```bash
+   npm install
+   ```
+3. Copie as variáveis de ambiente:
 
-3. **Configure variáveis de ambiente:**
+   ```bash
+   cp .env.example .env
+   ```
+4. Inicie o servidor:
 
-Copie o arquivo `.env.example` para `.env` e edite conforme necessário (futuramente incluirá a URL do banco).
+   ```bash
+   npm start
+   ```
 
-4. **Inicie o servidor:**
+O backend estará disponível em `http://localhost:3000`.
 
-```bash
-npm start
-```
+### 4.2 Frontend
 
-> O servidor será iniciado na porta `3000` e acessível via `http://localhost:3000`.
+1. Acesse o diretório do frontend:
+
+   ```bash
+   cd baeu-learning/frontend
+   ```
+2. Instale as dependências:
+
+   ```bash
+   npm install
+   ```
+3. Inicie o servidor de desenvolvimento:
+
+   ```bash
+   npm start
+   ```
+
+O frontend estará disponível em `http://localhost:3001`.
 
 ---
 
-## ✅ Funcionalidades Implementadas
+## 5. Requisitos de Entrega
 
-* Organização do projeto no padrão MVC
-* Inicialização do servidor com Express.js
-* Primeiras rotas conectadas à view EJS
-* Modelo de usuário implementado
-* Estrutura pronta para conexão com banco de dados
-* Teste automatizado de exemplo configurado com Jest
-* Diagrama físico e lógico do banco incluído no repositório
+Para que o sistema seja considerado completo, deve incluir:
+
+* ✅ **Banco de Dados**: Modelo relacional com diagramas físico e lógico (`modelo-banco.png`).
+* ✅ **Backend**: Aplicação Node.js/Express estruturada em MVC, com servidor funcional (`server.js`).
+* ✅ **Frontend**: SPA React com interface de usuário interativa.
+* ✅ **Integração**: Comunicação frontend-backend via API REST.
+* ✅ **Documentação**: Código hospedado em repositório público no GitHub com `README.md` e `WAD.md`.
 
 ---
 
-## 🔜 Próximas Etapas
+## 6. Documentação e Qualidade de Código
 
-* Criar autenticação de usuários
-* Conectar à API de IA para geração de flashcards
-* Salvar e gerenciar decks personalizados
-* Implementar funcionalidades interativas de aprendizado
-* Melhorar a responsividade da interface com CSS moderno
+* **README.md**: Contém descrição do projeto, instruções de instalação e execução, estrutura de pastas e visão geral das funcionalidades.
+* **WAD.md**: Descreve arquitetura, diagrama de dados e estrutura de pastas.
+* **Testes**: Implementação de testes unitários com Jest (pasta `tests/`).
+* **Boas práticas**: Padrão MVC, uso de variáveis de ambiente, tratamento de erros e code style consistente.
+
