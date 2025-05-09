@@ -1,18 +1,13 @@
-
-const { Pool } = require('pg');
+const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
 
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_DATABASE,
-  password: process.env.DB_PASSWORD,
-  port: process.env.DB_PORT,
-  ssl: process.env.DB_SSL ? { rejectUnauthorized: false } : false,
-});
+if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase credentials. Please check your .env file.');
+}
 
-module.exports = {
-  query: (text, params) => pool.query(text, params),
-  connect: () => pool.connect(),
-};
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+module.exports = supabase;

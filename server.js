@@ -1,50 +1,59 @@
 require('dotenv').config();
 const express = require('express');
-const app = express();
-const db = require('./config/db');
-const path = require('path');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
+const logger = require('./utils/logger');
 
-app.use(cors());
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const lessonRoutes = require('./routes/lessonRoutes');
+const exerciseRoutes = require('./routes/exerciseRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+const app = express();
 
-db.connect()
-  .then(() => {
-    console.log('Conectado ao banco de dados PostgreSQL');
+// Middleware
+app.use(cors({
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie']
+}));
 
-    app.use(express.json());
+app.use(express.json());
+app.use(cookieParser());
 
-    const userRoutes = require('./routes/userRoutes');
-    app.use('/users', userRoutes);
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
-    const frontendRoutes = require('./routes/frontRoutes');
-    app.use('/', frontendRoutes);
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/lessons', lessonRoutes);
+app.use('/api/exercises', exerciseRoutes);
+app.use('/api/admin', adminRoutes);
 
+// Error handling middleware
+app.use((err, req, res, next) => {
+    logger.error('Unhandled error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+});
 
-    const lessonRoutes = require("./routes/lessonRoutes");
-    const exerciseRoutes = require("./routes/exerciseRoutes");
+// 404 handler
+app.use((req, res) => {
+    if (req.path.startsWith('/api')) {
+        res.status(404).json({ error: 'API endpoint not found' });
+    } else {
+        res.status(404).send('Not found');
+    }
+});
 
-    app.use("/api/lessons", lessonRoutes);
-    app.use("/api/exercises", exerciseRoutes);
+const PORT = process.env.PORT || 3000;
 
-    // Middleware para lidar com erros de rota não encontrada
-    app.use((req, res, next) => {
-      res.status(404).send('Página não encontrada');
-    });
-
-    // Middleware para lidar com erros internos do servidor
-    app.use((err, req, res, next) => {
-      console.error(err.stack);
-      res.status(500).send('Erro no servidor');
-    });
-
-    const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {
-      console.log(`Servidor rodando na porta ${PORT}`);
-    });
-  })
-  .catch(err => {
-    console.error('Erro ao conectar ao banco de dados:', err);
-  });
+app.listen(PORT, () => {
+    logger.info(`Server running on port ${PORT}`);
+});

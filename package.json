@@ -12,14 +12,20 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.49.4",
+    "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "ejs": "^3.1.10",
     "express": "^4.17.1",
+    "express-session": "^1.17.3",
+    "hangul-js": "^0.2.6",
+    "jsonwebtoken": "^9.0.2",
     "pg": "^8.15.1",
     "pg-pool": "^3.9.1",
     "postgres": "^3.4.5",
-    "psql": "^0.0.1"
+    "psql": "^0.0.1",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "jest": "^27.0.6",

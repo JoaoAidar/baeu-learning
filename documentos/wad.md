@@ -1,103 +1,95 @@
-WAD.md - Projeto BaeU Learning
-## 1. Introdução
+# Documentação da Aplicação Web (WAD)
 
-O **BaeU Learning** é uma aplicação web MVP voltada para o aprendizado de coreano, oferecendo lições interativas e exercícios de múltipla escolha, tradução e construção de frases em estilo Anki. Esta documentação descreve a estrutura, o modelo de dados e as instruções para configuração do projeto, seguindo o padrão **MVC (Model-View-Controller)**.
+## Introdução
+O Aplicativo de Aprendizado de Coreano é uma plataforma web desenvolvida para auxiliar estudantes no aprendizado do idioma coreano. A aplicação segue a arquitetura MVC (Model-View-Controller) e utiliza tecnologias modernas como Node.js, Express, PostgreSQL e React.
 
----
+### Objetivos
+- Fornecer uma plataforma interativa para aprendizado de coreano
+- Implementar sistema de progresso e acompanhamento do usuário
+- Oferecer exercícios variados e adaptados ao nível do estudante
+- Garantir uma experiência responsiva em diferentes dispositivos
 
-## 2. Modelo de Dados
+### Tecnologias Principais
+- **Backend:** Node.js, Express.js
+- **Frontend:** React.js
+- **Banco de Dados:** PostgreSQL
+- **Autenticação:** JWT (JSON Web Tokens)
+- **Estilização:** CSS3 com design responsivo
 
-O banco de dados utiliza um modelo relacional para gerenciar usuários, lições, exercícios e resultados.
+## Estrutura do Banco de Dados
+O banco de dados é composto por quatro tabelas principais:
+1. **users:** Armazena informações dos usuários
+2. **lessons:** Contém as lições disponíveis
+3. **exercises:** Armazena os exercícios de cada lição
+4. **user_progress:** Registra o progresso do usuário
 
-### Entidades principais
+### Diagrama do Banco de Dados
+O diagrama relacional do banco de dados está disponível em dois formatos:
+- Arquivo editável: `documentos/db_schema.drawio`
+- Imagem estática: `documentos/db_diagram.png`
 
-* **Users**: cadastro e informações dos usuários.
-* **Lessons**: lições disponíveis para estudo.
-* **Exercises**: tipos de exercício atrelados a cada lição (multiple\_choice, translate, listen).
-* **UserProgress**: registro de progresso do usuário em cada lição.
-* **Submissions**: respostas enviadas pelos usuários e resultado (correto/incorreto).
+![Diagrama do Banco de Dados](documentos/db_diagram.png)
 
-### Diagrama Relacional
+O diagrama mostra:
 
-Insira aqui a imagem `modelo-banco.png`, exportada do seu diagrama ER.
+- **Tabela users** (azul)
+  - Chave primária: id
+  - Campos: username, email, password_hash
+  - Timestamps: created_at, updated_at
 
----
+- **Tabela lessons** (verde)
+  - Chave primária: id
+  - Campos: title, description, difficulty, order_index
+  - Timestamps: created_at, updated_at
 
-## 3. Estrutura do Projeto
+- **Tabela exercises** (laranja)
+  - Chave primária: id
+  - Chave estrangeira: lesson_id
+  - Campos: type, difficulty, prompt, choices, correct_answer, explanation
+  - Timestamps: created_at, updated_at
 
-```
-TODO
-```
+- **Tabela user_progress** (vermelho)
+  - Chave primária: id
+  - Chaves estrangeiras: user_id, lesson_id, exercise_id
+  - Campos: completed, score
+  - Timestamps: last_attempt, created_at, updated_at
 
-**Observação:** A pasta `frontend` está localizada diretamente dentro de `baeu-learning`.
+Os relacionamentos são:
+- Uma lição pode ter vários exercícios (1:N)
+- Um usuário pode ter vários registros de progresso (1:N)
+- Uma lição pode ter vários registros de progresso (1:N)
+- Um exercício pode ter vários registros de progresso (1:N)
 
----
+## Atualizações Recentes
 
-## 4. Como Executar o Projeto Localmente
+### Correções de Bugs
+- Corrigida navegação e passagem de parâmetros para exercícios, garantindo que `exerciseId` esteja sempre definido e usado corretamente
+- Resolvidos avisos de chaves React usando `exercise_id` único como chave nas listas de exercícios
+- Melhorado tratamento de erros para parâmetros ausentes ou inválidos em ExercisePage
+- Adicionadas mensagens de erro robustas para dados de exercícios ausentes e falhas em chamadas de API
+- Removido o wrapper Layout duplicado em LessonsPage para evitar renderização recursiva
+- Corrigido o redirecionamento catch-all para a tela inicial
+- Garantido que cada lição possui um array de exercícios, evitando erros de renderização
+- Adicionados logs para depuração dos dados recebidos da API
+- Ajustada a navegação para evitar loops de renderização ao clicar em 'Lições' no cabeçalho
 
-### 4.1 Backend
+### Design Responsivo
+- Melhorada escala responsiva para componentes ExercisePage e ExerciseRenderer
+- Adicionadas media queries para breakpoints de dispositivos móveis e tablets
+- Containers de exercícios, questões e opções agora escalam adequadamente em todos os tamanhos de tela
 
-1. Acesse o diretório do backend:
+### Qualidade do Código
+- Removidos wrappers Layout desnecessários para evitar cabeçalhos duplicados e melhorar a estrutura
+- Adicionados comentários e clarificação de uso de parâmetros em ExercisePage
 
-   ```bash
-   cd baeu-learning/backend
-   ```
-2. Instale as dependências:
+## Uso
+- A aplicação agora fornece uma experiência perfeita em diferentes dispositivos
+- Todas as mensagens de erro são claras e informativas
+- A navegação entre lições e exercícios é robusta e intuitiva
+- O sistema de progresso permite acompanhamento contínuo do aprendizado
 
-   ```bash
-   npm install
-   ```
-3. Copie as variáveis de ambiente:
-
-   ```bash
-   cp .env.example .env
-   ```
-4. Inicie o servidor:
-
-   ```bash
-   npm start
-   ```
-
-O backend estará disponível em `http://localhost:3000`.
-
-### 4.2 Frontend
-
-1. Acesse o diretório do frontend:
-
-   ```bash
-   cd baeu-learning/frontend
-   ```
-2. Instale as dependências:
-
-   ```bash
-   npm install
-   ```
-3. Inicie o servidor de desenvolvimento:
-
-   ```bash
-   npm start
-   ```
-
-O frontend estará disponível em `http://localhost:3001`.
-
----
-
-## 5. Requisitos de Entrega
-
-Para que o sistema seja considerado completo, deve incluir:
-
-* ✅ **Banco de Dados**: Modelo relacional com diagramas físico e lógico (`modelo-banco.png`).
-* ✅ **Backend**: Aplicação Node.js/Express estruturada em MVC, com servidor funcional (`server.js`).
-* ✅ **Frontend**: SPA React com interface de usuário interativa.
-* ✅ **Integração**: Comunicação frontend-backend via API REST.
-* ✅ **Documentação**: Código hospedado em repositório público no GitHub com `README.md` e `WAD.md`.
-
----
-
-## 6. Documentação e Qualidade de Código
-
-* **README.md**: Contém descrição do projeto, instruções de instalação e execução, estrutura de pastas e visão geral das funcionalidades.
-* **WAD.md**: Descreve arquitetura, diagrama de dados e estrutura de pastas.
-* **Testes**: Implementação de testes unitários com Jest (pasta `tests/`).
-* **Boas práticas**: Padrão MVC, uso de variáveis de ambiente, tratamento de erros e code style consistente.
-
+## Próximos Passos
+1. Implementar sistema de revisão espaçada
+2. Adicionar mais tipos de exercícios
+3. Melhorar o sistema de feedback
+4. Implementar gamificação 
