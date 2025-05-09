@@ -1,6 +1,11 @@
 const jwt = require('jsonwebtoken');
 const logger = require('../utils/logger');
 
+// TODO: [SECURITY] Add token blacklisting for logged out tokens
+// TODO: [SECURITY] Implement token refresh mechanism
+// TODO: [SECURITY] Add token expiration time configuration
+// TODO: [SECURITY] Consider implementing 2FA for admin routes
+
 const auth = (req, res, next) => {
     try {
         const token = req.cookies.token;
@@ -42,6 +47,10 @@ const adminAuth = (req, res, next) => {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 };
+
+// TODO: [SECURITY] Add rate limiting specifically for auth routes
+// TODO: [SECURITY] Implement session management
+// TODO: [SECURITY] Add audit logging for admin actions
 
 module.exports = {
     auth,

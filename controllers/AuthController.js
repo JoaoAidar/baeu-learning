@@ -3,11 +3,20 @@ const bcrypt = require('bcryptjs');
 const { supabase } = require('../config/supabase');
 const logger = require('../utils/logger');
 
+// TODO: [SECURITY] Add password complexity requirements
+// TODO: [SECURITY] Implement account lockout after failed attempts
+// TODO: [SECURITY] Add session management
+// TODO: [SECURITY] Implement token refresh mechanism
+
 class AuthController {
     async login(req, res) {
         try {
             const { username, password } = req.body;
             logger.info(`Login attempt for user: ${username}`);
+
+            // TODO: [SECURITY] Add rate limiting for login attempts
+            // TODO: [SECURITY] Add IP-based blocking
+            // TODO: [SECURITY] Add brute force protection
 
             // Log the request body for debugging
             logger.debug('Login request body:', { username, passwordLength: password?.length });
@@ -48,6 +57,8 @@ class AuthController {
                 return res.status(401).json({ error: 'Invalid credentials' });
             }
 
+            // TODO: [SECURITY] Add token expiration configuration
+            // TODO: [SECURITY] Add token rotation
             const token = jwt.sign(
                 { 
                     userId: user.id,
@@ -58,6 +69,8 @@ class AuthController {
                 { expiresIn: '24h' }
             );
 
+            // TODO: [SECURITY] Add secure cookie configuration
+            // TODO: [SECURITY] Add CSRF protection
             res.cookie('token', token, {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
@@ -83,6 +96,8 @@ class AuthController {
 
     async logout(req, res) {
         try {
+            // TODO: [SECURITY] Add token blacklisting
+            // TODO: [SECURITY] Add session invalidation
             res.clearCookie('token');
             res.json({ message: 'Logged out successfully' });
         } catch (error) {
@@ -212,6 +227,8 @@ class AuthController {
             const { userId } = req.params;
             const { role } = req.body;
 
+            // TODO: [VALIDATION] Add role validation middleware
+            // TODO: [AUDIT] Add role change logging
             if (!['user', 'admin'].includes(role)) {
                 return res.status(400).json({ error: 'Invalid role' });
             }
