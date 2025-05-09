@@ -6,10 +6,13 @@ This document provides a rundown of all backend API routes, their methods, paths
 
 ## Auth Routes (`/api/auth`)
 - **POST `/login`**: User login. Expects username and password. Sets session/cookie.
+- **POST `/logout`**: User logout. Clears session/cookie.
 - **GET `/me`**: Get current logged-in user (requires auth, checks session/cookie).
 - **GET `/progress`**: Get all progress for the current user.
 - **GET `/progress/:lessonId`**: Get progress for a specific lesson for the current user.
+- **POST `/progress`**: Update user progress (requires auth).
 - **GET `/admin/users`**: (Admin) Get all users.
+- **PATCH `/admin/users/:userId/role`**: (Admin) Update user role.
 
 ## User Routes (`/api/users`)
 - **GET `/`**: Get all users.
@@ -23,6 +26,10 @@ This document provides a rundown of all backend API routes, their methods, paths
 - **GET `/lesson/:lessonId`**: Get all exercises for a lesson.
 - **GET `/lesson/:lessonId/type/:type`**: Get exercises for a lesson by type.
 - **GET `/:exerciseId`**: Get a single exercise by ID.
+- **POST `/:exerciseId/submit`**: Submit an answer for an exercise.
+- **POST `/`**: Create a new exercise (admin only).
+- **PUT `/:exerciseId`**: Update an existing exercise (admin only).
+- **DELETE `/:exerciseId`**: Delete an exercise (admin only).
 
 ## Admin Routes (`/api/admin`)
 - **GET `/users/recent`**: Get recent users (admin only).
