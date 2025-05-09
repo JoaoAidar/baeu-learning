@@ -1,101 +1,149 @@
 import React from 'react';
-import styled from 'styled-components';
 import { Link } from 'react-router-dom';
+import styled from 'styled-components';
 import designSystem from '../../styles/designSystem';
 
-const { colors, typography, spacing, borderRadius, shadows, transitions } = designSystem;
+const { colors, spacing, typography, borderRadius, shadows, transitions } = designSystem;
 
 const Card = styled(Link)`
     display: block;
-    background-color: ${colors.neutral.white};
+    background-color: ${colors.background.paper};
     border-radius: ${borderRadius.lg};
-    padding: ${spacing.lg};
+    box-shadow: ${shadows.sm};
+    padding: ${spacing.xl};
     text-decoration: none;
     color: inherit;
     transition: all ${transitions.normal} ${transitions.easeInOut};
-    border: 2px solid ${colors.primary.light};
-    position: relative;
-    overflow: hidden;
+    border: 1px solid ${colors.neutral.light};
 
     &:hover {
         transform: translateY(-4px);
-        box-shadow: ${shadows.lg};
+        box-shadow: ${shadows.md};
         border-color: ${colors.primary.main};
-        background-color: ${colors.primary.light};
-
-        .lesson-title {
-            color: ${colors.primary.main};
-        }
-
-        .lesson-stats {
-            color: ${colors.primary.dark};
-        }
     }
+`;
 
-    &:active {
-        transform: translateY(-2px);
-    }
+const CardHeader = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: ${spacing.md};
 `;
 
 const Title = styled.h3`
     font-family: ${typography.fontFamily.primary};
     font-size: ${typography.fontSize.xl};
     font-weight: ${typography.fontWeight.bold};
-    margin-bottom: ${spacing.sm};
-    color: ${colors.neutral.dark};
-    transition: color ${transitions.normal} ${transitions.easeInOut};
+    color: ${colors.text.primary};
+    margin: 0;
+`;
+
+const Difficulty = styled.span`
+    font-family: ${typography.fontFamily.secondary};
+    font-size: ${typography.fontSize.sm};
+    font-weight: ${typography.fontWeight.medium};
+    padding: ${spacing.xs} ${spacing.sm};
+    border-radius: ${borderRadius.full};
+    background-color: ${({ level }) => {
+        switch (level) {
+            case 'beginner':
+                return colors.success.light;
+            case 'intermediate':
+                return colors.warning.light;
+            case 'advanced':
+                return colors.error.light;
+            default:
+                return colors.neutral.light;
+        }
+    }};
+    color: ${({ level }) => {
+        switch (level) {
+            case 'beginner':
+                return colors.success.main;
+            case 'intermediate':
+                return colors.warning.main;
+            case 'advanced':
+                return colors.error.main;
+            default:
+                return colors.neutral.dark;
+        }
+    }};
 `;
 
 const Description = styled.p`
     font-family: ${typography.fontFamily.primary};
-    font-size: ${typography.fontSize.base};
-    color: ${colors.neutral.medium};
-    margin-bottom: ${spacing.md};
-    line-height: ${typography.lineHeight.normal};
+    font-size: ${typography.fontSize.md};
+    color: ${colors.text.secondary};
+    margin: 0 0 ${spacing.lg};
+    line-height: ${typography.lineHeight.relaxed};
 `;
 
-const Stats = styled.div`
+const CardFooter = styled.div`
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding-top: ${spacing.sm};
-    border-top: 1px solid ${colors.primary.light};
-    transition: color ${transitions.normal} ${transitions.easeInOut};
+    justify-content: space-between;
+    padding-top: ${spacing.md};
+    border-top: 1px solid ${colors.neutral.light};
 `;
 
-const Stat = styled.div`
+const Category = styled.span`
+    font-family: ${typography.fontFamily.secondary};
+    font-size: ${typography.fontSize.sm};
+    color: ${colors.text.secondary};
+`;
+
+const Progress = styled.div`
     display: flex;
     align-items: center;
     gap: ${spacing.xs};
+    font-family: ${typography.fontFamily.secondary};
     font-size: ${typography.fontSize.sm};
-    color: ${colors.neutral.medium};
-    transition: color ${transitions.normal} ${transitions.easeInOut};
+    color: ${colors.text.secondary};
+`;
 
-    ${Card}:hover & {
-        color: ${colors.primary.dark};
-    }
+const ProgressBar = styled.div`
+    width: 60px;
+    height: 4px;
+    background-color: ${colors.neutral.light};
+    border-radius: ${borderRadius.full};
+    overflow: hidden;
+`;
+
+const ProgressFill = styled.div`
+    height: 100%;
+    background-color: ${colors.success.main};
+    width: ${({ value }) => `${value}%`};
+    transition: width ${transitions.normal} ${transitions.easeInOut};
 `;
 
 const LessonCard = ({ lesson }) => {
-    if (!lesson) {
-        return null;
-    }
-    if (!lesson.id) {
-        return null;
-    }
-    const exerciseCount = Array.isArray(lesson.exercises) ? lesson.exercises.length : 0;
+    const {
+        id,
+        title,
+        description,
+        difficulty = 'beginner',
+        category,
+        progress = 0,
+    } = lesson;
+
     return (
-        <Card to={`/lessons/${lesson.id}`}>
-            <Title className="lesson-title">{lesson.title || 'Untitled Lesson'}</Title>
-            <Description>{lesson.description || 'No description available'}</Description>
-            <Stats className="lesson-stats">
-                <Stat>
-                    <span>Exercises: {exerciseCount}</span>
-                </Stat>
-                <Stat>
-                    <span>Order: {lesson.order_index || 0}</span>
-                </Stat>
-            </Stats>
+        <Card to={`/lessons/${id}`}>
+            <CardHeader>
+                <Title>{title}</Title>
+                <Difficulty level={difficulty}>
+                    {difficulty ? difficulty.charAt(0).toUpperCase() + difficulty.slice(1) : 'Beginner'}
+                </Difficulty>
+            </CardHeader>
+            <Description>{description}</Description>
+            <CardFooter>
+                <Category>{category || 'Uncategorized'}</Category>
+                <Progress>
+                    <ProgressBar>
+                        <ProgressFill value={progress} />
+                    </ProgressBar>
+                    <span>{progress}%</span>
+                </Progress>
+            </CardFooter>
         </Card>
     );
 };

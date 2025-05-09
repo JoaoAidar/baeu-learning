@@ -3,37 +3,54 @@ import styled from 'styled-components';
 import Button from '../components/common/Button';
 import LessonsGrid from '../components/lessons/LessonsGrid';
 import { api } from '../utils/api';
+import designSystem from '../styles/designSystem';
+
+const { colors, spacing, typography, borderRadius, shadows, transitions } = designSystem;
+
+const Container = styled.div`
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: ${spacing.xl};
+`;
 
 const PageHeader = styled.div`
-    background-color: ${({ theme }) => theme.colors.primary.main};
-    color: ${({ theme }) => theme.colors.primary.contrast};
-    padding: ${({ theme }) => theme.spacing['2xl']} 0;
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    background-color: ${colors.background.paper};
+    color: ${colors.text.primary};
+    padding: ${spacing['2xl']} 0;
+    margin-bottom: ${spacing.xl};
     text-align: center;
+    border-radius: ${borderRadius.lg};
+    box-shadow: ${shadows.md};
 `;
 
 const PageTitle = styled.h1`
-    font-family: ${({ theme }) => theme.typography.fontFamily.secondary};
-    font-size: ${({ theme }) => theme.typography.fontSize['4xl']};
+    font-family: ${typography.fontFamily.secondary};
+    font-size: ${typography.fontSize['4xl']};
     margin: 0;
-    margin-bottom: ${({ theme }) => theme.spacing.md};
+    margin-bottom: ${spacing.md};
+    color: ${colors.text.primary};
 `;
 
 const PageDescription = styled.p`
-    font-size: ${({ theme }) => theme.typography.fontSize.lg};
+    font-size: ${typography.fontSize.lg};
     max-width: 600px;
     margin: 0 auto;
     opacity: 0.9;
+    color: ${colors.text.secondary};
 `;
 
 const FiltersContainer = styled.div`
     display: flex;
     justify-content: center;
-    gap: ${({ theme }) => theme.spacing.md};
-    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    gap: ${spacing.md};
+    margin-bottom: ${spacing.xl};
     flex-wrap: wrap;
+    padding: ${spacing.lg};
+    background-color: ${colors.background.paper};
+    border-radius: ${borderRadius.lg};
+    box-shadow: ${shadows.sm};
 
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+    @media (max-width: ${designSystem.breakpoints.sm}) {
         flex-direction: column;
         align-items: stretch;
     }
@@ -41,6 +58,12 @@ const FiltersContainer = styled.div`
 
 const FilterButton = styled(Button)`
     min-width: 120px;
+    transition: all ${transitions.normal} ${transitions.easeInOut};
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: ${shadows.md};
+    }
 `;
 
 const LessonsPage = () => {
@@ -54,9 +77,7 @@ const LessonsPage = () => {
             try {
                 setLoading(true);
                 const data = await api.get('/lessons');
-                console.log('Fetched lessons:', data);
                 if (Array.isArray(data)) {
-                    // Ensure each lesson has an exercises array
                     const lessonsWithExercises = data.map(lesson => ({
                         ...lesson,
                         exercises: Array.isArray(lesson.exercises) ? lesson.exercises : [],
@@ -76,9 +97,7 @@ const LessonsPage = () => {
     }, []);
 
     const filteredLessons = lessons.filter(lesson => {
-        if (!lesson) {
-            return false;
-        }
+        if (!lesson) return false;
         
         const exerciseCount = lesson.exercises?.length || 0;
         const completedCount = lesson.exercises?.filter(ex => ex.completed)?.length || 0;
@@ -96,7 +115,7 @@ const LessonsPage = () => {
     });
 
     return (
-        <>
+        <Container>
             <PageHeader>
                 <PageTitle>Korean Lessons</PageTitle>
                 <PageDescription>
@@ -137,7 +156,7 @@ const LessonsPage = () => {
                 loading={loading}
                 error={error}
             />
-        </>
+        </Container>
     );
 };
 
