@@ -1,13 +1,13 @@
 import styled from 'styled-components';
 
-// Korean-inspired color palette
+// Modern Korean Learning color palette
 export const colors = {
-    // Primary colors - Duolingo-inspired with dark blue
+    // Primary colors - Warm and inviting teal
     primary: {
-        main: '#1a365d', // Dark blue as primary
-        light: '#2c5282',
-        dark: '#0f2942',
-        contrast: '#FFFFFF'
+        main: '#2DD4BF', // Vibrant teal as primary
+        light: '#5EEAD4',
+        dark: '#14B8A6',
+        contrast: '#0F172A'
     },
     // Secondary colors - Complementary to dark blue
     secondary: {
@@ -113,69 +113,84 @@ export const colors = {
     }
 };
 
-// Typography - Modern and friendly
+// Typography configuration
 export const typography = {
     fontFamily: {
-        primary: "'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-        secondary: "'Nunito Sans', sans-serif",
-        mono: "'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace",
+        heading: "'Poppins', sans-serif",
+        body: "'Inter', sans-serif",
     },
     fontSize: {
         xs: '0.75rem',    // 12px
         sm: '0.875rem',   // 14px
-        md: '1rem',       // 16px
+        base: '1rem',     // 16px
         lg: '1.125rem',   // 18px
         xl: '1.25rem',    // 20px
-        xxl: '1.5rem',    // 24px
-        xxxl: '2rem',     // 32px
+        '2xl': '1.5rem',  // 24px
+        '3xl': '1.875rem',// 30px
+        '4xl': '2.25rem', // 36px
     },
     fontWeight: {
-        light: 300,
-        regular: 400,
-        medium: 600,
-        semibold: 700,
-        bold: 800,
+        normal: 400,
+        medium: 500,
+        semibold: 600,
+        bold: 700,
     },
     lineHeight: {
-        tight: 1.2,
+        none: 1,
+        tight: 1.25,
+        snug: 1.375,
         normal: 1.5,
-        relaxed: 1.75,
+        relaxed: 1.625,
+        loose: 2,
     }
 };
 
-// Spacing
+// Spacing system
 export const spacing = {
-    xs: '0.25rem',    // 4px
-    sm: '0.5rem',     // 8px
-    md: '1rem',       // 16px
-    lg: '1.5rem',     // 24px
-    xl: '2rem',       // 32px
-    xxl: '3rem',      // 48px
+    px: '1px',
+    0: '0',
+    0.5: '0.125rem',
+    1: '0.25rem',
+    2: '0.5rem',
+    3: '0.75rem',
+    4: '1rem',
+    5: '1.25rem',
+    6: '1.5rem',
+    8: '2rem',
+    10: '2.5rem',
+    12: '3rem',
+    16: '4rem',
+    20: '5rem',
+    24: '6rem',
 };
 
-// Border radius - More rounded corners for a friendly feel
+// Border radius
 export const borderRadius = {
     none: '0',
-    sm: '0.25rem',   // 4px
-    md: '0.5rem',    // 8px
-    lg: '1rem',      // 16px
-    xl: '1.5rem',    // 24px
-    full: '9999px'
+    sm: '0.125rem',
+    default: '0.25rem',
+    md: '0.375rem',
+    lg: '0.5rem',
+    xl: '0.75rem',
+    '2xl': '1rem',
+    '3xl': '1.5rem',
+    full: '9999px',
 };
 
-// Shadows - Softer shadows for depth
+// Shadows
 export const shadows = {
-    sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    default: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
 };
 
-// Transitions - Smoother animations
+// Transitions
 export const transitions = {
-    fast: '150ms cubic-bezier(0.4, 0, 0.2, 1)',
-    normal: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
-    slow: '500ms cubic-bezier(0.4, 0, 0.2, 1)',
+    default: 'all 0.3s ease',
+    fast: 'all 0.15s ease',
+    slow: 'all 0.45s ease',
 };
 
 // Z-index
@@ -298,4 +313,4 @@ export const darkTheme = {
     layout
 };
 
-export default designSystem; 
+export default designSystem;

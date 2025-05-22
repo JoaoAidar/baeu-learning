@@ -51,8 +51,14 @@ const Progress = styled.div`
 const NavigationButtons = styled.div`
     display: flex;
     justify-content: space-between;
-    margin-top: ${({ theme }) => theme.spacing.xl};
     gap: ${({ theme }) => theme.spacing.md};
+    margin-top: ${({ theme }) => theme.spacing.xl};
+    padding-top: ${({ theme }) => theme.spacing.lg};
+    border-top: 1px solid ${({ theme }) => theme.colors.neutral.main};
+
+    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
+        flex-direction: column-reverse;
+    }
 `;
 
 const ErrorMessage = styled.div`
@@ -69,10 +75,59 @@ const LoadingMessage = styled.div`
 `;
 
 const CompletionMessage = styled.div`
-    color: ${({ theme }) => theme.colors.success.main};
-    font-size: ${({ theme }) => theme.typography.fontSize.lg};
     text-align: center;
-    margin: ${({ theme }) => theme.spacing.xl} 0;
+    margin: ${({ theme }) => theme.spacing.xxl} 0;
+    padding: ${({ theme }) => theme.spacing.xl};
+    background-color: ${({ theme }) => theme.colors.success.light};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    box-shadow: ${({ theme }) => theme.shadows.lg};
+
+    .completion-icon {
+        font-size: 4rem;
+        margin-bottom: ${({ theme }) => theme.spacing.lg};
+        animation: bounce 1s ease infinite;
+    }
+
+    h2 {
+        color: ${({ theme }) => theme.colors.success.dark};
+        font-family: ${({ theme }) => theme.typography.fontFamily.heading};
+        font-size: ${({ theme }) => theme.typography.fontSize.xxl};
+        margin-bottom: ${({ theme }) => theme.spacing.md};
+    }
+
+    p {
+        color: ${({ theme }) => theme.colors.text.secondary};
+        font-size: ${({ theme }) => theme.typography.fontSize.lg};
+        margin-bottom: ${({ theme }) => theme.spacing.xl};
+    }
+
+    button {
+        margin-top: ${({ theme }) => theme.spacing.lg};
+    }
+
+    @keyframes bounce {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+`;
+
+const ExerciseStatus = styled.div`
+    text-align: center;
+    color: ${({ theme }) => theme.colors.text.secondary};
+    font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    
+    span {
+        display: inline-block;
+        padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
+        background-color: ${({ theme }) => theme.colors.background.paper};
+        border-radius: ${({ theme }) => theme.borderRadius.full};
+        box-shadow: ${({ theme }) => theme.shadows.sm};
+    }
 `;
 
 const ExercisePage = () => {
@@ -104,8 +159,20 @@ const ExercisePage = () => {
         }
         const fetchExercise = async () => {
             try {
+                console.log('Fetching exercise with ID:', exerciseId);
                 const data = await api.get(`/exercises/${exerciseId}`);
-                setExercise(data);
+                console.log('Received exercise data:', data);
+                
+                // Ensure the exercise data has the correct structure
+                const processedExercise = {
+                    ...data,
+                    options: data.options?.map(opt => 
+                        typeof opt === 'object' ? opt.text || opt.id : opt
+                    ) || []
+                };
+                
+                console.log('Processed exercise data:', processedExercise);
+                setExercise(processedExercise);
                 setError(null);
             } catch (err) {
                 setError('Failed to load exercise. Please try again.');
@@ -136,21 +203,17 @@ const ExercisePage = () => {
         } finally {
             setIsSubmitting(false);
         }
-    };
-
-    const handleNext = () => {
+    };    const handleNext = () => {
         if (nextExerciseId) {
-            navigate(`/lesson/${lessonId}/exercise/${nextExerciseId}`, {
+            navigate(`/lessons/${lessonId}/exercise/${nextExerciseId}`, {
                 state: { exerciseList }
             });
         } else {
             setCompleted(true);
         }
-    };
-
-    const handleExit = () => {
+    };    const handleExit = () => {
         if (window.confirm('Are you sure you want to exit? Your progress will be saved.')) {
-            navigate(`/lesson/${lessonId}`);
+            navigate(`/lessons/${lessonId}`);
         }
     };
 
@@ -164,14 +227,15 @@ const ExercisePage = () => {
 
     if (!exercise) {
         return <ErrorMessage>Exercise not found</ErrorMessage>;
-    }
-
-    return (
+    }    return (
         <ExerciseContainer>
             <ContentWrapper>
                 <ProgressBar>
                     <Progress $progress={progress} />
                 </ProgressBar>
+                <ExerciseStatus>
+                    <span>Exercise {currentIndex + 1} of {exerciseList.length}</span>
+                </ExerciseStatus>
                 <ExerciseRenderer
                     exercise={exercise}
                     onSubmit={handleSubmit}
@@ -183,7 +247,7 @@ const ExercisePage = () => {
                         onClick={handleExit}
                         disabled={isSubmitting}
                     >
-                        Exit Exercise
+                        Save & Exit
                     </Button>
                     {showNext && !completed && (
                         <Button 
@@ -191,13 +255,21 @@ const ExercisePage = () => {
                             onClick={handleNext}
                             disabled={isSubmitting}
                         >
-                            {nextExerciseId ? 'Next Exercise' : 'Complete Lesson'}
+                            {nextExerciseId ? 'Next Exercise →' : 'Complete Lesson ✓'}
                         </Button>
                     )}
                 </NavigationButtons>
                 {completed && (
                     <CompletionMessage>
-                        Congratulations! You have completed all exercises in this lesson.
+                        <div className="completion-icon">🎉</div>
+                        <h2>Congratulations!</h2>
+                        <p>You have completed all exercises in this lesson.</p>
+                        <Button 
+                            $variant="primary"
+                            onClick={() => navigate(`/lesson/${lessonId}`)}
+                        >
+                            Return to Lesson
+                        </Button>
                     </CompletionMessage>
                 )}
             </ContentWrapper>
@@ -205,4 +277,4 @@ const ExercisePage = () => {
     );
 };
 
-export default ExercisePage; 
+export default ExercisePage;

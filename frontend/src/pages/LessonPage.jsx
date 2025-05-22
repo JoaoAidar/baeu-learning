@@ -104,16 +104,27 @@ const DifficultyBadge = styled.span`
 `;
 
 const ErrorMessage = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
     color: ${colors.error.main};
-    margin: ${spacing.md} 0;
-    padding: ${spacing.md};
+    text-align: center;
+    padding: ${spacing.xl};
     background-color: ${colors.error.light};
-    border-radius: 4px;
+    border-radius: ${borderRadius.lg};
+    margin: ${spacing.xl} auto;
+    max-width: 600px;
 `;
 
 const LoadingMessage = styled.div`
-    text-align: center;
-    margin: ${spacing.xl} 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    color: ${colors.text.secondary};
+    font-size: ${typography.fontSize.lg};
 `;
 
 const NavigationButtons = styled.div`
@@ -128,9 +139,7 @@ const LessonPage = () => {
     const [lesson, setLesson] = useState(null);
     const [exercises, setExercises] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
+    const [error, setError] = useState(null);    useEffect(() => {
         if (!lessonId) {
             setError('No lesson ID provided.');
             setLoading(false);
@@ -138,13 +147,19 @@ const LessonPage = () => {
         }
         const fetchLessonAndExercises = async () => {
             try {
+                console.log('Fetching lesson data for ID:', lessonId);
                 // Fetch lesson details
                 const lessonData = await api.get(`/lessons/${lessonId}`);
-                setLesson(lessonData);
-
-                // Fetch exercises for this lesson
+                console.log('Received lesson data:', lessonData);
+                setLesson(lessonData);                // Fetch exercises for this lesson
                 const exercisesData = await api.get(`/exercises/lesson/${lessonId}`);
-                const exercisesArray = Array.isArray(exercisesData.exercises) ? exercisesData.exercises : [];
+                console.log('Received exercises data:', exercisesData);
+                const exercisesArray = Array.isArray(exercisesData.exercises) 
+                    ? exercisesData.exercises 
+                    : Array.isArray(exercisesData) 
+                        ? exercisesData 
+                        : [];
+                console.log('Processed exercises array:', exercisesArray);
                 setExercises(exercisesArray);
                 setError(null);
             } catch (err) {
@@ -156,11 +171,9 @@ const LessonPage = () => {
         };
 
         fetchLessonAndExercises();
-    }, [lessonId]);
-
-    const handleExerciseClick = (exerciseId) => {
+    }, [lessonId]);    const handleExerciseClick = (exerciseId) => {
         const exerciseIds = exercises.map(ex => ex.exercise_id);
-        navigate(`/lesson/${lessonId}/exercise/${exerciseId}`, {
+        navigate(`/lessons/${lessonId}/exercise/${exerciseId}`, {
             state: { exerciseList: exerciseIds }
         });
     };
@@ -218,4 +231,4 @@ const LessonPage = () => {
     );
 };
 
-export default LessonPage; 
+export default LessonPage;

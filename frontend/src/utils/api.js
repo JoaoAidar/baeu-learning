@@ -30,7 +30,7 @@ api.interceptors.request.use(
 api.interceptors.response.use(
     (response) => {
         console.log(`Received response from ${response.config.url}:`, response.data);
-        return response;
+        return response.data; // Return the data directly instead of the full response
     },
     (error) => {
         console.error('Response error:', error.response?.data || error.message);

@@ -3,14 +3,16 @@ export const theme = {
     // Light mode
     light: {
       primary: {
-        main: '#FF6B6B', // Warm coral
-        light: '#FF8E8E',
-        dark: '#E55A5A',
+        main: '#2DD4BF', // Vibrant teal
+        light: '#5EEAD4',
+        dark: '#14B8A6',
+        contrast: '#0F172A',
       },
       secondary: {
-        main: '#4ECDC4', // Rich teal
-        light: '#6ED7D0',
-        dark: '#3DBBB3',
+        main: '#F97316', // Warm orange
+        light: '#FB923C',
+        dark: '#EA580C',
+        contrast: '#FFFFFF',
       },
       background: {
         default: '#FFFFFF',
