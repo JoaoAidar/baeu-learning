@@ -141,11 +141,23 @@ const Exercise = ({ selectedLesson }) => {
             style={{ width: `${progress}%` }}
           ></div>
         </div>
-      </div>
-
-      {/* Question */}
-      <div className="bg-gray-50 p-4 rounded-lg mb-6">
-        <h3 className="font-medium text-gray-900">{selectedExercise.question}</h3>
+      </div>      {/* Question */}
+      <div className="bg-gray-50 p-4 rounded-lg mb-6 shadow-sm">
+        <div className="flex items-start">
+          <div className="flex-grow">
+            <span className="text-sm text-gray-500 mb-1 block">{selectedExercise.type === 'multiple_choice' ? 'Choose the correct answer:' : 'Answer the question:'}</span>
+            <h3 className="text-lg font-medium text-gray-900">{selectedExercise.prompt}</h3>
+          </div>
+          {selectedExercise.difficulty && (
+            <span className={`ml-2 px-2 py-1 text-xs font-medium rounded-full ${
+              selectedExercise.difficulty === 'easy' ? 'bg-green-100 text-green-800' :
+              selectedExercise.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+              'bg-red-100 text-red-800'
+            }`}>
+              {selectedExercise.difficulty.charAt(0).toUpperCase() + selectedExercise.difficulty.slice(1)}
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Answer options */}

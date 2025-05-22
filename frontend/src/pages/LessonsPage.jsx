@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Button from '../components/common/Button';
 import LessonsGrid from '../components/lessons/LessonsGrid';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import AlertMessage from '../components/common/AlertMessage';
 import { api } from '../utils/api';
 import designSystem from '../styles/designSystem';
 
@@ -75,21 +77,14 @@ const LessonsPage = () => {
     useEffect(() => {
         const fetchLessons = async () => {
             try {
-                console.log('Starting to fetch lessons...');
                 setLoading(true);
                 const response = await api.get('/lessons');
                 const data = response.data;
-                console.log('Received lessons data:', data);
-                
-                // Convert object to array if needed
                 const lessonsArray = Array.isArray(data) ? data : Object.values(data);
-                console.log(`Processing ${lessonsArray.length} lessons`);
-                
                 const lessonsWithExercises = lessonsArray.map(lesson => ({
                     ...lesson,
                     exercises: Array.isArray(lesson.exercises) ? lesson.exercises : [],
                 }));
-                console.log('Processed lessons:', lessonsWithExercises);
                 setLessons(lessonsWithExercises);
                 setError(null);
             } catch (err) {
@@ -99,8 +94,29 @@ const LessonsPage = () => {
                 setLoading(false);
             }
         };
+
         fetchLessons();
     }, []);
+
+    if (loading) {
+        return (
+            <Container>
+                <LoadingSpinner message="Loading lessons..." size={32} />
+            </Container>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container>
+                <AlertMessage 
+                    type="error" 
+                    message={error} 
+                    onClose={() => setError(null)}
+                />
+            </Container>
+        );
+    }
 
     const filteredLessons = lessons.filter(lesson => {
         if (!lesson) return false;
@@ -166,4 +182,4 @@ const LessonsPage = () => {
     );
 };
 
-export default LessonsPage; 
+export default LessonsPage;

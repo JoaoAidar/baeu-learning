@@ -1,10 +1,17 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { SunIcon, MoonIcon, BellIcon } from '@heroicons/react/24/outline';
+import {
+  SunIcon,
+  MoonIcon,
+  BellIcon,
+  Bars3Icon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline';
 
 const Layout = ({ children }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
-    const location = useLocation();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
 
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
@@ -17,7 +24,7 @@ const Layout = ({ children }) => {
     { name: 'Profile', href: '/profile' },
   ];
 
-    return (
+  return (
     <div className="min-h-screen bg-background-default dark:bg-gray-900">
       {/* Navigation Bar */}
       <nav className="bg-white dark:bg-gray-800 shadow-sm">
@@ -31,8 +38,8 @@ const Layout = ({ children }) => {
                 </Link>
               </div>
 
-              {/* Navigation Links */}
-              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+              {/* Desktop Navigation Links */}
+              <div className="hidden md:ml-6 md:flex md:space-x-8">
                 {navigation.map((item) => (
                   <Link
                     key={item.name}
@@ -51,23 +58,48 @@ const Layout = ({ children }) => {
 
             {/* Right side buttons */}
             <div className="flex items-center space-x-4">
+              {/* Mobile menu button */}
               <button
-                onClick={toggleDarkMode}
-                className="p-0.5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                type="button"
+                className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-main"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                aria-controls="mobile-menu"
+                aria-expanded={isMobileMenuOpen}
               >
-                {isDarkMode ? (
-                  <SunIcon className="h-2 w-2" />
+                <span className="sr-only">
+                  {isMobileMenuOpen ? 'Close main menu' : 'Open main menu'}
+                </span>
+                {isMobileMenuOpen ? (
+                  <XMarkIcon className="block h-6 w-6" aria-hidden="true" />
                 ) : (
-                  <MoonIcon className="h-2 w-2" />
+                  <Bars3Icon className="block h-6 w-6" aria-hidden="true" />
                 )}
               </button>
 
-              <button className="p-0.5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
-                <BellIcon className="h-2 w-2" />
+              <button
+                onClick={toggleDarkMode}
+                className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="Toggle dark mode"
+              >
+                {isDarkMode ? (
+                  <SunIcon className="h-5 w-5" />
+                ) : (
+                  <MoonIcon className="h-5 w-5" />
+                )}
+              </button>
+
+              <button 
+                className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                aria-label="View notifications"
+              >
+                <BellIcon className="h-5 w-5" />
               </button>
 
               {/* Language Selector */}
-              <select className="bg-transparent text-sm font-medium text-gray-500 dark:text-gray-300 border-0 focus:ring-0">
+              <select 
+                className="bg-transparent text-sm font-medium text-gray-500 dark:text-gray-300 border-0 focus:ring-0"
+                aria-label="Select language"
+              >
                 <option value="en">English</option>
                 <option value="ko">한국어</option>
               </select>
@@ -83,6 +115,29 @@ const Layout = ({ children }) => {
             </div>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        <div
+          className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden`}
+          id="mobile-menu"
+        >
+          <div className="pt-2 pb-3 space-y-1">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`${
+                  location.pathname === item.href
+                    ? 'bg-primary-main text-white'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                } block px-3 py-2 rounded-md text-base font-medium`}
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                {item.name}
+              </Link>
+            ))}
+          </div>
+        </div>
       </nav>
 
       {/* Main Content */}
@@ -90,7 +145,7 @@ const Layout = ({ children }) => {
         {children}
       </main>
     </div>
-    );
+  );
 };
 
-export default Layout; 
+export default Layout;

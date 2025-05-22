@@ -104,6 +104,18 @@ const DifficultyBadge = styled.span`
 
 const AnswerContainer = styled.div`
     margin-top: ${({ theme }) => theme.spacing.xl};
+    position: relative;
+    transition: all ${({ theme }) => theme.transitions.normal};
+    ${props => props.$submitted && `
+        border: 2px solid ${props.$isCorrect 
+            ? props.theme.colors.success.main 
+            : props.theme.colors.error.main};
+        border-radius: ${props.theme.borderRadius.md};
+        padding: ${props.theme.spacing.md};
+        background-color: ${props.$isCorrect 
+            ? props.theme.colors.success.light 
+            : props.theme.colors.error.light}20;
+    `}
 `;
 
 const AnswerInput = styled.input`
@@ -126,6 +138,13 @@ const AnswerInput = styled.input`
         background-color: ${({ theme }) => theme.colors.neutral.light};
         cursor: not-allowed;
     }
+
+    ${props => props.$submitted && `
+        border-color: ${props.$isCorrect 
+            ? props.theme.colors.success.main 
+            : props.theme.colors.error.main};
+        background-color: ${props.theme.colors.background.paper};
+    `}
 `;
 
 const FeedbackMessage = styled.div`
@@ -213,23 +232,46 @@ const OptionButton = styled.button`
         cursor: not-allowed;
         opacity: 0.7;
     }
+
+    ${props => props.$submitted && props.$isCorrect && `
+        background-color: ${props.theme.colors.success.light};
+        border-color: ${props.theme.colors.success.main};
+        color: ${props.theme.colors.success.dark};
+    `}
+    ${props => props.$submitted && !props.$isCorrect && `
+        background-color: ${props.theme.colors.error.light};
+        border-color: ${props.theme.colors.error.main};
+        color: ${props.theme.colors.error.dark};
+    `}
 `;
 
-const ExerciseContainer = styled.div`
+const CorrectAnswerSection = styled.div`
+    margin-top: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacing.md};
     background-color: ${({ theme }) => theme.colors.background.paper};
-    padding: ${({ theme }) => theme.spacing.xl};
-    border-radius: ${({ theme }) => theme.borderRadius.lg};
-    box-shadow: ${({ theme }) => theme.shadows.md};
+    border: 1px solid ${({ theme }) => theme.colors.neutral.light};
+    border-radius: ${({ theme }) => theme.borderRadius.md};
+
+    h4 {
+        font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+        color: ${({ theme }) => theme.colors.text.primary};
+        margin-bottom: ${({ theme }) => theme.spacing.xs};
+    }
+
+    p {
+        color: ${({ theme }) => theme.colors.text.secondary};
+        font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    }
 `;
 
 const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
     const [answer, setAnswer] = useState('');
     const [feedback, setFeedback] = useState(null);
     const [selectedOption, setSelectedOption] = useState(null);
+    const [canRetry, setCanRetry] = useState(false);
 
     console.log('Exercise data:', exercise);
 
-    // Format question text similar to options
     const formatQuestion = (question) => {
         if (typeof question === 'string') return question;
         if (typeof question === 'object' && question !== null) {
@@ -240,22 +282,40 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
         return 'Question not available';
     };
 
+    const resetExercise = () => {
+        setAnswer('');
+        setSelectedOption(null);
+        setFeedback(null);
+        setCanRetry(false);
+    };
+
+    const handleRetry = () => {
+        resetExercise();
+    };
+
     const handleSubmitAnswer = async () => {
-        if (isSubmitting || !answer) return;
+        if (isSubmitting || (!answer && !selectedOption)) return;
         
-        // For multiple choice, use selectedOption as answer
         const submittedAnswer = exercise.type === 'multiple_choice' 
             ? selectedOption 
             : answer;
 
         try {
-            await onSubmit(submittedAnswer);
-            setFeedback({ isCorrect: true, message: 'Correct! Well done!' });
+            const response = await onSubmit(submittedAnswer);
+            setFeedback({
+                isCorrect: true,
+                message: 'Correct! Well done!',
+                ...response
+            });
+            setCanRetry(false);
         } catch (error) {
             setFeedback({ 
                 isCorrect: false, 
-                message: error.response?.data?.message || 'Incorrect. Try again!' 
+                message: error.response?.data?.message || 'Incorrect. Try again!',
+                correctAnswer: error.response?.data?.correctAnswer,
+                explanation: error.response?.data?.explanation
             });
+            setCanRetry(true);
         }
     };
 
@@ -265,7 +325,6 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
             return null;
         }
 
-        // Ensure options are properly formatted
         const formatOption = (opt) => {
             if (typeof opt === 'string') return opt;
             if (typeof opt === 'object' && opt !== null) {
@@ -276,18 +335,24 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
             return '';
         };
 
+        const isSubmitted = !!feedback;
+        const isDisabled = isSubmitting || (isSubmitted && !canRetry);
+
         switch (exercise.type) {
             case 'multiple_choice':
                 return (
                     <MultipleChoiceContainer>
                         {exercise.options.map((option, index) => {
                             const optionText = formatOption(option);
+                            const isSelected = selectedOption === optionText;
                             return (
                                 <OptionButton
                                     key={index}
-                                    $isSelected={selectedOption === optionText}
-                                    onClick={() => setSelectedOption(optionText)}
-                                    disabled={isSubmitting}
+                                    $isSelected={isSelected}
+                                    $submitted={isSubmitted}
+                                    $isCorrect={isSelected && feedback?.isCorrect}
+                                    onClick={() => !isDisabled && setSelectedOption(optionText)}
+                                    disabled={isDisabled}
                                 >
                                     {optionText}
                                 </OptionButton>
@@ -299,9 +364,11 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
                 return (
                     <KoreanInput
                         value={answer}
-                        onChange={setAnswer}
-                        disabled={isSubmitting}
+                        onChange={!isDisabled ? setAnswer : undefined}
+                        disabled={isDisabled}
                         placeholder="Type your answer in Korean..."
+                        $submitted={isSubmitted}
+                        $isCorrect={feedback?.isCorrect}
                     />
                 );
             default:
@@ -309,9 +376,11 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
                     <AnswerInput
                         type="text"
                         value={answer}
-                        onChange={(e) => setAnswer(e.target.value)}
-                        disabled={isSubmitting}
+                        onChange={(e) => !isDisabled && setAnswer(e.target.value)}
+                        disabled={isDisabled}
                         placeholder="Type your answer..."
+                        $submitted={isSubmitted}
+                        $isCorrect={feedback?.isCorrect}
                     />
                 );
         }
@@ -325,30 +394,57 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
             
             <div className="exercise-container">
                 <div className="question-container">
-                    <Question text={formatQuestion(exercise.prompt)} />
+                    <Question>{formatQuestion(exercise.prompt)}</Question>
                 </div>
             </div>
             
-            <AnswerContainer>
+            <AnswerContainer 
+                $submitted={!!feedback} 
+                $isCorrect={feedback?.isCorrect}
+            >
                 {renderAnswerInput()}
-            </AnswerContainer>
 
-            {feedback && (
-                <FeedbackMessage $isCorrect={feedback.isCorrect}>
-                    {feedback.isCorrect ? (
-                        <CheckCircle size={20} />
-                    ) : (
-                        <XCircle size={20} />
-                    )}
-                    {feedback.message}
-                </FeedbackMessage>
-            )}
+                {feedback && (
+                    <FeedbackMessage $isCorrect={feedback.isCorrect}>
+                        {feedback.isCorrect ? (
+                            <CheckCircle size={20} />
+                        ) : (
+                            <XCircle size={20} />
+                        )}
+                        {feedback.message}
+                    </FeedbackMessage>
+                )}
+
+                {feedback && !feedback.isCorrect && (
+                    <CorrectAnswerSection>
+                        {feedback.correctAnswer && (
+                            <>
+                                <h4>Correct Answer:</h4>
+                                <p>{feedback.correctAnswer}</p>
+                            </>
+                        )}
+                        {feedback.explanation && (
+                            <>
+                                <h4>Explanation:</h4>
+                                <p>{feedback.explanation}</p>
+                            </>
+                        )}
+                    </CorrectAnswerSection>
+                )}
+            </AnswerContainer>
             
             <SubmitButton
-                onClick={handleSubmitAnswer}
+                onClick={feedback ? (
+                    canRetry ? handleRetry : handleSubmitAnswer
+                ) : handleSubmitAnswer}
                 disabled={isSubmitting || (!answer && !selectedOption)}
             >
-                {isSubmitting ? 'Checking...' : 'Submit Answer'}
+                {isSubmitting ? 'Checking...' : 
+                    feedback ? (
+                        feedback.isCorrect ? 'Next Exercise' :
+                        canRetry ? 'Try Again' : 'Submit Again'
+                    ) : 'Submit Answer'
+                }
             </SubmitButton>
         </ExerciseWrapper>
     );
