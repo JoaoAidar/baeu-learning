@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import { api } from '../utils/api';
-import { useAuth } from '../utils/AuthContext';
 import LessonCard from '../components/lessons/LessonCard';
 
 const HomeContainer = styled.div`
@@ -55,14 +54,17 @@ const Home = () => {
   const [lessons, setLessons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth();
+  const user = JSON.parse(localStorage.getItem('user'));
 
   useEffect(() => {
     const fetchLessons = async () => {
       try {
         setError(null);
         const response = await api.get('/lessons');
-        setLessons(Array.isArray(response) ? response : []);
+        const data = response.data;
+        // Convert object to array if needed
+        const lessonsArray = Array.isArray(data) ? data : Object.values(data);
+        setLessons(lessonsArray);
       } catch (error) {
         console.error('Error fetching lessons:', error);
         setError('Failed to load lessons. Please try again later.');

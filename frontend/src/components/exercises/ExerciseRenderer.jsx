@@ -59,7 +59,9 @@ const Question = styled.h3`
 `;
 
 const DifficultyBadge = styled.span`
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.xs};
     padding: ${({ theme }) => theme.spacing.xs} ${({ theme }) => theme.spacing.sm};
     border-radius: ${({ theme }) => theme.borderRadius.full};
     font-size: ${({ theme }) => theme.typography.fontSize.sm};
@@ -91,6 +93,13 @@ const DifficultyBadge = styled.span`
                 return t.colors.text.primary;
         }
     }};
+    box-shadow: ${({ theme }) => theme.shadows.sm};
+    transition: all ${({ theme }) => theme.transitions.normal};
+
+    &:hover {
+        transform: translateY(-1px);
+        box-shadow: ${({ theme }) => theme.shadows.md};
+    }
 `;
 
 const OptionsContainer = styled.div`
@@ -109,33 +118,121 @@ const OptionsContainer = styled.div`
     }
 `;
 
-const Option = styled.button`
-    padding: clamp(${({ theme }) => theme.spacing.sm}, 3vw, ${({ theme }) => theme.spacing.xl});
+const OptionButton = styled.button`
+    display: flex;
+    align-items: center;
+    gap: ${({ theme }) => theme.spacing.md};
+    padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.lg};
+    background-color: ${({ theme }) => theme.colors.background.paper};
     border: 2px solid ${({ theme }) => theme.colors.neutral.light};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
-    background-color: ${props => props.$selected ? props.theme.colors.primary.light : props.theme.colors.background.paper};
-    color: ${props => props.$selected ? props.theme.colors.primary.dark : props.theme.colors.text.primary};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    color: ${({ theme }) => theme.colors.text.primary};
+    font-size: ${({ theme }) => theme.typography.fontSize.md};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all ${({ theme }) => theme.transitions.normal};
     text-align: left;
-    font-size: clamp(${({ theme }) => theme.typography.fontSize.sm}, 2vw, ${({ theme }) => theme.typography.fontSize.md});
     width: 100%;
 
     &:hover {
         border-color: ${({ theme }) => theme.colors.primary.main};
+        background-color: ${({ theme }) => theme.colors.primary.light};
         transform: translateY(-2px);
+        box-shadow: ${({ theme }) => theme.shadows.md};
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    ${props => props.$selected && `
+        border-color: ${props.theme.colors.primary.main};
+        background-color: ${props.theme.colors.primary.light};
+        color: ${props.theme.colors.primary.contrast};
+    `}
+
+    ${props => props.$correct && `
+        border-color: ${props.theme.colors.success.main};
+        background-color: ${props.theme.colors.success.light};
+        color: ${props.theme.colors.success.contrast};
+    `}
+
+    ${props => props.$incorrect && `
+        border-color: ${props.theme.colors.error.main};
+        background-color: ${props.theme.colors.error.light};
+        color: ${props.theme.colors.error.contrast};
+    `}
+
+    &:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+        transform: none;
+        box-shadow: none;
     }
 `;
 
-const Feedback = styled.div`
-    padding: ${({ theme }) => theme.spacing.md};
-    border-radius: ${({ theme }) => theme.borderRadius.md};
+const FeedbackMessage = styled.div`
     margin-top: ${({ theme }) => theme.spacing.lg};
-    display: flex;
-    align-items: center;
-    gap: ${({ theme }) => theme.spacing.sm};
-    background-color: ${props => props.$isCorrect ? props.theme.colors.success.light : props.theme.colors.error.light};
-    color: ${props => props.$isCorrect ? props.theme.colors.success.dark : props.theme.colors.error.dark};
+    padding: ${({ theme }) => theme.spacing.md};
+    border-radius: ${({ theme }) => theme.borderRadius.lg};
+    font-size: ${({ theme }) => theme.typography.fontSize.md};
+    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
+    text-align: center;
+    animation: fadeIn 0.3s ease-in-out;
+
+    ${props => props.$type === 'success' && `
+        background-color: ${props.theme.colors.success.light};
+        color: ${props.theme.colors.success.dark};
+    `}
+
+    ${props => props.$type === 'error' && `
+        background-color: ${props.theme.colors.error.light};
+        color: ${props.theme.colors.error.dark};
+    `}
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+`;
+
+const ProgressBar = styled.div`
+    width: 100%;
+    height: 8px;
+    background-color: ${({ theme }) => theme.colors.neutral.light};
+    border-radius: ${({ theme }) => theme.borderRadius.full};
+    margin: ${({ theme }) => theme.spacing.lg} 0;
+    overflow: hidden;
+`;
+
+const Progress = styled.div`
+    width: ${props => props.$progress}%;
+    height: 100%;
+    background-color: ${({ theme }) => theme.colors.primary.main};
+    transition: width 0.3s ease;
+    border-radius: ${({ theme }) => theme.borderRadius.full};
+`;
+
+const ExerciseTitle = styled.h2`
+    font-family: ${({ theme }) => theme.typography.fontFamily.secondary};
+    font-size: ${({ theme }) => theme.typography.fontSize.xl};
+    color: ${({ theme }) => theme.colors.text.primary};
+    margin-bottom: ${({ theme }) => theme.spacing.lg};
+    text-align: center;
+`;
+
+const ExerciseDescription = styled.p`
+    font-size: ${({ theme }) => theme.typography.fontSize.md};
+    color: ${({ theme }) => theme.colors.text.secondary};
+    margin-bottom: ${({ theme }) => theme.spacing.xl};
+    text-align: center;
+    line-height: ${({ theme }) => theme.typography.lineHeight.relaxed};
 `;
 
 const MatchingContainer = styled.div`
@@ -330,14 +427,16 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
             <Question>{promptText}</Question>
             <OptionsContainer>
               {processedOptions.map((option) => (
-                <Option
+                <OptionButton
                   key={option.id}
                   $selected={selectedAnswer === option.id}
                   onClick={() => !isSubmitted && !isSubmitting && setSelectedAnswer(option.id)}
                   disabled={isSubmitted || isSubmitting}
+                  $correct={selectedAnswer === exercise.correct_answer}
+                  $incorrect={selectedAnswer !== exercise.correct_answer}
                 >
                   {option.text}
-                </Option>
+                </OptionButton>
               ))}
             </OptionsContainer>
             {!isSubmitted && (
@@ -349,7 +448,7 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
               </SubmitButton>
             )}
             {showFeedback && (
-              <Feedback $isCorrect={isCorrect}>
+              <FeedbackMessage $type={isCorrect ? 'success' : 'error'}>
                 {isCorrect ? (
                   <>
                     <CheckCircle size={24} />
@@ -361,7 +460,7 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
                     Incorrect. The correct answer is: {processedOptions.find(opt => opt.id === exercise.correct_answer)?.text}
                   </>
                 )}
-              </Feedback>
+              </FeedbackMessage>
             )}
           </>
         );
@@ -395,7 +494,7 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
               </SubmitButton>
             )}
             {showFeedback && (
-              <Feedback $isCorrect={isCorrect}>
+              <FeedbackMessage $type={isCorrect ? 'success' : 'error'}>
                 {isCorrect ? (
                   <>
                     <CheckCircle size={24} />
@@ -407,7 +506,7 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
                     Incorrect. The correct answer is: {processedOptions.find(opt => opt.id === exercise.correct_answer)?.text}
                   </>
                 )}
-              </Feedback>
+              </FeedbackMessage>
             )}
           </>
         );
@@ -435,7 +534,7 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
               </SubmitButton>
             )}
             {showFeedback && (
-              <Feedback $isCorrect={isCorrect}>
+              <FeedbackMessage $type={isCorrect ? 'success' : 'error'}>
                 {isCorrect ? (
                   <>
                     <CheckCircle size={24} />
@@ -447,7 +546,7 @@ const ExerciseRenderer = ({ exercise, onSubmit, isSubmitting }) => {
                     Incorrect. The correct answer is: {exercise.correct_answer}
                   </>
                 )}
-              </Feedback>
+              </FeedbackMessage>
             )}
           </>
         );

@@ -75,19 +75,25 @@ const LessonsPage = () => {
     useEffect(() => {
         const fetchLessons = async () => {
             try {
+                console.log('Starting to fetch lessons...');
                 setLoading(true);
-                const data = await api.get('/lessons');
-                if (Array.isArray(data)) {
-                    const lessonsWithExercises = data.map(lesson => ({
-                        ...lesson,
-                        exercises: Array.isArray(lesson.exercises) ? lesson.exercises : [],
-                    }));
-                    setLessons(lessonsWithExercises);
-                    setError(null);
-                } else {
-                    setError('Invalid data format received from server');
-                }
+                const response = await api.get('/lessons');
+                const data = response.data;
+                console.log('Received lessons data:', data);
+                
+                // Convert object to array if needed
+                const lessonsArray = Array.isArray(data) ? data : Object.values(data);
+                console.log(`Processing ${lessonsArray.length} lessons`);
+                
+                const lessonsWithExercises = lessonsArray.map(lesson => ({
+                    ...lesson,
+                    exercises: Array.isArray(lesson.exercises) ? lesson.exercises : [],
+                }));
+                console.log('Processed lessons:', lessonsWithExercises);
+                setLessons(lessonsWithExercises);
+                setError(null);
             } catch (err) {
+                console.error('Error fetching lessons:', err);
                 setError('Failed to load lessons. Please try again later.');
             } finally {
                 setLoading(false);

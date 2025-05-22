@@ -1,5 +1,6 @@
 const Lesson = require('../models/lessonModel');
 const supabase = require('../config/db');
+const logger = require('../utils/logger');
 
 class LessonController {
     static async getLessonById(req, res) {
@@ -17,6 +18,8 @@ class LessonController {
 
     static async getAllLessons(req, res) {
         try {
+            logger.info('Fetching all lessons from database...');
+            
             const { data: lessons, error } = await supabase
                 .from('lessons')
                 .select(`
@@ -40,13 +43,20 @@ class LessonController {
                 .order('order_index', { ascending: true });
 
             if (error) {
-                console.error('Error in getAllLessons:', error);
+                logger.error('Error in getAllLessons:', error);
                 return res.status(500).json({ error: 'Failed to fetch lessons' });
+            }
+
+            logger.info(`Successfully fetched ${lessons?.length || 0} lessons`);
+            logger.debug('Lessons data:', lessons);
+
+            if (!lessons || lessons.length === 0) {
+                logger.warn('No lessons found in database');
             }
 
             res.json(lessons);
         } catch (error) {
-            console.error('Error in getAllLessons:', error);
+            logger.error('Error in getAllLessons:', error);
             res.status(500).json({ error: 'Internal server error' });
         }
     }

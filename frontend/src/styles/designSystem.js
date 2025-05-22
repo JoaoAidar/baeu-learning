@@ -2,121 +2,122 @@ import styled from 'styled-components';
 
 // Korean-inspired color palette
 export const colors = {
-    // Primary colors inspired by Korean traditional colors
+    // Primary colors - Duolingo-inspired with dark blue
     primary: {
-        main: '#2563eb',
-        light: '#60a5fa',
-        dark: '#1d4ed8',
+        main: '#1a365d', // Dark blue as primary
+        light: '#2c5282',
+        dark: '#0f2942',
         contrast: '#FFFFFF'
     },
-    // Secondary colors
+    // Secondary colors - Complementary to dark blue
     secondary: {
-        main: '#7c3aed',
-        light: '#a78bfa',
-        dark: '#5b21b6',
+        main: '#4299e1', // Bright blue as secondary
+        light: '#63b3ed',
+        dark: '#3182ce',
         contrast: '#FFFFFF'
     },
-    // Accent colors
+    // Accent colors - For highlights and success states
     accent: {
-        main: '#FF8E8E', // Soft Korean red
-        light: '#FFE5E5',
-        dark: '#CC7272',
+        main: '#48bb78', // Success green
+        light: '#68d391',
+        dark: '#38a169',
         contrast: '#FFFFFF'
     },
-    // Neutral colors
+    // Neutral colors - For backgrounds and text
     neutral: {
-        light: '#f3f4f6',
-        main: '#9ca3af',
-        dark: '#4b5563',
+        light: '#f7fafc',
+        main: '#e2e8f0',
+        dark: '#a0aec0',
         white: '#FFFFFF'
     },
     // Semantic colors
     success: {
-        main: '#059669',
-        light: '#34d399',
-        dark: '#047857',
+        main: '#48bb78',
+        light: '#68d391',
+        dark: '#38a169',
         contrast: '#FFFFFF'
     },
     error: {
-        main: '#dc2626',
-        light: '#f87171',
-        dark: '#b91c1c',
+        main: '#f56565',
+        light: '#fc8181',
+        dark: '#e53e3e',
         contrast: '#FFFFFF'
     },
     warning: {
-        main: '#d97706',
-        light: '#fbbf24',
-        dark: '#b45309',
+        main: '#ed8936',
+        light: '#f6ad55',
+        dark: '#dd6b20',
+        contrast: '#FFFFFF'
     },
     text: {
-        primary: '#111827',
-        secondary: '#4b5563',
-        disabled: '#9ca3af',
+        primary: '#2d3748',
+        secondary: '#4a5568',
+        disabled: '#a0aec0',
     },
     background: {
         default: '#ffffff',
-        paper: '#f9fafb',
+        paper: '#f7fafc',
     },
     // Dark mode palette
     dark: {
         primary: {
-            main: '#60a5fa',
-            light: '#93c5fd',
-            dark: '#2563eb',
-            contrast: '#18181b'
+            main: '#4299e1',
+            light: '#63b3ed',
+            dark: '#3182ce',
+            contrast: '#1a202c'
         },
         secondary: {
-            main: '#a78bfa',
-            light: '#c4b5fd',
-            dark: '#7c3aed',
-            contrast: '#18181b'
+            main: '#48bb78',
+            light: '#68d391',
+            dark: '#38a169',
+            contrast: '#1a202c'
         },
         accent: {
-            main: '#FFB4B4',
-            light: '#FFE5E5',
-            dark: '#CC7272',
-            contrast: '#18181b'
+            main: '#f6ad55',
+            light: '#fbd38d',
+            dark: '#ed8936',
+            contrast: '#1a202c'
         },
         neutral: {
-            light: '#18181b',
-            main: '#27272a',
-            dark: '#3f3f46',
-            white: '#18181b'
+            light: '#1a202c',
+            main: '#2d3748',
+            dark: '#4a5568',
+            white: '#1a202c'
         },
         success: {
-            main: '#34d399',
-            light: '#6ee7b7',
-            dark: '#059669',
-            contrast: '#18181b'
+            main: '#68d391',
+            light: '#9ae6b4',
+            dark: '#48bb78',
+            contrast: '#1a202c'
         },
         error: {
-            main: '#f87171',
-            light: '#fecaca',
-            dark: '#dc2626',
-            contrast: '#18181b'
+            main: '#fc8181',
+            light: '#feb2b2',
+            dark: '#f56565',
+            contrast: '#1a202c'
         },
         warning: {
-            main: '#fbbf24',
-            light: '#fde68a',
-            dark: '#d97706',
+            main: '#f6ad55',
+            light: '#fbd38d',
+            dark: '#ed8936',
         },
         text: {
-            primary: '#f3f4f6',
-            secondary: '#d1d5db',
-            disabled: '#6b7280',
+            primary: '#f7fafc',
+            secondary: '#e2e8f0',
+            disabled: '#a0aec0',
         },
         background: {
-            default: '#18181b',
-            paper: '#27272a',
+            default: '#1a202c',
+            paper: '#2d3748',
         },
     }
 };
 
-// Typography
+// Typography - Modern and friendly
 export const typography = {
     fontFamily: {
-        primary: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
-        secondary: "'Noto Serif KR', serif",
+        primary: "'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif",
+        secondary: "'Nunito Sans', sans-serif",
         mono: "'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace",
     },
     fontSize: {
@@ -131,12 +132,12 @@ export const typography = {
     fontWeight: {
         light: 300,
         regular: 400,
-        medium: 500,
-        semibold: 600,
-        bold: 700,
+        medium: 600,
+        semibold: 700,
+        bold: 800,
     },
     lineHeight: {
-        tight: 1.25,
+        tight: 1.2,
         normal: 1.5,
         relaxed: 1.75,
     }
@@ -152,29 +153,29 @@ export const spacing = {
     xxl: '3rem',      // 48px
 };
 
-// Border radius
+// Border radius - More rounded corners for a friendly feel
 export const borderRadius = {
     none: '0',
-    sm: '0.125rem',   // 2px
-    md: '0.25rem',    // 4px
-    lg: '0.5rem',     // 8px
-    xl: '1rem',       // 16px
+    sm: '0.25rem',   // 4px
+    md: '0.5rem',    // 8px
+    lg: '1rem',      // 16px
+    xl: '1.5rem',    // 24px
     full: '9999px'
 };
 
-// Shadows
+// Shadows - Softer shadows for depth
 export const shadows = {
-    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    sm: '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
     md: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
     lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
     xl: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
 };
 
-// Transitions
+// Transitions - Smoother animations
 export const transitions = {
-    fast: '150ms',
-    normal: '300ms',
-    slow: '500ms',
+    fast: '150ms cubic-bezier(0.4, 0, 0.2, 1)',
+    normal: '300ms cubic-bezier(0.4, 0, 0.2, 1)',
+    slow: '500ms cubic-bezier(0.4, 0, 0.2, 1)',
 };
 
 // Z-index

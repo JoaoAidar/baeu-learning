@@ -1,233 +1,95 @@
-import React from 'react';
-import styled from 'styled-components';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Container } from '../../styles/designSystem';
-import { useTheme } from '../../contexts/ThemeContext';
+import { SunIcon, MoonIcon, BellIcon } from '@heroicons/react/24/outline';
 
-const LayoutContainer = styled.div`
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    background-color: ${({ theme }) => theme.colors.background.default};
-    width: 100%;
-`;
-
-const Header = styled.header`
-    background-color: ${({ theme }) => theme.colors.background.paper};
-    box-shadow: ${({ theme }) => theme.shadows.sm};
-    padding: ${({ theme }) => theme.spacing.md} 0;
-    width: 100%;
-    box-sizing: border-box;
-`;
-
-const Nav = styled.nav`
-    width: 100%;
-    background: transparent;
-`;
-
-const NavContent = styled(Container)`
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-top: 0;
-    padding-bottom: 0;
-`;
-
-const Logo = styled(Link)`
-    font-family: ${({ theme }) => theme.typography.fontFamily.secondary};
-    font-size: ${({ theme }) => theme.typography.fontSize.xl};
-    font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
-    color: ${({ theme }) => theme.colors.primary.main};
-    text-decoration: none;
-    transition: color ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easeInOut};
-
-    &:hover {
-        color: ${({ theme }) => theme.colors.primary.dark};
-    }
-`;
-
-const NavLinks = styled.div`
-    display: flex;
-    gap: ${({ theme }) => theme.spacing.lg};
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        gap: ${({ theme }) => theme.spacing.md};
-    }
-`;
-
-const NavLink = styled(Link)`
-    color: ${({ theme }) => theme.colors.neutral.dark};
-    text-decoration: none;
-    font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
-    padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-    border-radius: ${({ theme }) => theme.borderRadius.lg};
-    transition: all ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easeInOut};
-
-    &:hover {
-        color: ${({ theme }) => theme.colors.primary.main};
-        background-color: ${({ theme }) => theme.colors.primary.light};
-    }
-    &.active {
-        color: ${({ theme }) => theme.colors.primary.main};
-        background-color: ${({ theme }) => theme.colors.primary.light};
-    }
-`;
-
-const Main = styled.main`
-    flex: 1;
-    width: 100%;
-    box-sizing: border-box;
-    padding: ${({ theme }) => theme.spacing.xl} 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        padding: ${({ theme }) => theme.spacing.lg} 0;
-    }
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        padding: ${({ theme }) => theme.spacing.md} 0;
-    }
-    @media (max-width: ${({ theme }) => theme.breakpoints.sm}) {
-        padding: ${({ theme }) => theme.spacing.sm} 0;
-    }
-`;
-
-const Footer = styled.footer`
-    background-color: ${({ theme }) => theme.colors.background.paper};
-    padding: ${({ theme }) => theme.spacing.lg} 0;
-    margin-top: auto;
-    width: 100%;
-    box-sizing: border-box;
-`;
-
-const FooterContent = styled(Container)`
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: ${({ theme }) => theme.spacing.xl};
-    justify-items: center;
-    align-items: start;
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        gap: ${({ theme }) => theme.spacing.lg};
-    }
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        grid-template-columns: 1fr;
-        gap: ${({ theme }) => theme.spacing.md};
-    }
-`;
-
-const FooterSection = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: ${({ theme }) => theme.spacing.md};
-`;
-
-const FooterTitle = styled.h3`
-    font-family: ${({ theme }) => theme.typography.fontFamily.secondary};
-    font-size: ${({ theme }) => theme.typography.fontSize.lg};
-    color: ${({ theme }) => theme.colors.neutral.dark};
-    margin: 0;
-`;
-
-const FooterLink = styled(Link)`
-    color: ${({ theme }) => theme.colors.neutral.medium};
-    text-decoration: none;
-    transition: color ${({ theme }) => theme.transitions.normal} ${({ theme }) => theme.transitions.easeInOut};
-    &:hover {
-        color: ${({ theme }) => theme.colors.primary.main};
-    }
-`;
-
-const Copyright = styled(Container)`
-    text-align: center;
-    padding-top: ${({ theme }) => theme.spacing.xl};
-    color: ${({ theme }) => theme.colors.neutral.medium};
-    font-size: ${({ theme }) => theme.typography.fontSize.sm};
-    padding-bottom: ${({ theme }) => theme.spacing.xl};
-    @media (max-width: ${({ theme }) => theme.breakpoints.lg}) {
-        padding-top: ${({ theme }) => theme.spacing.lg};
-        padding-bottom: ${({ theme }) => theme.spacing.lg};
-    }
-    @media (max-width: ${({ theme }) => theme.breakpoints.md}) {
-        padding-top: ${({ theme }) => theme.spacing.md};
-        padding-bottom: ${({ theme }) => theme.spacing.md};
-    }
-`;
-
-const Layout = ({ children, maxWidth, showHeader = true, showFooter = true }) => {
+const Layout = ({ children }) => {
+  const [isDarkMode, setIsDarkMode] = useState(false);
     const location = useLocation();
-    const { mode, toggleTheme } = useTheme();
+
+  const toggleDarkMode = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
+  const navigation = [
+    { name: 'Dashboard', href: '/' },
+    { name: 'Lessons', href: '/lessons' },
+    { name: 'Profile', href: '/profile' },
+  ];
 
     return (
-        <LayoutContainer>
-            {showHeader && <Header>
-                <Nav>
-                    <NavContent>
-                        <Logo to="/">BeaU Learning</Logo>
-                        <NavLinks>
-                            <NavLink to="/" className={location.pathname === '/' ? 'active' : ''}>
-                                Home
-                            </NavLink>
-                            <NavLink to="/lessons" className={location.pathname.startsWith('/lessons') ? 'active' : ''}>
-                                Lessons
-                            </NavLink>
-                            <NavLink to="/progress" className={location.pathname === '/progress' ? 'active' : ''}>
-                                Progress
-                            </NavLink>
-                            <NavLink to="/about-me" className={location.pathname === '/about-me' ? 'active' : ''}>
-                                About Me
-                            </NavLink>
-                            <NavLink to="/about-project" className={location.pathname === '/about-project' ? 'active' : ''}>
-                                About Project
-                            </NavLink>
-                            <button
-                                onClick={toggleTheme}
-                                style={{
-                                    marginLeft: '1rem',
-                                    background: 'none',
-                                    border: 'none',
-                                    fontSize: '1.5rem',
-                                    cursor: 'pointer',
-                                    color: 'inherit',
-                                }}
-                                aria-label="Toggle dark mode"
-                                title="Toggle dark mode"
-                            >
-                                {mode === 'dark' ? '🌙' : '☀️'}
-                            </button>
-                        </NavLinks>
-                    </NavContent>
-                </Nav>
-            </Header>}
-            <Main>
-                <Container>
-                    {children}
-                </Container>
-            </Main>
-            {showFooter && <Footer>
-                <FooterContent>
-                    <FooterSection>
-                        <FooterTitle>Learn Korean</FooterTitle>
-                        <FooterLink to="/lessons">Start Learning</FooterLink>
-                        <FooterLink to="/progress">Track Progress</FooterLink>
-                        <FooterLink to="/about">About Us</FooterLink>
-                    </FooterSection>
-                    <FooterSection>
-                        <FooterTitle>Resources</FooterTitle>
-                        <FooterLink to="/grammar">Grammar Guide</FooterLink>
-                        <FooterLink to="/vocabulary">Vocabulary</FooterLink>
-                        <FooterLink to="/practice">Practice Exercises</FooterLink>
-                    </FooterSection>
-                    <FooterSection>
-                        <FooterTitle>Support</FooterTitle>
-                        <FooterLink to="/faq">FAQ</FooterLink>
-                        <FooterLink to="/contact">Contact Us</FooterLink>
-                        <FooterLink to="/privacy">Privacy Policy</FooterLink>
-                    </FooterSection>
-                </FooterContent>
-                <Copyright>
-                    © {new Date().getFullYear()} BeaU Learning. All rights reserved.
-                </Copyright>
-            </Footer>}
-        </LayoutContainer>
+    <div className="min-h-screen bg-background-default dark:bg-gray-900">
+      {/* Navigation Bar */}
+      <nav className="bg-white dark:bg-gray-800 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between h-16">
+            <div className="flex">
+              {/* Logo */}
+              <div className="flex-shrink-0 flex items-center">
+                <Link to="/" className="text-2xl font-heading font-bold text-primary-main">
+                  Korean Learning
+                </Link>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
+                {navigation.map((item) => (
+                  <Link
+                    key={item.name}
+                    to={item.href}
+                    className={`${
+                      location.pathname === item.href
+                        ? 'border-primary-main text-gray-900 dark:text-white'
+                        : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                    } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                  >
+                    {item.name}
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Right side buttons */}
+            <div className="flex items-center space-x-4">
+              <button
+                onClick={toggleDarkMode}
+                className="p-0.5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                {isDarkMode ? (
+                  <SunIcon className="h-2 w-2" />
+                ) : (
+                  <MoonIcon className="h-2 w-2" />
+                )}
+              </button>
+
+              <button className="p-0.5 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700">
+                <BellIcon className="h-2 w-2" />
+              </button>
+
+              {/* Language Selector */}
+              <select className="bg-transparent text-sm font-medium text-gray-500 dark:text-gray-300 border-0 focus:ring-0">
+                <option value="en">English</option>
+                <option value="ko">한국어</option>
+              </select>
+
+              {/* User Avatar */}
+              <div className="ml-3 relative">
+                <Link to="/profile">
+                  <div className="h-8 w-8 rounded-full bg-primary-main flex items-center justify-center text-white font-medium">
+                    U
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        {children}
+      </main>
+    </div>
     );
 };
 
