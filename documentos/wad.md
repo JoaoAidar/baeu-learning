@@ -60,6 +60,10 @@ Os relacionamentos são:
 - Uma lição pode ter vários registros de progresso (1:N)
 - Um exercício pode ter vários registros de progresso (1:N)
 
+
+## Diagrama MVC
+
+![Diagrama MVC](documentos/diagramaMVC.png)
 ## Atualizações Recentes
 
 ### Correções de Bugs
