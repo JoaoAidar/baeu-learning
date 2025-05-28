@@ -251,6 +251,87 @@ class AuthController {
             res.status(500).json({ error: 'Internal server error' });
         }
     }
+    async createUser(req, res) {
+    try {
+        const { username, email, password } = req.body;
+
+        // Input validation
+        if (!username || !email || !password) {
+            return res.status(400).json({ error: 'Username, email, and password are required' });
+        }
+
+        // Email format validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) {
+            return res.status(400).json({ error: 'Invalid email format' });
+        }
+
+        // Password strength validation
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        }
+
+        // Check if user already exists
+        const { data: existingUser, error: checkError } = await supabase
+            .from('users')
+            .select('id')
+            .or(`email.eq.${email},username.eq.${username}`)
+            .single();
+
+        if (existingUser) {
+            return res.status(409).json({ error: 'Username or email already exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        
+        const { data, error } = await supabase
+            .from('users')
+            .insert({
+                username,
+                email,
+                password_hash: hashedPassword,
+                role: 'user',
+                created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+
+        if (error) {
+            logger.error('Error creating user:', error);
+            return res.status(500).json({ error: 'Failed to create user' });
+        }
+
+        // Create JWT token
+        const token = jwt.sign(
+            { userId: data.id, username: data.username, role: data.role },
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' }
+        );
+
+        // Set cookie
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+        });
+
+        logger.info(`User created successfully: ${username}`);
+        
+        return res.status(201).json({
+            user: {
+                id: data.id,
+                username: data.username,
+                email: data.email,
+                role: data.role
+            },
+            token
+        });
+    } catch (error) {
+        logger.error('User creation error:', error);
+        return res.status(500).json({ error: 'Internal server error' });
+    }
+    }
 }
 
 module.exports = AuthController; 

@@ -8,7 +8,54 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline';
 
+// --- Duolingo-inspired Colors (Ideally in tailwind.config.js) ---
+// For demonstration, I'm using arbitrary values like `bg-[#58CC02]`
+// In your tailwind.config.js, it might look like this:
+/*
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        'duo-green-main': '#58CC02',
+        'duo-green-dark': '#4CAF00',
+        'duo-green-light': '#8AF148',
+        'duo-yellow': '#FFC800',
+        'duo-blue': '#1CB0F6', // Used for XP display
+        'duo-red': '#FF4B4B',
+        'duo-purple': '#CE82FF',
+        'duo-text-dark': '#3C3C3C',
+        'duo-text-light': '#FFFFFF',
+        'duo-bg-light': '#F7F7F7',
+        'duo-bg-dark': '#1F2437',
+      },
+      fontFamily: {
+        // You'd import specific fonts (e.g., 'Fredoka One' for headings, 'Nunito' for body)
+        // heading: ['Fredoka One', 'cursive'],
+        // body: ['Nunito', 'sans-serif'],
+      }
+    }
+  }
+}
+*/
+
 // --- Sub-components ---
+
+// Mock Streak Display component for gamification feel
+const StreakDisplay = ({ streak }) => (
+  <div className="flex items-center space-x-1 p-2 bg-[#FFC800] rounded-full text-white font-bold text-sm shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
+    <span className="text-xl">🔥</span> {/* Fire icon */}
+    <span>{streak}</span>
+  </div>
+);
+
+// New Mock XP Display component
+const XPDisplay = ({ xp }) => (
+  <div className="flex items-center space-x-1 p-2 bg-[#1CB0F6] rounded-full text-white font-bold text-sm shadow-md hover:scale-105 transition-transform duration-200 cursor-pointer">
+    <span className="text-xl">✨</span> {/* Star or Sparkle icon */}
+    <span>{xp} XP</span>
+  </div>
+);
+
 
 const Navbar = ({
   isDarkMode,
@@ -18,28 +65,34 @@ const Navbar = ({
   navigation,
   location,
 }) => (
-  <nav className="bg-white dark:bg-gray-800 shadow-sm">
+  <nav className="bg-white dark:bg-[#1F2437] shadow-lg sticky top-0 z-50">
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div className="flex justify-between h-16">
-        <div className="flex">
-          {/* Logo */}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="text-2xl font-heading font-bold text-primary-main">
-              Korean Learning
+        <div className="flex items-center">
+          {/* Logo - More Duolingo-like bold text with playful hover */}
+          <div className="flex-shrink-0">
+            <Link 
+              to="/" 
+              className="text-3xl font-bold text-[#58CC02] dark:text-[#8AF148] tracking-tight 
+                         transform hover:rotate-3 transition-transform duration-200 ease-in-out"
+            >
+              KoreanLearning
             </Link>
           </div>
 
           {/* Desktop Navigation Links */}
-          <div className="hidden md:ml-6 md:flex md:space-x-8">
+          <div className="hidden md:ml-8 md:flex md:space-x-4 lg:space-x-6">
             {navigation.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
-                className={`${
-                  location.pathname === item.href
-                    ? 'border-primary-main text-gray-900 dark:text-white'
-                    : 'border-transparent text-gray-500 dark:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
-                } inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium`}
+                className={`
+                  ${location.pathname === item.href
+                    ? 'bg-[#58CC02] text-white shadow-md'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+                  }
+                  inline-flex items-center px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ease-in-out transform hover:scale-105
+                `}
               >
                 {item.name}
               </Link>
@@ -47,12 +100,18 @@ const Navbar = ({
           </div>
         </div>
 
-        {/* Right side buttons */}
-        <div className="flex items-center space-x-4">
+        {/* Right side buttons & User Info */}
+        <div className="flex items-center space-x-3 sm:space-x-4">
+          {/* Mock Streak Display */}
+          <StreakDisplay streak={125} /> {/* Example streak */}
+
+          {/* Mock XP Display */}
+          <XPDisplay xp={1500} /> {/* Example XP */}
+
           {/* Mobile menu button */}
           <button
             type="button"
-            className="md:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-primary-main"
+            className="md:hidden inline-flex items-center justify-center p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-[#58CC02] dark:hover:text-[#8AF148] hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#58CC02] transition-all duration-200 transform hover:scale-110"
             onClick={() => setIsMobileMenuOpen((prev) => !prev)}
             aria-controls="mobile-menu"
             aria-expanded={isMobileMenuOpen}
@@ -67,9 +126,10 @@ const Navbar = ({
             )}
           </button>
 
+          {/* Dark Mode Toggle */}
           <button
             onClick={toggleDarkMode}
-            className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-[#58CC02] dark:hover:text-[#8AF148] transition-all duration-200 transform hover:scale-110"
             aria-label="Toggle dark mode"
           >
             {isDarkMode ? (
@@ -79,26 +139,27 @@ const Navbar = ({
             )}
           </button>
 
+          {/* Notifications */}
           <button
-            className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+            className="p-2 rounded-full text-gray-500 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-[#58CC02] dark:hover:text-[#8AF148] transition-all duration-200 transform hover:scale-110"
             aria-label="View notifications"
           >
             <BellIcon className="h-5 w-5" />
           </button>
 
-          {/* Language Selector */}
+          {/* Language Selector - Styled to blend in and be rounded */}
           <select
-            className="bg-transparent text-sm font-medium text-gray-500 dark:text-gray-300 border-0 focus:ring-0"
+            className="bg-transparent text-sm font-medium text-gray-600 dark:text-gray-300 border-0 focus:ring-0 rounded-lg py-1 px-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
             aria-label="Select language"
           >
             <option value="en">English</option>
             <option value="ko">한국어</option>
           </select>
 
-          {/* User Avatar */}
+          {/* User Avatar - More prominent & rounded with hover */}
           <div className="ml-3 relative">
             <Link to="/profile">
-              <div className="h-8 w-8 rounded-full bg-primary-main flex items-center justify-center text-white font-medium">
+              <div className="h-10 w-10 rounded-full bg-[#1CB0F6] flex items-center justify-center text-white font-bold text-lg shadow-md ring-2 ring-white dark:ring-gray-800 hover:scale-105 transition-transform duration-200">
                 U
               </div>
             </Link>
@@ -111,19 +172,21 @@ const Navbar = ({
 
 const MobileMenu = ({ isMobileMenuOpen, navigation, location, setIsMobileMenuOpen }) => (
   <div
-    className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden`}
+    className={`${isMobileMenuOpen ? 'block' : 'hidden'} md:hidden bg-white dark:bg-gray-800 shadow-md`}
     id="mobile-menu"
   >
-    <div className="pt-2 pb-3 space-y-1">
+    <div className="pt-2 pb-3 space-y-1 px-2">
       {navigation.map((item) => (
         <Link
           key={item.name}
           to={item.href}
-          className={`${
-            location.pathname === item.href
-              ? 'bg-primary-main text-white'
-              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
-          } block px-3 py-2 rounded-md text-base font-medium`}
+          className={`
+            ${location.pathname === item.href
+              ? 'bg-[#58CC02] text-white shadow-md'
+              : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
+            }
+            block px-3 py-2 rounded-lg text-base font-medium transition-all duration-200
+          `}
           onClick={() => setIsMobileMenuOpen(false)}
         >
           {item.name}
@@ -148,7 +211,7 @@ const Layout = ({ children }) => {
   const location = useLocation();
 
   // Apply dark mode class on initial render and when isDarkMode changes
-  useState(() => {
+  useState(() => { // Using useState as a useEffect for side effect, common in simple cases
     if (isDarkMode) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('theme', 'dark');
@@ -166,10 +229,12 @@ const Layout = ({ children }) => {
     { name: 'Dashboard', href: '/' },
     { name: 'Lessons', href: '/lessons' },
     { name: 'Profile', href: '/profile' },
+    { name: 'Leagues', href: '/leagues' },
+    { name: 'Shop', href: '/shop' },
   ];
 
   return (
-    <div className="min-h-screen bg-background-default dark:bg-gray-900">
+    <div className="min-h-screen bg-[#F7F7F7] dark:bg-[#121626] font-sans"> {/* Updated background colors, general font */}
       <Navbar
         isDarkMode={isDarkMode}
         toggleDarkMode={toggleDarkMode}

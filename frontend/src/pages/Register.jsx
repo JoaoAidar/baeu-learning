@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate, Link } from 'react-router-dom';
-import { api } from '../utils/api';
+// FIX: Change import to specifically get the named export 'registerUser'
+import {registerUser} from '../lib/api'; // <--- CHANGED THIS LINE
 import { Container } from '../styles/designSystem';
 
 const RegisterContainer = styled(Container)`
@@ -165,19 +166,18 @@ const Register = () => {
         }
 
         try {
-            const response = await api.post('/auth/register', {
-                username: formData.username,
-                email: formData.email,
-                password: formData.password
-            });
+            // Now directly call the imported registerUser function
+            const response = await registerUser(formData.username, formData.email, formData.password);
 
-            if (response.data.token) {
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                navigate('/');
+            if (response.success) {
+                navigate('/login');
+            } else {
+                setError(response.message || 'Registration failed');
             }
         } catch (err) {
-            setError(err.response?.data?.error || 'Registration failed');
+            console.error("Registration error:", err); // Log the full error for debugging
+            // axios errors typically have a 'response' object with 'data'
+            setError(err.response?.data?.message || err.response?.data?.error || 'Registration failed. Please try again.');
         } finally {
             setLoading(false);
         }
@@ -249,4 +249,4 @@ const Register = () => {
     );
 };
 
-export default Register; 
+export default Register;

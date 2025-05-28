@@ -8,6 +8,34 @@ const api = axios.create({
   },
 });
 
+export const setAuthToken = (token) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
+
+// Example of user login
+export const loginUser = async (username, password) => {
+  try {
+    const response = await api.post('/auth/login', { username, password });
+    return response.data;
+  } catch (error) {
+    console.error("Error logging in:", error);
+    throw error;
+  }
+};
+// Example of user registration
+export const registerUser = async (username, email, password) => {
+  try {
+    const response = await api.post('/auth/signup', { username, email, password });
+    return response.data;
+  } catch (error) {
+    console.error("Error registering user:", error);
+    throw error;
+  }
+};
 // Example of fetching lessons
 export const getLessons = async () => {
   try {

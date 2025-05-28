@@ -13,7 +13,7 @@ const authController = new AuthController();
 // Public routes
 router.post('/login', validateLogin, authController.login.bind(authController));
 router.post('/logout', authController.logout.bind(authController));
-
+router.post('/signup', authController.createUser.bind(authController));
 // TODO: [SECURITY] Add session invalidation on logout
 // TODO: [SECURITY] Add token revocation mechanism
 

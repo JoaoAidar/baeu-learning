@@ -7,7 +7,6 @@ import ExercisePage from './pages/ExercisePage';
 import Profile from './pages/Profile';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
-import LoginPage from './pages/LoginPage';
 import Register from './pages/Register';
 
 function App() {

@@ -237,6 +237,7 @@ const HomePage = () => {
             } catch (err) {
                 setError('Failed to load data. Please try again.');
                 console.error('Error fetching data:', err);
+                navigate('/signup'); // Redirect to register if not authenticated
             } finally {
                 setLoading(false);
             }
