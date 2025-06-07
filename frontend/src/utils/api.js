@@ -1,92 +1,43 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+import axios from 'axios';
 
-const getAuthHeaders = () => {
-    const token = localStorage.getItem('token');
-    return {
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+export const api = axios.create({
+    baseURL,
+    headers: {
         'Content-Type': 'application/json',
-        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-    };
-};
+    },
+    withCredentials: true
+});
 
-const handleResponse = async (response) => {
-    if (!response.ok) {
-        const error = await response.json().catch(() => ({ message: 'An error occurred' }));
-        throw new Error(error.error || error.message || `HTTP error! status: ${response.status}`);
+// Add request interceptor for logging
+api.interceptors.request.use(
+    (config) => {
+        console.log(`Making ${config.method.toUpperCase()} request to ${config.url}`);
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => {
+        console.error('Request error:', error);
+        return Promise.reject(error);
     }
-    return response.json();
-};
+);
 
-const defaultOptions = {
-    credentials: 'include',
-    headers: getAuthHeaders(),
-};
-
-export const api = {
-    get: async (endpoint) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...defaultOptions,
-                method: 'GET',
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('API GET Error:', error);
-            throw error;
-        }
+// Add response interceptor for logging
+api.interceptors.response.use(
+    (response) => {
+        console.log(`Received response from ${response.config.url}:`, response.data);
+        return response.data; // Return the data directly instead of the full response
     },
-
-    post: async (endpoint, data) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...defaultOptions,
-                method: 'POST',
-                body: JSON.stringify(data),
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('API POST Error:', error);
-            throw error;
+    (error) => {
+        console.error('Response error:', error.response?.data || error.message);
+        if (error.response?.status === 401) {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
         }
-    },
-
-    put: async (endpoint, data) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...defaultOptions,
-                method: 'PUT',
-                body: JSON.stringify(data),
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('API PUT Error:', error);
-            throw error;
-        }
-    },
-
-    patch: async (endpoint, data) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...defaultOptions,
-                method: 'PATCH',
-                body: JSON.stringify(data),
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('API PATCH Error:', error);
-            throw error;
-        }
-    },
-
-    delete: async (endpoint) => {
-        try {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                ...defaultOptions,
-                method: 'DELETE',
-            });
-            return handleResponse(response);
-        } catch (error) {
-            console.error('API DELETE Error:', error);
-            throw error;
-        }
-    },
-}; 
+        return Promise.reject(error);
+    }
+); 

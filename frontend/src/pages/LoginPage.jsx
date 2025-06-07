@@ -1,12 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import Layout from '../components/layout/Layout';
 import Button from '../components/common/Button';
-import { api } from '../utils/api';
+import { api } from '../utils/api'; // Assuming this is your API utility
 import designSystem from '../styles/designSystem';
 
-const { colors, spacing, typography, borderRadius, breakpoints } = designSystem;
+const { colors, spacing, typography, borderRadius, breakpoints, shadows } = designSystem;
+
+// --- Styled Components ---
 
 const LoginContainer = styled.div`
     max-width: 1440px;
@@ -17,29 +19,27 @@ const LoginContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: calc(100vh - 200px);
-    
+    min-height: calc(100vh - 200px); /* Adjust based on your Layout's header/footer height */
+
     @media (max-width: ${breakpoints.lg}) {
         padding: ${spacing.lg};
     }
-    
     @media (max-width: ${breakpoints.md}) {
         padding: ${spacing.md};
     }
-    
     @media (max-width: ${breakpoints.sm}) {
         padding: ${spacing.sm};
     }
 `;
 
-const LoginForm = styled.div`
+const LoginFormWrapper = styled.div`
     width: 100%;
     max-width: 400px;
     background-color: ${colors.background.paper};
     padding: ${spacing.xl};
     border-radius: ${borderRadius.lg};
-    box-shadow: ${designSystem.shadows.lg};
-    
+    box-shadow: ${shadows.lg};
+
     @media (max-width: ${breakpoints.md}) {
         padding: ${spacing.lg};
     }
@@ -50,7 +50,7 @@ const Title = styled.h1`
     font-size: ${typography.fontSize.xxl};
     margin-bottom: ${spacing.xl};
     text-align: center;
-    
+
     @media (max-width: ${breakpoints.md}) {
         font-size: ${typography.fontSize.xl};
         margin-bottom: ${spacing.lg};
@@ -63,7 +63,7 @@ const Form = styled.form`
     gap: ${spacing.md};
 `;
 
-const Input = styled.input`
+const InputField = styled.input`
     padding: ${spacing.md};
     border: 2px solid ${colors.neutral.light};
     border-radius: ${borderRadius.md};
@@ -76,10 +76,11 @@ const Input = styled.input`
     }
 `;
 
-const ErrorMessage = styled.div`
+const StyledErrorMessage = styled.div`
     color: ${colors.error.main};
     margin-top: ${spacing.sm};
     text-align: center;
+    font-size: ${typography.fontSize.sm};
 `;
 
 const TestCredentials = styled.p`
@@ -88,6 +89,8 @@ const TestCredentials = styled.p`
     color: ${colors.text.secondary};
     font-size: ${typography.fontSize.sm};
 `;
+
+// --- LoginPage Component ---
 
 const LoginPage = () => {
     const navigate = useNavigate();
@@ -98,14 +101,15 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+    const handleChange = useCallback((e) => {
+        const { name, value } = e.target;
+        setFormData(prevData => ({
+            ...prevData,
+            [name]: value
+        }));
+    }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSubmit = useCallback(async (e) => {
         e.preventDefault();
         setError('');
         setLoading(true);
@@ -113,53 +117,56 @@ const LoginPage = () => {
         try {
             const data = await api.post('/auth/login', formData);
 
-            // Save token to localStorage
+            // Save token and user data to localStorage
             localStorage.setItem('token', data.token);
             localStorage.setItem('user', JSON.stringify(data.user));
 
             // Redirect to home page
             navigate('/');
         } catch (err) {
-            setError(err.message);
+            // Provide a more user-friendly error message
+            setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
         } finally {
             setLoading(false);
         }
-    };
+    }, [formData, navigate]);
 
     return (
         <Layout showHeader={false} showFooter={false}>
             <LoginContainer>
-                <LoginForm>
+                <LoginFormWrapper>
                     <Title>Login</Title>
                     <Form onSubmit={handleSubmit}>
-                        <Input
+                        <InputField
                             type="text"
                             name="username"
                             placeholder="Username"
                             value={formData.username}
                             onChange={handleChange}
                             required
+                            aria-label="Username"
                         />
-                        <Input
+                        <InputField
                             type="password"
                             name="password"
                             placeholder="Password"
                             value={formData.password}
                             onChange={handleChange}
                             required
+                            aria-label="Password"
                         />
-                        {error && <ErrorMessage>{error}</ErrorMessage>}
+                        {error && <StyledErrorMessage role="alert">{error}</StyledErrorMessage>}
                         <Button type="submit" disabled={loading} fullWidth>
                             {loading ? 'Logging in...' : 'Login'}
                         </Button>
                     </Form>
                     <TestCredentials>
-                        Test credentials: username: test, password: test123
+                        Test credentials: username: **test**, password: **test123**
                     </TestCredentials>
-                </LoginForm>
+                </LoginFormWrapper>
             </LoginContainer>
         </Layout>
     );
 };
 
-export default LoginPage; 
+export default LoginPage;

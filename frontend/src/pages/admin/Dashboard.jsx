@@ -1,12 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
-import { useAuth } from '../../utils/AuthContext';
+import { Menu, X, Home, BookOpen, Users as UsersIcon, Settings as SettingsIcon } from 'lucide-react';
 import Overview from './Overview';
 import Lessons from './Lessons';
 import Users from './Users';
 import Settings from './Settings';
-import { Menu, X, Home, BookOpen, Users as UsersIcon, Settings as SettingsIcon } from 'lucide-react';
 
 const DashboardContainer = styled.div`
   display: flex;
@@ -99,7 +98,12 @@ const Dashboard = () => {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuth();
+  const user = JSON.parse(localStorage.getItem('user'));
+  const [stats, setStats] = useState({
+    totalUsers: 0,
+    totalLessons: 0,
+    totalProgress: 0
+  });
 
   const navItems = [
     { path: '/admin', icon: <Home size={20} />, text: 'Overview' },
@@ -108,8 +112,24 @@ const Dashboard = () => {
     { path: '/admin/settings', icon: <SettingsIcon size={20} />, text: 'Settings' }
   ];
 
+  useEffect(() => {
+    // Here you would typically fetch admin dashboard data
+    // For now, we'll use mock data
+    setStats({
+      totalUsers: 2,
+      totalLessons: 10,
+      totalProgress: 15
+    });
+  }, []);
+
   const handleNavClick = (path) => {
     navigate(path);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/login');
   };
 
   return (

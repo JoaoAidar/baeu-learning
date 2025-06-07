@@ -17,10 +17,13 @@ This document provides a rundown of all backend API routes, their methods, paths
 ## User Routes (`/api/users`)
 - **GET `/`**: Get all users.
 - **GET `/:id`**: Get user by ID.
+- **PUT `/:id`**: Update user by ID.
+- **DELETE `/:id`**: Delete user by ID.
 
 ## Lesson Routes (`/api/lessons`)
 - **GET `/`**: Get all lessons (public or user-specific, depending on implementation).
 - **GET `/:lessonId`**: Get a specific lesson by ID.
+- **DELETE `/:lessonId`**: Delete a lesson (admin only).
 
 ## Exercise Routes (`/api/exercises`)
 - **GET `/lesson/:lessonId`**: Get all exercises for a lesson.

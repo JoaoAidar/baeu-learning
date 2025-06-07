@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import Button from '../components/common/Button';
 import LessonsGrid from '../components/lessons/LessonsGrid';
+import LoadingSpinner from '../components/common/LoadingSpinner';
+import AlertMessage from '../components/common/AlertMessage';
 import { api } from '../utils/api';
 import designSystem from '../styles/designSystem';
 
@@ -76,25 +78,45 @@ const LessonsPage = () => {
         const fetchLessons = async () => {
             try {
                 setLoading(true);
-                const data = await api.get('/lessons');
-                if (Array.isArray(data)) {
-                    const lessonsWithExercises = data.map(lesson => ({
-                        ...lesson,
-                        exercises: Array.isArray(lesson.exercises) ? lesson.exercises : [],
-                    }));
-                    setLessons(lessonsWithExercises);
-                    setError(null);
-                } else {
-                    setError('Invalid data format received from server');
-                }
+                const response = await api.get('/lessons');
+                const data = response.data;
+                const lessonsArray = Array.isArray(data) ? data : Object.values(data);
+                const lessonsWithExercises = lessonsArray.map(lesson => ({
+                    ...lesson,
+                    exercises: Array.isArray(lesson.exercises) ? lesson.exercises : [],
+                }));
+                setLessons(lessonsWithExercises);
+                setError(null);
             } catch (err) {
+                console.error('Error fetching lessons:', err);
                 setError('Failed to load lessons. Please try again later.');
             } finally {
                 setLoading(false);
             }
         };
+
         fetchLessons();
     }, []);
+
+    if (loading) {
+        return (
+            <Container>
+                <LoadingSpinner message="Loading lessons..." size={32} />
+            </Container>
+        );
+    }
+
+    if (error) {
+        return (
+            <Container>
+                <AlertMessage 
+                    type="error" 
+                    message={error} 
+                    onClose={() => setError(null)}
+                />
+            </Container>
+        );
+    }
 
     const filteredLessons = lessons.filter(lesson => {
         if (!lesson) return false;
@@ -160,4 +182,4 @@ const LessonsPage = () => {
     );
 };
 
-export default LessonsPage; 
+export default LessonsPage;

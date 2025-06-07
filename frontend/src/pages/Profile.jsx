@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { useAuth } from '../utils/AuthContext';
 import { api } from '../utils/api';
 import { Award, BookOpen, Clock, Target } from 'lucide-react';
 
@@ -121,33 +120,42 @@ const ActivityTime = styled.div`
 `;
 
 const Profile = () => {
-  const { user } = useAuth();
+  const user = JSON.parse(localStorage.getItem('user'));
   const [stats, setStats] = useState({
     completedLessons: 0,
-    completedExercises: 0,
-    totalTime: 0,
-    accuracy: 0
+    totalExercises: 0,
+    correctAnswers: 0,
+    timeSpent: 0
   });
   const [recentActivity, setRecentActivity] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProfileData = async () => {
+    const fetchStats = async () => {
       try {
-        const [statsResponse, activityResponse] = await Promise.all([
-          api.get('/users/profile/stats'),
-          api.get('/users/profile/activity')
-        ]);
-        setStats(statsResponse.data);
+        const response = await api.get('/user/stats');
+        setStats(response.data);
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  useEffect(() => {
+    const fetchRecentActivity = async () => {
+      try {
+        const activityResponse = await api.get('/users/profile/activity');
         setRecentActivity(activityResponse.data);
       } catch (error) {
-        console.error('Error fetching profile data:', error);
+        console.error('Error fetching recent activity:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProfileData();
+    fetchRecentActivity();
   }, []);
 
   if (loading) {
@@ -177,8 +185,8 @@ const Profile = () => {
             <Award size={24} />
           </StatIcon>
           <StatContent>
-            <StatValue>{stats.completedExercises}</StatValue>
-            <StatLabel>Completed Exercises</StatLabel>
+            <StatValue>{stats.totalExercises}</StatValue>
+            <StatLabel>Total Exercises</StatLabel>
           </StatContent>
         </StatCard>
 
@@ -187,8 +195,8 @@ const Profile = () => {
             <Clock size={24} />
           </StatIcon>
           <StatContent>
-            <StatValue>{stats.totalTime}</StatValue>
-            <StatLabel>Total Time (minutes)</StatLabel>
+            <StatValue>{stats.timeSpent}</StatValue>
+            <StatLabel>Time Spent (minutes)</StatLabel>
           </StatContent>
         </StatCard>
 
@@ -197,8 +205,8 @@ const Profile = () => {
             <Target size={24} />
           </StatIcon>
           <StatContent>
-            <StatValue>{stats.accuracy}%</StatValue>
-            <StatLabel>Average Accuracy</StatLabel>
+            <StatValue>{stats.correctAnswers}</StatValue>
+            <StatLabel>Correct Answers</StatLabel>
           </StatContent>
         </StatCard>
       </StatsGrid>
