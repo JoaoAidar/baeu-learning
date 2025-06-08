@@ -3,58 +3,58 @@ export const theme = {
     // Light mode
     light: {
       primary: {
-        main: '#2DD4BF', // Vibrant teal
-        light: '#5EEAD4',
-        dark: '#14B8A6',
-        contrast: '#0F172A',
+        main: '#d62828', // Primary red accent
+        light: '#f87171',
+        dark: '#991b1b',
+        contrast: '#ffffff',
       },
       secondary: {
-        main: '#F97316', // Warm orange
-        light: '#FB923C',
-        dark: '#EA580C',
-        contrast: '#FFFFFF',
+        main: '#023e8a', // Secondary blue accent
+        light: '#60a5fa',
+        dark: '#1e3a8a',
+        contrast: '#ffffff',
       },
       background: {
-        default: '#FFFFFF',
-        paper: '#F8F9FA',
-        elevated: '#FFFFFF',
+        default: '#f8f9fa', // Base background color
+        paper: '#ffffff',
+        elevated: '#ffffff',
       },
       text: {
-        primary: '#2D3436',
-        secondary: '#636E72',
-        disabled: '#B2BEC3',
+        primary: '#202124',
+        secondary: '#5f6368',
+        disabled: '#9aa0a6',
       },
-      border: '#DFE6E9',
+      border: '#e8eaed',
     },
     // Dark mode
     dark: {
       primary: {
-        main: '#FF6B6B',
-        light: '#FF8E8E',
-        dark: '#E55A5A',
+        main: '#f87171', // Lighter red for dark mode
+        light: '#fca5a5',
+        dark: '#dc2626',
       },
       secondary: {
-        main: '#4ECDC4',
-        light: '#6ED7D0',
-        dark: '#3DBBB3',
+        main: '#60a5fa', // Lighter blue for dark mode
+        light: '#93c5fd',
+        dark: '#1d4ed8',
       },
       background: {
-        default: '#1A1A1A',
-        paper: '#2D2D2D',
-        elevated: '#363636',
+        default: '#111827',
+        paper: '#1f2937',
+        elevated: '#374151',
       },
       text: {
-        primary: '#FFFFFF',
-        secondary: '#B2BEC3',
-        disabled: '#636E72',
+        primary: '#f9fafb',
+        secondary: '#d1d5db',
+        disabled: '#9ca3af',
       },
-      border: '#404040',
-    },
-  },
+      border: '#4b5563',
+    },  },
   typography: {
     fontFamily: {
-      heading: 'Poppins, sans-serif',
-      body: 'Inter, sans-serif',
+      primary: "'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif",
+      heading: "'Poppins', sans-serif",
+      body: "'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif",
     },
     fontSize: {
       xs: '0.75rem',

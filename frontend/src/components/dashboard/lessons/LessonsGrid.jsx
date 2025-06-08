@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import LessonCard from './LessonCard';
-import designSystem from '../../styles/designSystem';
+import { designSystem } from '../../../styles/designSystem';
 
 const { colors, spacing, typography, borderRadius, shadows } = designSystem;
 

@@ -45,11 +45,10 @@ const AlertMessage = ({ type = 'info', message, onClose }) => {
         <IconComponent className={`h-5 w-5 flex-shrink-0 ${variant.text}`} />
         <div className={`flex-1 ${variant.text}`}>
           <p className="text-sm font-medium">{message}</p>
-        </div>
-        {onClose && (
+        </div>        {onClose && (
           <button
             type="button"
-            className={`rounded-md p-1.5 hover:bg-white/20 ${variant.text}`}
+            className={`rounded-md p-1.5 transition-all duration-200 hover:bg-white/20 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-red-500/20 ${variant.text}`}
             onClick={onClose}
             aria-label="Dismiss message"
           >

@@ -16,7 +16,16 @@ const auth = (req, res, next) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = decoded;
+        
+        // Standardize user object structure
+        req.user = {
+            id: decoded.userId || decoded.id,
+            userId: decoded.userId || decoded.id, // Backward compatibility
+            username: decoded.username,
+            email: decoded.email,
+            role: decoded.role
+        };
+        
         next();
     } catch (error) {
         logger.error('Authentication error:', error);

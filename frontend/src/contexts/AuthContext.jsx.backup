@@ -1,3 +1,4 @@
+// ARQUIVO DEPRECIADO - USE O NOVO CONTEXTO EM auth/AuthContext.jsx
 import React, { createContext, useContext, useState } from 'react';
 import { api } from '../utils/api';
 

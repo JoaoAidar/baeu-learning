@@ -153,7 +153,7 @@ const LessonCard = ({ lesson }) => {
                 <div className="flex items-start justify-between">
                     <div className="flex items-center space-x-3">
                         <div className="flex-shrink-0">
-                            <div className="h-4 w-4 rounded-lg bg-primary-light dark:bg-primary-dark flex items-center justify-center text-white">
+                            <div className="h-4 w-4 rounded-lg bg-red-500 dark:bg-red-600 flex items-center justify-center text-white">
                                 {icon || <PlayIcon className="h-1.5 w-1.5" />}
                             </div>
                         </div>
@@ -177,12 +177,12 @@ const LessonCard = ({ lesson }) => {
                     <div className="relative pt-1">
                         <div className="flex mb-2 items-center justify-between">
                             <div>
-                                <span className="text-xs font-semibold inline-block text-primary-main">
+                                <span className="text-xs font-semibold inline-block text-red-600">
                                     Progress
                                 </span>
                             </div>
                             <div className="text-right">
-                                <span className="text-xs font-semibold inline-block text-primary-main">
+                                <span className="text-xs font-semibold inline-block text-red-600">
                                     {progress}%
                                 </span>
                             </div>
@@ -190,7 +190,7 @@ const LessonCard = ({ lesson }) => {
                         <div className="overflow-hidden h-2 text-xs flex rounded bg-gray-200 dark:bg-gray-700">
                             <div
                                 style={{ width: `${progress}%` }}
-                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-primary-main"
+                                className="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center bg-red-600"
                             />
                         </div>
                     </div>
@@ -200,7 +200,7 @@ const LessonCard = ({ lesson }) => {
                 <div className="mt-6">
                     <Link
                         to={`/lessons/${id}`}
-                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-main hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-main transition-colors duration-200"
+                        className="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
                     >
                         {status === 'completed' ? 'Review Lesson' : status === 'in_progress' ? 'Continue Lesson' : 'Start Lesson'}
                     </Link>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../utils/AuthContext';
+import Button from '../components/shared/Button';
 
 const AdminDashboard = () => {
     const { user, logout } = useAuth();
@@ -34,15 +35,11 @@ const AdminDashboard = () => {
                     <div className="flex justify-between h-16">
                         <div className="flex items-center">
                             <h1 className="text-xl font-semibold">Admin Dashboard</h1>
-                        </div>
-                        <div className="flex items-center">
+                        </div>                        <div className="flex items-center">
                             <span className="mr-4">Welcome, {user?.username}</span>
-                            <button
-                                onClick={handleLogout}
-                                className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium"
-                            >
+                            <Button onClick={handleLogout} variant="primary">
                                 Logout
-                            </button>
+                            </Button>
                         </div>
                     </div>
                 </div>

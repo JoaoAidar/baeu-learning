@@ -28,7 +28,19 @@ const validateLogin = (req, res, next) => {
 
 const validateProgress = (req, res, next) => {
     const { lessonId, exerciseId, completed, correct } = req.body;
+    const { answer } = req.body;
 
+    // For exercise submission, we need either progress data or answer
+    if (req.path.includes('/submit')) {
+        if (!answer || (typeof answer === 'string' && answer.trim() === '')) {
+            logger.warn('Exercise submission validation failed: missing answer');
+            return res.status(400).json({ error: 'Answer is required' });
+        }
+        // Answer validation passed, continue
+        return next();
+    }
+
+    // For explicit progress updates
     if (!lessonId || !exerciseId) {
         logger.warn('Progress validation failed: missing required fields');
         return res.status(400).json({ error: 'Lesson ID and Exercise ID are required' });

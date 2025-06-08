@@ -1,8 +1,8 @@
 import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import Layout from '../components/layout/Layout';
-import Button from '../components/common/Button';
+import Layout from '../components/shared/layout/Layout';
+import Button from '../components/shared/Button';
 import { api } from '../utils/api'; // Assuming this is your API utility
 import designSystem from '../styles/designSystem';
 

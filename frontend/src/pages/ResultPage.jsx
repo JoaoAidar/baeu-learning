@@ -1,9 +1,9 @@
 import React from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import Layout from '../components/layout/Layout';
-import Button from '../components/common/Button';
-import Card from '../components/common/Card';
+import Layout from '../components/shared/layout/Layout';
+import Button from '../components/shared/Button';
+import Card from '../components/shared/Card';
 import designSystem from '../styles/designSystem';
 
 const { colors, typography, spacing, borderRadius, shadows } = designSystem;

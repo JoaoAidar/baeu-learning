@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import Button from '../components/common/Button';
-import LessonsGrid from '../components/lessons/LessonsGrid';
-import LoadingSpinner from '../components/common/LoadingSpinner';
-import AlertMessage from '../components/common/AlertMessage';
+import Button from '../components/shared/Button';
+import LessonsGrid from '../components/dashboard/lessons/LessonsGrid';
+import LoadingSpinner from '../components/shared/LoadingSpinner';
+import AlertMessage from '../components/shared/AlertMessage';
 import { api } from '../utils/api';
 import designSystem from '../styles/designSystem';
 
@@ -13,16 +13,48 @@ const Container = styled.div`
     max-width: 1200px;
     margin: 0 auto;
     padding: ${spacing.xl};
+    
+    /* Tailwind equivalent: xl:px-8 lg:px-6 md:px-4 px-3 */
+    @media (max-width: 1280px) {
+        padding: ${spacing.lg};
+    }
+    
+    @media (max-width: 1024px) {
+        padding: ${spacing.md};
+    }
+    
+    @media (max-width: 768px) {
+        padding: ${spacing.md} ${spacing.sm};
+    }
+    
+    @media (max-width: 640px) {
+        padding: ${spacing.sm};
+    }
 `;
 
 const PageHeader = styled.div`
     background-color: ${colors.background.paper};
     color: ${colors.text.primary};
-    padding: ${spacing['2xl']} 0;
+    padding: ${spacing['2xl']} ${spacing.xl};
     margin-bottom: ${spacing.xl};
     text-align: center;
     border-radius: ${borderRadius.lg};
     box-shadow: ${shadows.md};
+    
+    /* Tailwind equivalent: lg:py-16 lg:px-8 md:py-12 md:px-6 py-8 px-4 */
+    @media (max-width: 1024px) {
+        padding: ${spacing.xl} ${spacing.lg};
+    }
+    
+    @media (max-width: 768px) {
+        padding: ${spacing.lg} ${spacing.md};
+        margin-bottom: ${spacing.lg};
+    }
+    
+    @media (max-width: 640px) {
+        padding: ${spacing.md} ${spacing.sm};
+        margin-bottom: ${spacing.md};
+    }
 `;
 
 const PageTitle = styled.h1`
@@ -31,6 +63,20 @@ const PageTitle = styled.h1`
     margin: 0;
     margin-bottom: ${spacing.md};
     color: ${colors.text.primary};
+    
+    /* Tailwind equivalent: lg:text-4xl md:text-3xl text-2xl */
+    @media (max-width: 1024px) {
+        font-size: ${typography.fontSize['3xl']};
+    }
+    
+    @media (max-width: 768px) {
+        font-size: ${typography.fontSize['2xl']};
+        margin-bottom: ${spacing.sm};
+    }
+    
+    @media (max-width: 640px) {
+        font-size: ${typography.fontSize.xl};
+    }
 `;
 
 const PageDescription = styled.p`
@@ -39,6 +85,18 @@ const PageDescription = styled.p`
     margin: 0 auto;
     opacity: 0.9;
     color: ${colors.text.secondary};
+    line-height: 1.6;
+    
+    /* Tailwind equivalent: md:text-lg text-base */
+    @media (max-width: 768px) {
+        font-size: ${typography.fontSize.base};
+        max-width: 100%;
+        padding: 0 ${spacing.sm};
+    }
+    
+    @media (max-width: 640px) {
+        font-size: ${typography.fontSize.sm};
+    }
 `;
 
 const FiltersContainer = styled.div`
@@ -52,19 +110,47 @@ const FiltersContainer = styled.div`
     border-radius: ${borderRadius.lg};
     box-shadow: ${shadows.sm};
 
-    @media (max-width: ${designSystem.breakpoints.sm}) {
-        flex-direction: column;
-        align-items: stretch;
+    /* Tailwind equivalent: lg:flex-row lg:justify-center md:grid md:grid-cols-2 flex-col */
+    @media (max-width: 1024px) {
+        gap: ${spacing.sm};
+        padding: ${spacing.md};
+    }
+
+    @media (max-width: 768px) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: ${spacing.sm};
+        margin-bottom: ${spacing.lg};
+    }
+
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+        gap: ${spacing.xs};
+        padding: ${spacing.sm};
+        margin-bottom: ${spacing.md};
     }
 `;
 
 const FilterButton = styled(Button)`
     min-width: 120px;
     transition: all ${transitions.normal} ${transitions.easeInOut};
+    flex: 1;
 
     &:hover {
         transform: translateY(-2px);
         box-shadow: ${shadows.md};
+    }
+    
+    /* Tailwind equivalent: md:min-w-30 min-w-full md:flex-initial flex-1 */
+    @media (max-width: 768px) {
+        min-width: auto;
+        width: 100%;
+    }
+    
+    @media (max-width: 640px) {
+        min-width: auto;
+        padding: ${spacing.sm} ${spacing.md};
+        font-size: ${typography.fontSize.sm};
     }
 `;
 

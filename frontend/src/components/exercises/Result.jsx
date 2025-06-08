@@ -1,5 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import Button from '../shared/Button';
 
 export default function Result() {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ export default function Result() {
     <div>
       <h2>Result</h2>
       <p>You completed the exercise. Congratulations!</p>
-      <button onClick={handleGoBack}>Go Back to Lessons</button>
+      <Button onClick={handleGoBack} variant="primary">Go Back to Lessons</Button>
     </div>
   );
 }

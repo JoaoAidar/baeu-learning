@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import Button from '../components/common/Button';
+import Button from '../components/shared/Button';
 import { api } from '../utils/api';
 import designSystem from '../styles/designSystem';
 

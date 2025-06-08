@@ -167,11 +167,9 @@ const Profile = () => {
       <ProfileHeader>
         <Username>{user.username}</Username>
         <Email>{user.email}</Email>
-      </ProfileHeader>
-
-      <StatsGrid>
+      </ProfileHeader>      <StatsGrid>
         <StatCard>
-          <StatIcon $color="#4CAF50">
+          <StatIcon $color="#d62828">
             <BookOpen size={24} />
           </StatIcon>
           <StatContent>
@@ -181,7 +179,7 @@ const Profile = () => {
         </StatCard>
 
         <StatCard>
-          <StatIcon $color="#2196F3">
+          <StatIcon $color="#023e8a">
             <Award size={24} />
           </StatIcon>
           <StatContent>
@@ -191,7 +189,7 @@ const Profile = () => {
         </StatCard>
 
         <StatCard>
-          <StatIcon $color="#FF9800">
+          <StatIcon $color="#f59e0b">
             <Clock size={24} />
           </StatIcon>
           <StatContent>
@@ -201,7 +199,7 @@ const Profile = () => {
         </StatCard>
 
         <StatCard>
-          <StatIcon $color="#9C27B0">
+          <StatIcon $color="#10b981">
             <Target size={24} />
           </StatIcon>
           <StatContent>

@@ -67,8 +67,8 @@ const Input = styled.input`
 
 const Button = styled.button`
     padding: ${({ theme }) => theme.spacing.md};
-    background-color: ${({ theme }) => theme.colors.primary.main};
-    color: ${({ theme }) => theme.colors.primary.contrast};
+    background-color: #d62828;
+    color: #ffffff;
     border: none;
     border-radius: ${({ theme }) => theme.borderRadius.lg};
     font-size: ${({ theme }) => theme.typography.fontSize.md};
@@ -78,9 +78,14 @@ const Button = styled.button`
     margin-top: ${({ theme }) => theme.spacing.md};
 
     &:hover {
-        background-color: ${({ theme }) => theme.colors.primary.dark};
+        background-color: #991b1b;
         transform: translateY(-2px);
         box-shadow: ${({ theme }) => theme.shadows.md};
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.2);
     }
 
     &:active {
@@ -88,7 +93,7 @@ const Button = styled.button`
     }
 
     &:disabled {
-        background-color: ${({ theme }) => theme.colors.neutral.light};
+        background-color: #9ca3af;
         cursor: not-allowed;
         transform: none;
         box-shadow: none;

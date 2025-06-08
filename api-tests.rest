@@ -1,0 +1,370 @@
+# ==========================================================================
+# 🚀 BaeU Learning - API Testing Suite
+# Complete REST file for testing all backend API routes
+# ==========================================================================
+
+@baseUrl = http://localhost:3000/api
+@userId = 39602f41-b43e-4fa8-b7f7-34c7a516740b
+@lessonId = 1
+@exerciseId = 1
+
+# ==========================================================================
+# 🔐 AUTHENTICATION ROUTES (/api/auth)
+# ==========================================================================
+
+### 1. Login - Authenticate user
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testuser",
+  "password": "password123"
+}
+
+### 2. Register new user
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "username": "newuser",
+  "email": "newuser@example.com",
+  "password": "password123"
+}
+
+### 3. Get current user (requires authentication)
+GET {{baseUrl}}/auth/me
+Accept: application/json
+
+### 4. Logout user
+POST {{baseUrl}}/auth/logout
+Accept: application/json
+
+### 5. Get user progress (all lessons)
+GET {{baseUrl}}/auth/progress
+Accept: application/json
+
+### 6. Get progress for specific lesson
+GET {{baseUrl}}/auth/progress/{{lessonId}}
+Accept: application/json
+
+### 7. Update user progress
+POST {{baseUrl}}/auth/progress
+Content-Type: application/json
+
+{
+  "lessonId": {{lessonId}},
+  "exerciseId": {{exerciseId}},
+  "completed": true,
+  "correct": true
+}
+
+# ==========================================================================
+# 📚 LESSON ROUTES (/api/lessons)
+# ==========================================================================
+
+### 8. Get all lessons
+GET {{baseUrl}}/lessons
+Accept: application/json
+
+### 9. Get specific lesson by ID
+GET {{baseUrl}}/lessons/{{lessonId}}
+Accept: application/json
+
+### 10. Create new lesson (admin only)
+POST {{baseUrl}}/lessons
+Content-Type: application/json
+
+{
+  "title": "Korean Basics - Lesson 1",
+  "description": "Introduction to Korean alphabet and basic greetings",
+  "order_index": 1
+}
+
+### 11. Update lesson (admin only)
+PUT {{baseUrl}}/lessons/{{lessonId}}
+Content-Type: application/json
+
+{
+  "title": "Korean Basics - Updated",
+  "description": "Updated lesson description",
+  "order_index": 1
+}
+
+### 12. Delete lesson (admin only)
+DELETE {{baseUrl}}/lessons/{{lessonId}}
+Accept: application/json
+
+# ==========================================================================
+# 💪 EXERCISE ROUTES (/api/exercises)
+# ==========================================================================
+
+### 13. Get all exercises for a lesson
+GET {{baseUrl}}/exercises/lesson/{{lessonId}}
+Accept: application/json
+
+### 14. Get exercises by type for a lesson
+GET {{baseUrl}}/exercises/lesson/{{lessonId}}/type/multiple_choice
+Accept: application/json
+
+### 15. Get specific exercise by ID
+GET {{baseUrl}}/exercises/{{exerciseId}}
+Accept: application/json
+
+### 16. Submit exercise answer
+POST {{baseUrl}}/exercises/{{exerciseId}}/submit
+Content-Type: application/json
+
+{
+  "answer": "안녕하세요",
+  "lessonId": {{lessonId}}
+}
+
+### 17. Create new exercise (admin only)
+POST {{baseUrl}}/exercises
+Content-Type: application/json
+
+{
+  "lesson_id": {{lessonId}},
+  "type": "multiple_choice",
+  "difficulty": "beginner",
+  "prompt": "How do you say 'Hello' in Korean?",
+  "options": [
+    {"id": "a", "text": "안녕하세요"},
+    {"id": "b", "text": "감사합니다"},
+    {"id": "c", "text": "죄송합니다"},
+    {"id": "d", "text": "안녕히 가세요"}
+  ],
+  "correct_answer": "a",
+  "explanation": "안녕하세요 (annyeonghaseyo) is the formal way to say hello in Korean.",
+  "order_index": 1
+}
+
+### 18. Update exercise (admin only)
+PUT {{baseUrl}}/exercises/{{exerciseId}}
+Content-Type: application/json
+
+{
+  "prompt": "Updated: How do you say 'Hello' in Korean?",
+  "explanation": "Updated explanation for the exercise."
+}
+
+### 19. Delete exercise (admin only)
+DELETE {{baseUrl}}/exercises/{{exerciseId}}
+Accept: application/json
+
+# ==========================================================================
+# 👥 USER ROUTES (/api/users)
+# ==========================================================================
+
+### 20. Get all users
+GET {{baseUrl}}/users
+Accept: application/json
+
+### 21. Get user by ID
+GET {{baseUrl}}/users/{{userId}}
+Accept: application/json
+
+### 22. Create new user
+POST {{baseUrl}}/users/create
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+
+### 23. Update user
+PUT {{baseUrl}}/users/{{userId}}
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "jane@example.com"
+}
+
+### 24. Delete user
+DELETE {{baseUrl}}/users/{{userId}}
+Accept: application/json
+
+# ==========================================================================
+# 🛡️ ADMIN ROUTES (/api/admin) - Requires admin authentication
+# ==========================================================================
+
+### 25. Get recent users (admin only)
+GET {{baseUrl}}/admin/users/recent
+Accept: application/json
+
+### 26. Get platform statistics (admin only)
+GET {{baseUrl}}/admin/stats
+Accept: application/json
+
+### 27. Get all lessons with exercises (admin only)
+GET {{baseUrl}}/admin/lessons
+Accept: application/json
+
+### 28. Get simple lessons list (admin only)
+GET {{baseUrl}}/admin/lessons-simple
+Accept: application/json
+
+### 29. Get all users (admin only)
+GET {{baseUrl}}/admin/users
+Accept: application/json
+
+### 30. Update platform settings (admin only)
+PUT {{baseUrl}}/admin/settings
+Content-Type: application/json
+
+{
+  "maintenance_mode": false,
+  "registration_enabled": true,
+  "max_users": 1000
+}
+
+### 31. Update user role (admin only)
+PATCH {{baseUrl}}/auth/admin/users/{{userId}}/role
+Content-Type: application/json
+
+{
+  "role": "admin"
+}
+
+# ==========================================================================
+# 🏥 HEALTH CHECK
+# ==========================================================================
+
+### 32. Health check endpoint
+GET http://localhost:3000/api/health
+Accept: application/json
+
+# ==========================================================================
+# 📝 TESTING SCENARIOS
+# ==========================================================================
+
+### Scenario 1: Complete user flow - Register, Login, Get lessons, Submit exercise
+# Step 1: Register
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "username": "testflow",
+  "email": "testflow@example.com",
+  "password": "password123"
+}
+
+### Step 2: Login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "testflow",
+  "password": "password123"
+}
+
+### Step 3: Get current user
+GET {{baseUrl}}/auth/me
+
+### Step 4: Get all lessons
+GET {{baseUrl}}/lessons
+
+### Step 5: Get exercises for first lesson
+GET {{baseUrl}}/exercises/lesson/1
+
+### Step 6: Submit an exercise answer
+POST {{baseUrl}}/exercises/1/submit
+Content-Type: application/json
+
+{
+  "answer": "안녕하세요",
+  "lessonId": 1
+}
+
+### Step 7: Update progress
+POST {{baseUrl}}/auth/progress
+Content-Type: application/json
+
+{
+  "lessonId": 1,
+  "exerciseId": 1,
+  "completed": true,
+  "correct": true
+}
+
+### Step 8: Check progress
+GET {{baseUrl}}/auth/progress
+
+# ==========================================================================
+# 🚨 ERROR TESTING
+# ==========================================================================
+
+### Test invalid login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "username": "invaliduser",
+  "password": "wrongpassword"
+}
+
+### Test accessing protected route without auth
+GET {{baseUrl}}/auth/me
+
+### Test invalid lesson ID
+GET {{baseUrl}}/lessons/999999
+
+### Test invalid exercise ID
+GET {{baseUrl}}/exercises/999999
+
+### Test malformed request
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "invalid": "request"
+}
+
+# ==========================================================================
+# 📊 PERFORMANCE TESTING
+# ==========================================================================
+
+### Load test - Multiple lesson requests
+GET {{baseUrl}}/lessons
+
+###
+GET {{baseUrl}}/lessons
+
+###
+GET {{baseUrl}}/lessons
+
+# ==========================================================================
+# 🔧 NOTES & USAGE
+# ==========================================================================
+
+# USAGE INSTRUCTIONS:
+# 1. Start the backend server: npm start
+# 2. Update the @baseUrl variable if needed
+# 3. Update @userId, @lessonId, @exerciseId variables with actual IDs
+# 4. For authenticated routes, login first to set session cookies
+# 5. Admin routes require admin user authentication
+# 6. Use VS Code REST Client extension to execute these requests
+
+# AUTHENTICATION:
+# - Most routes require authentication via session cookies
+# - Admin routes require admin role
+# - Login first to establish session before testing protected routes
+
+# VARIABLES:
+# - @baseUrl: Base API URL
+# - @userId: Valid user ID for testing
+# - @lessonId: Valid lesson ID for testing  
+# - @exerciseId: Valid exercise ID for testing
+
+# EXPECTED RESPONSES:
+# - 200: Success
+# - 201: Created
+# - 400: Bad Request
+# - 401: Unauthorized
+# - 403: Forbidden (admin required)
+# - 404: Not Found
+# - 500: Internal Server Error
+
+# ==========================================================================

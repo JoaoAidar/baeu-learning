@@ -222,9 +222,8 @@ const Exercise = ({ selectedLesson }) => {
           {/* Corrected progress text to reflect current question */}
           <span>Questão { (lesson.exercises.length - availableExercises.length) || 0} de {lesson.exercises.length}</span>
         </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-          <div
-            className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
+        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">          <div
+            className="bg-red-600 h-2.5 rounded-full transition-all duration-300 ease-out"
             style={{ width: `${progress}%` }}
           ></div>
         </div>
@@ -257,8 +256,7 @@ const Exercise = ({ selectedLesson }) => {
           <div className="space-y-2">
             {selectedExercise.options.map((opt, i) => (
               <label
-                key={i}
-                className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
+                key={i}                className={`flex items-center p-3 rounded-lg border cursor-pointer transition-colors ${
                   userAnswer === opt
                     ? 'bg-blue-50 border-blue-300 dark:bg-blue-900 dark:border-blue-700'
                     : 'bg-white border-gray-200 hover:bg-gray-50 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700'
@@ -290,11 +288,10 @@ const Exercise = ({ selectedLesson }) => {
       {/* Submit button */}
       <button
         onClick={handleSubmit}
-        disabled={!userAnswer || feedback?.isLoading || !!feedback?.error}
-        className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
+        disabled={!userAnswer || feedback?.isLoading || !!feedback?.error}        className={`w-full py-3 px-4 rounded-lg font-medium text-white transition-colors ${
           !userAnswer || feedback?.isLoading || !!feedback?.error
             ? 'bg-gray-400 dark:bg-gray-600 cursor-not-allowed'
-            : 'bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800'
+            : 'bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-800'
         }`}
       >
         {feedback?.isLoading ? (

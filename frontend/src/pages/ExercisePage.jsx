@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled from 'styled-components';
 import ExerciseRenderer from '../components/exercises/ExerciseRenderer'; // Assuming this component renders the exercise question and handles user input
-import Button from '../components/common/Button';
+import Button from '../components/shared/Button';
 import { api } from '../utils/api';
 // Assuming Container is a styled-component you define in designSystem or similar
 import designSystem from '../styles/designSystem'; 
@@ -22,14 +22,23 @@ const ExerciseContainer = styled.div`
     background-color: ${colors.background.default};
     min-height: calc(100vh - 120px); /* Adjust based on your Layout's header/footer if any */
 
-    @media (max-width: ${breakpoints.lg}) {
+    /* Tailwind equivalent: xl:px-8 lg:px-6 md:px-4 px-3 */
+    @media (max-width: 1280px) {
         padding: ${spacing.lg};
     }
-    @media (max-width: ${breakpoints.md}) {
+    
+    @media (max-width: 1024px) {
         padding: ${spacing.md};
     }
-    @media (max-width: ${breakpoints.sm}) {
+    
+    @media (max-width: 768px) {
         padding: ${spacing.sm};
+        min-height: calc(100vh - 80px);
+    }
+    
+    @media (max-width: 640px) {
+        padding: ${spacing.xs} ${spacing.sm};
+        min-height: calc(100vh - 60px);
     }
 `;
 
@@ -44,8 +53,26 @@ const ContentWrapper = styled(Container)`
     width: 100%;
     max-width: 800px; /* Max width for content within container */
 
-    @media (max-width: ${breakpoints.md}) {
+    /* Tailwind equivalent: lg:p-8 md:p-6 p-4 lg:gap-8 md:gap-6 gap-4 */
+    @media (max-width: 1024px) {
         padding: ${spacing.lg};
+        gap: ${spacing.lg};
+        max-width: 700px;
+    }
+    
+    @media (max-width: 768px) {
+        padding: ${spacing.md};
+        gap: ${spacing.md};
+        max-width: 100%;
+        border-radius: ${borderRadius.md};
+        box-shadow: ${shadows.md};
+    }
+    
+    @media (max-width: 640px) {
+        padding: ${spacing.sm};
+        gap: ${spacing.sm};
+        border-radius: ${borderRadius.sm};
+        box-shadow: ${shadows.sm};
     }
 `;
 
@@ -73,8 +100,18 @@ const NavigationButtons = styled.div`
     padding-top: ${spacing.lg};
     border-top: 1px solid ${colors.neutral.main};
 
-    @media (max-width: ${breakpoints.sm}) {
+    /* Tailwind equivalent: md:flex-row md:justify-between flex-col-reverse gap-3 */
+    @media (max-width: 768px) {
         flex-direction: column-reverse;
+        gap: ${spacing.sm};
+        margin-top: ${spacing.lg};
+        padding-top: ${spacing.md};
+    }
+    
+    @media (max-width: 640px) {
+        gap: ${spacing.xs};
+        margin-top: ${spacing.md};
+        padding-top: ${spacing.sm};
     }
 `;
 
@@ -88,6 +125,7 @@ const StyledMessage = styled.div`
     align-items: center;
     justify-content: center;
     gap: ${spacing.sm};
+    line-height: 1.5;
 
     &.error {
         color: ${colors.error.main};
@@ -98,6 +136,20 @@ const StyledMessage = styled.div`
     &.loading {
         color: ${colors.text.secondary};
         background-color: ${colors.neutral.light};
+    }
+    
+    /* Tailwind equivalent: md:text-base text-sm md:p-4 p-3 md:mx-0 mx-2 */
+    @media (max-width: 768px) {
+        font-size: ${typography.fontSize.sm};
+        padding: ${spacing.md};
+        margin: ${spacing.lg} ${spacing.sm};
+        flex-direction: column;
+        gap: ${spacing.xs};
+    }
+    
+    @media (max-width: 640px) {        font-size: ${typography.fontSize.xs};
+        padding: ${spacing.sm};
+        margin: ${spacing.md} 0;
     }
 `;
 

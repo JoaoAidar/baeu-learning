@@ -11,8 +11,13 @@ const Container = styled.div`
     min-height: 100vh;
     background-color: ${({ theme }) => theme.colors.background.default};
     
-    @media (max-width: 1024px) {
+    /* Tailwind equivalent: xl:px-8 lg:px-6 md:px-4 sm:px-3 px-4 */
+    @media (max-width: 1280px) {
         padding: ${({ theme }) => theme.spacing[6]};
+    }
+    
+    @media (max-width: 1024px) {
+        padding: ${({ theme }) => theme.spacing[5]};
     }
     
     @media (max-width: 768px) {
@@ -20,22 +25,31 @@ const Container = styled.div`
     }
     
     @media (max-width: 640px) {
-        padding: ${({ theme }) => theme.spacing[3]};
+        padding: ${({ theme }) => theme.spacing[4]} ${({ theme }) => theme.spacing[3]};
     }
 `;
 
 const Header = styled.header`
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;
     margin-bottom: ${({ theme }) => theme.spacing[8]};
     padding-bottom: ${({ theme }) => theme.spacing[6]};
     border-bottom: 1px solid ${({ theme }) => theme.colors.neutral.main};
+    gap: ${({ theme }) => theme.spacing[4]};
     
+    /* Tailwind equivalent: md:flex-row md:items-center md:gap-0 flex-col items-start gap-4 */
     @media (max-width: 768px) {
         flex-direction: column;
-        gap: ${({ theme }) => theme.spacing[4]};
-        align-items: flex-start;
+        align-items: stretch;
+        gap: ${({ theme }) => theme.spacing[6]};
+        margin-bottom: ${({ theme }) => theme.spacing[6]};
+        padding-bottom: ${({ theme }) => theme.spacing[4]};
+    }
+    
+    @media (max-width: 640px) {
+        margin-bottom: ${({ theme }) => theme.spacing[5]};
+        padding-bottom: ${({ theme }) => theme.spacing[3]};
     }
 `;
 
@@ -49,9 +63,21 @@ const Title = styled.h1`
     font-weight: ${({ theme }) => theme.typography.fontWeight.bold};
     color: ${({ theme }) => theme.colors.text.primary};
     margin-bottom: ${({ theme }) => theme.spacing[2]};
+    line-height: 1.2;
+    
+    /* Tailwind equivalent: lg:text-3xl md:text-2xl text-xl */
+    @media (max-width: 1024px) {
+        font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
+    }
     
     @media (max-width: 768px) {
-        font-size: ${({ theme }) => theme.typography.fontSize['2xl']};
+        font-size: ${({ theme }) => theme.typography.fontSize.xl};
+        margin-bottom: ${({ theme }) => theme.spacing[3]};
+    }
+    
+    @media (max-width: 640px) {
+        font-size: ${({ theme }) => theme.typography.fontSize.lg};
+        text-align: center;
     }
 `;
 
@@ -60,6 +86,17 @@ const Subtitle = styled.p`
     font-size: ${({ theme }) => theme.typography.fontSize.lg};
     color: ${({ theme }) => theme.colors.text.secondary};
     margin-top: ${({ theme }) => theme.spacing[2]};
+    line-height: 1.5;
+    
+    /* Tailwind equivalent: md:text-lg text-base */
+    @media (max-width: 768px) {
+        font-size: ${({ theme }) => theme.typography.fontSize.base};
+        text-align: center;
+    }
+    
+    @media (max-width: 640px) {
+        font-size: ${({ theme }) => theme.typography.fontSize.sm};
+    }
 `;
 
 const UserStats = styled.div`
@@ -67,9 +104,22 @@ const UserStats = styled.div`
     gap: ${({ theme }) => theme.spacing[6]};
     margin-top: ${({ theme }) => theme.spacing[4]};
     
-    @media (max-width: 640px) {
-        flex-wrap: wrap;
+    /* Tailwind equivalent: lg:flex-row lg:gap-6 md:grid md:grid-cols-2 md:gap-4 flex-col gap-3 */
+    @media (max-width: 1024px) {
         gap: ${({ theme }) => theme.spacing[4]};
+    }
+    
+    @media (max-width: 768px) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: ${({ theme }) => theme.spacing[3]};
+        margin-top: ${({ theme }) => theme.spacing[6]};
+    }
+    
+    @media (max-width: 640px) {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing[3]};
+        margin-top: ${({ theme }) => theme.spacing[4]};
     }
 `;
 
@@ -79,10 +129,27 @@ const StatItem = styled.div`
     gap: ${({ theme }) => theme.spacing[2]};
     color: ${({ theme }) => theme.colors.text.secondary};
     font-size: ${({ theme }) => theme.typography.fontSize.sm};
-    padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
+    padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
     background-color: ${({ theme }) => theme.colors.background.paper};
     border-radius: ${({ theme }) => theme.borderRadius.md};
     border: 1px solid ${({ theme }) => theme.colors.neutral.main};
+    min-width: 0;
+    flex: 1;
+    
+    /* Tailwind equivalent: md:p-3 p-2 md:text-sm text-xs */
+    @media (max-width: 768px) {
+        padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
+        font-size: ${({ theme }) => theme.typography.fontSize.xs};
+        gap: ${({ theme }) => theme.spacing[1]};
+    }
+    
+    @media (max-width: 640px) {
+        justify-content: center;
+        text-align: center;
+        flex-direction: column;
+        gap: ${({ theme }) => theme.spacing[1]};
+        padding: ${({ theme }) => theme.spacing[3]};
+    }
 `;
 
 const LessonsGrid = styled.div`
@@ -90,9 +157,24 @@ const LessonsGrid = styled.div`
     grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
     gap: ${({ theme }) => theme.spacing[6]};
     
-    @media (max-width: 768px) {
+    /* Tailwind equivalent: xl:grid-cols-3 lg:grid-cols-2 md:grid-cols-1 grid-cols-1 */
+    @media (max-width: 1280px) {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: ${({ theme }) => theme.spacing[5]};
+    }
+    
+    @media (max-width: 1024px) {
         grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: ${({ theme }) => theme.spacing[4]};
+    }
+    
+    @media (max-width: 768px) {
+        grid-template-columns: 1fr;
+        gap: ${({ theme }) => theme.spacing[4]};
+    }
+    
+    @media (max-width: 640px) {
+        gap: ${({ theme }) => theme.spacing[3]};
     }
 `;
 
@@ -185,11 +267,32 @@ const LogoutButton = styled.button`
     font-weight: ${({ theme }) => theme.typography.fontWeight.medium};
     transition: ${({ theme }) => theme.transitions.default};
     cursor: pointer;
+    white-space: nowrap;
 
     &:hover {
-        background-color: ${({ theme }) => theme.colors.error.light};
-        color: ${({ theme }) => theme.colors.error.main};
-        border-color: ${({ theme }) => theme.colors.error.main};
+        background-color: #d62828;
+        color: #ffffff;
+        border-color: #d62828;
+        transform: translateY(-2px);
+        box-shadow: ${({ theme }) => theme.shadows.md};
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.2);
+    }
+    
+    /* Tailwind equivalent: md:w-auto w-full md:justify-start justify-center */
+    @media (max-width: 768px) {
+        width: 100%;
+        justify-content: center;
+        padding: ${({ theme }) => theme.spacing[3]} ${({ theme }) => theme.spacing[4]};
+        order: 1;
+    }
+    
+    @media (max-width: 640px) {
+        font-size: ${({ theme }) => theme.typography.fontSize.xs};
+        padding: ${({ theme }) => theme.spacing[2]} ${({ theme }) => theme.spacing[3]};
     }
 `;
 

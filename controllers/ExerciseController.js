@@ -29,8 +29,7 @@ class ExerciseController {
                     correct_answer: ex.correct_answer,
                     explanation: ex.explanation
                 }))
-            });
-        } catch (error) {
+            });        } catch (error) {
             console.error('Error in getExercisesByLessonId:', error);
             res.status(500).json({ error: 'Internal server error' });
         }
@@ -61,7 +60,17 @@ class ExerciseController {
     static async submitExerciseAnswer(req, res) {
         try {
             const { exerciseId } = req.params;
-            const { answer } = req.body;
+            const { answer, lessonId } = req.body;
+            const userId = req.user?.id || req.user?.userId;
+
+            // Validate required fields
+            if (!userId) {
+                return res.status(401).json({ error: 'User authentication required' });
+            }
+
+            if (!answer || answer.toString().trim() === '') {
+                return res.status(400).json({ error: 'Answer is required' });
+            }
 
             // Get exercise
             const exercise = await Exercise.findById(exerciseId);
@@ -70,20 +79,44 @@ class ExerciseController {
             }
 
             let isCorrect = false;
-            // Handle different types of answers
+            // Handle different types of answers with proper sanitization
             if (typeof answer === 'string' && typeof exercise.correct_answer === 'string') {
-                isCorrect = answer.trim().toLowerCase() === exercise.correct_answer.trim().toLowerCase();
+                const sanitizedAnswer = answer.trim().toLowerCase();
+                const sanitizedCorrect = exercise.correct_answer.trim().toLowerCase();
+                isCorrect = sanitizedAnswer === sanitizedCorrect;
             } else if (typeof answer === 'object' && typeof exercise.correct_answer === 'string') {
                 // For matching or other structured answers, compare as JSON
-                isCorrect = JSON.stringify(answer) === exercise.correct_answer;
+                try {
+                    isCorrect = JSON.stringify(answer) === exercise.correct_answer;
+                } catch (e) {
+                    console.error('Error comparing structured answer:', e);
+                    isCorrect = false;
+                }
             } else {
                 isCorrect = answer === exercise.correct_answer;
             }
 
-            // For now, just return the result without saving progress
+            // Save user progress
+            const UserProgress = require('../models/UserProgress');
+            const progressData = await UserProgress.updateProgress(
+                userId, 
+                lessonId || exercise.lesson_id, 
+                exerciseId, 
+                { 
+                    completed: true, 
+                    correct: isCorrect 
+                }
+            );
+
+            if (!progressData) {
+                console.warn('Failed to save progress for user:', userId, 'exercise:', exerciseId);
+            }
+
+            // Return the result with progress saved
             res.json({
                 correct: isCorrect,
-                explanation: exercise.explanation
+                explanation: exercise.explanation,
+                progressSaved: !!progressData
             });
         } catch (error) {
             console.error('Error in submitExerciseAnswer:', error);

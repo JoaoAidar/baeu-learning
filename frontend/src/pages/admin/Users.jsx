@@ -21,7 +21,7 @@ const Title = styled.h1`
 `;
 
 const Button = styled.button`
-  background-color: ${({ theme }) => theme.colors.primary.main};
+  background-color: #d62828;
   color: white;
   border: none;
   border-radius: ${({ theme }) => theme.borderRadius.md};
@@ -31,9 +31,21 @@ const Button = styled.button`
   align-items: center;
   gap: ${({ theme }) => theme.spacing.sm};
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
+  transition: all 0.2s ease;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primary.dark};
+    background-color: #991b1b;
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -76,10 +88,18 @@ const ActionButton = styled.button`
   cursor: pointer;
   padding: ${({ theme }) => theme.spacing.xs};
   border-radius: ${({ theme }) => theme.borderRadius.sm};
+  transition: all 0.2s ease;
 
   &:hover {
-    color: ${({ theme }) => theme.colors.primary.main};
+    color: #023e8a;
     background-color: ${({ theme }) => theme.colors.background.default};
+    transform: scale(1.1);
+  }
+
+  &:focus {
+    outline: none;
+    color: #023e8a;
+    box-shadow: 0 0 0 2px rgba(2, 62, 138, 0.2);
   }
 `;
 

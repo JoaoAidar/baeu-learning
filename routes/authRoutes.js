@@ -3,22 +3,24 @@ const router = express.Router();
 const AuthController = require('../controllers/AuthController');
 const { validateLogin, validateProgress } = require('../middleware/validators');
 const { auth, adminAuth } = require('../middleware/auth');
+const { authLimiter, generalLimiter } = require('../middleware/rateLimiter');
+const { auditAuth, AUDIT_EVENTS } = require('../middleware/audit');
 
-// TODO: [SECURITY] Add rate limiting for login attempts
+// Rate limiting implemented ✅
 // TODO: [SECURITY] Add password complexity validation
 // TODO: [SECURITY] Add account lockout after failed attempts
 
 const authController = new AuthController();
 
-// Public routes
-router.post('/login', validateLogin, authController.login.bind(authController));
-router.post('/logout', authController.logout.bind(authController));
-router.post('/signup', authController.createUser.bind(authController));
+// Public routes with strict rate limiting
+router.post('/login', authLimiter, validateLogin, auditAuth(AUDIT_EVENTS.USER_LOGIN), authController.login.bind(authController));
+router.post('/logout', generalLimiter, auditAuth(AUDIT_EVENTS.USER_LOGOUT), authController.logout.bind(authController));
+router.post('/signup', authLimiter, authController.createUser.bind(authController));
 // TODO: [SECURITY] Add session invalidation on logout
 // TODO: [SECURITY] Add token revocation mechanism
 
 // Protected routes
-router.get('/me', auth, authController.getCurrentUser.bind(authController));
+router.get('/me', generalLimiter, auth, authController.getCurrentUser.bind(authController));
 router.post('/progress', auth, validateProgress, authController.updateProgress.bind(authController));
 router.get('/progress', auth, authController.getProgress.bind(authController));
 router.get('/progress/:lessonId', auth, authController.getLessonProgress.bind(authController));

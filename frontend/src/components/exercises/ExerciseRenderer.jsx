@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { CheckCircle, XCircle } from 'lucide-react';
-import KoreanInput from '../KoreanInput';
+import KoreanInput from './KoreanInput';
 import { typography, spacing } from '../../styles/designSystem';
 
 // QWERTY to Korean jamo mapping and layout
@@ -173,8 +173,8 @@ const FeedbackMessage = styled.div`
 const SubmitButton = styled.button`
     margin-top: ${({ theme }) => theme.spacing.lg};
     padding: ${({ theme }) => theme.spacing.md} ${({ theme }) => theme.spacing.xl};
-    background-color: ${({ theme }) => theme.colors.primary.main};
-    color: ${({ theme }) => theme.colors.primary.contrast};
+    background-color: #d62828; /* Red for primary action */
+    color: #ffffff;
     border: none;
     border-radius: ${({ theme }) => theme.borderRadius.md};
     font-size: ${({ theme }) => theme.typography.fontSize.base};
@@ -183,13 +183,20 @@ const SubmitButton = styled.button`
     transition: all ${({ theme }) => theme.transitions.normal};
 
     &:hover:not(:disabled) {
-        background-color: ${({ theme }) => theme.colors.primary.dark};
+        background-color: #991b1b; /* Darker red */
         transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(214, 40, 40, 0.3);
+    }
+
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.2);
     }
 
     &:disabled {
-        background-color: ${({ theme }) => theme.colors.neutral.main};
+        background-color: #9ca3af;
         cursor: not-allowed;
+        transform: none;
     }
 `;
 

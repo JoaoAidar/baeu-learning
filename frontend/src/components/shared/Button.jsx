@@ -16,19 +16,17 @@ const StyledButton = styled.button`
     transition: all ${({ theme }) => theme.transitions.normal};
     width: ${props => props.$fullWidth ? '100%' : 'auto'};
     position: relative;
-    overflow: hidden;
-
-    /* Primary variant (default) */
+    overflow: hidden;    /* Primary variant (default) - Red for primary actions */
     background-color: ${props => {
         const t = props.theme;
-        if (props.$variant === 'secondary') return t.colors.secondary.main;
+        if (props.$variant === 'secondary') return '#023e8a'; // Blue for secondary actions
         if (props.$variant === 'text') return 'transparent';
-        return t.colors.primary.main;
+        return '#d62828'; // Red for primary actions
     }};
     color: ${props => {
         const t = props.theme;
-        if (props.$variant === 'text') return t.colors.primary.main;
-        return t.colors.primary.contrast;
+        if (props.$variant === 'text') return '#d62828';
+        return '#ffffff';
     }};
     box-shadow: ${props => {
         const t = props.theme;
@@ -40,9 +38,9 @@ const StyledButton = styled.button`
         transform: translateY(-2px);
         background-color: ${props => {
             const t = props.theme;
-            if (props.$variant === 'secondary') return t.colors.secondary.dark;
-            if (props.$variant === 'text') return t.colors.primary.light;
-            return t.colors.primary.dark;
+            if (props.$variant === 'secondary') return '#1e3a8a'; // Darker blue
+            if (props.$variant === 'text') return 'rgba(214, 40, 40, 0.1)'; // Light red background
+            return '#991b1b'; // Darker red
         }};
         box-shadow: ${props => {
             const t = props.theme;
@@ -51,7 +49,14 @@ const StyledButton = styled.button`
         }};
     }
 
-    &:active {
+    &:focus {
+        outline: none;
+        box-shadow: ${props => {
+            if (props.$variant === 'secondary') return '0 0 0 3px rgba(2, 62, 138, 0.2)'; // Blue focus ring
+            if (props.$variant === 'text') return '0 0 0 3px rgba(214, 40, 40, 0.2)'; // Red focus ring
+            return '0 0 0 3px rgba(214, 40, 40, 0.2)'; // Red focus ring
+        }};
+    }    &:active {
         transform: translateY(0);
         box-shadow: ${props => {
             const t = props.theme;
@@ -65,9 +70,8 @@ const StyledButton = styled.button`
         cursor: not-allowed;
         transform: none;
         box-shadow: none;
-    }
-
-    /* Loading state */
+        background-color: #9ca3af !important;
+    }    /* Loading state */
     ${props => props.$loading && `
         cursor: wait;
         &::after {
@@ -75,7 +79,7 @@ const StyledButton = styled.button`
             position: absolute;
             width: 20px;
             height: 20px;
-            border: 2px solid ${props.theme.colors.primary.contrast};
+            border: 2px solid #ffffff;
             border-radius: 50%;
             border-top-color: transparent;
             animation: spin 1s linear infinite;

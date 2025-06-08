@@ -52,22 +52,35 @@ const Button = styled.button`
   justify-content: center;
   gap: ${({ theme }) => theme.spacing.sm};
   padding: ${({ theme }) => theme.spacing.sm} ${({ theme }) => theme.spacing.md};
-  background-color: ${({ theme }) => theme.colors.primary.main};
+  background-color: #d62828;
   color: white;
   border: none;
   border-radius: ${({ theme }) => theme.borderRadius.md};
   cursor: pointer;
   font-size: ${({ theme }) => theme.typography.fontSize.sm};
-  transition: background-color 0.2s;
+  transition: all 0.2s ease;
   align-self: flex-start;
 
   &:hover {
-    background-color: ${({ theme }) => theme.colors.primary.dark};
+    background-color: #991b1b;
+    transform: translateY(-2px);
+    box-shadow: ${({ theme }) => theme.shadows.md};
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.2);
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 
   &:disabled {
-    background-color: ${({ theme }) => theme.colors.neutral.light};
+    background-color: #9ca3af;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
   }
 `;
 

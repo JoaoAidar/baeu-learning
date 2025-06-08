@@ -1,114 +1,113 @@
 import styled from 'styled-components';
 
-// Modern Korean Learning color palette
+// Modern BaeU Learning color palette
 export const colors = {
-    // Primary colors - Warm and inviting teal
+    // Primary colors - Red accent
     primary: {
-        main: '#2DD4BF', // Vibrant teal as primary
-        light: '#5EEAD4',
-        dark: '#14B8A6',
-        contrast: '#0F172A'
+        main: '#d62828', // Primary red accent
+        light: '#f87171',
+        dark: '#991b1b',
+        contrast: '#ffffff'
     },
-    // Secondary colors - Complementary to dark blue
+    // Secondary colors - Blue accent
     secondary: {
-        main: '#4299e1', // Bright blue as secondary
-        light: '#63b3ed',
-        dark: '#3182ce',
-        contrast: '#FFFFFF'
+        main: '#023e8a', // Secondary blue accent
+        light: '#60a5fa',
+        dark: '#1e3a8a',
+        contrast: '#ffffff'
     },
     // Accent colors - For highlights and success states
     accent: {
         main: '#48bb78', // Success green
         light: '#68d391',
         dark: '#38a169',
-        contrast: '#FFFFFF'
+        contrast: '#ffffff'
     },
     // Neutral colors - For backgrounds and text
     neutral: {
-        light: '#f7fafc',
-        main: '#e2e8f0',
-        dark: '#a0aec0',
-        white: '#FFFFFF'
+        light: '#f1f3f4',
+        main: '#e8eaed',
+        dark: '#9aa0a6',
+        white: '#ffffff'
     },
     // Semantic colors
     success: {
         main: '#48bb78',
         light: '#68d391',
         dark: '#38a169',
-        contrast: '#FFFFFF'
+        contrast: '#ffffff'
     },
     error: {
-        main: '#f56565',
-        light: '#fc8181',
-        dark: '#e53e3e',
-        contrast: '#FFFFFF'
+        main: '#dc2626',
+        light: '#fca5a5',
+        dark: '#991b1b',
+        contrast: '#ffffff'
     },
     warning: {
-        main: '#ed8936',
-        light: '#f6ad55',
-        dark: '#dd6b20',
-        contrast: '#FFFFFF'
+        main: '#f59e0b',
+        light: '#fbbf24',
+        dark: '#d97706',
+        contrast: '#ffffff'
     },
     text: {
-        primary: '#2d3748',
-        secondary: '#4a5568',
-        disabled: '#a0aec0',
+        primary: '#202124',
+        secondary: '#5f6368',
+        disabled: '#9aa0a6',
     },
     background: {
-        default: '#ffffff',
-        paper: '#f7fafc',
-    },
-    // Dark mode palette
+        default: '#f8f9fa', // Base background color
+        paper: '#ffffff',
+    },    // Dark mode palette
     dark: {
         primary: {
-            main: '#4299e1',
-            light: '#63b3ed',
-            dark: '#3182ce',
-            contrast: '#1a202c'
+            main: '#f87171', // Lighter red for dark mode
+            light: '#fca5a5',
+            dark: '#dc2626',
+            contrast: '#1f2937'
         },
         secondary: {
-            main: '#48bb78',
-            light: '#68d391',
-            dark: '#38a169',
-            contrast: '#1a202c'
+            main: '#60a5fa', // Lighter blue for dark mode
+            light: '#93c5fd',
+            dark: '#1d4ed8',
+            contrast: '#1f2937'
         },
         accent: {
-            main: '#f6ad55',
-            light: '#fbd38d',
-            dark: '#ed8936',
-            contrast: '#1a202c'
+            main: '#68d391',
+            light: '#9ae6b4',
+            dark: '#48bb78',
+            contrast: '#1f2937'
         },
         neutral: {
-            light: '#1a202c',
-            main: '#2d3748',
-            dark: '#4a5568',
-            white: '#1a202c'
+            light: '#374151',
+            main: '#4b5563',
+            dark: '#6b7280',
+            white: '#1f2937'
         },
         success: {
             main: '#68d391',
             light: '#9ae6b4',
             dark: '#48bb78',
-            contrast: '#1a202c'
+            contrast: '#1f2937'
         },
         error: {
-            main: '#fc8181',
-            light: '#feb2b2',
-            dark: '#f56565',
-            contrast: '#1a202c'
+            main: '#fca5a5',
+            light: '#fecaca',
+            dark: '#dc2626',
+            contrast: '#1f2937'
         },
         warning: {
-            main: '#f6ad55',
-            light: '#fbd38d',
-            dark: '#ed8936',
+            main: '#fbbf24',
+            light: '#fde047',
+            dark: '#f59e0b',
         },
         text: {
-            primary: '#f7fafc',
-            secondary: '#e2e8f0',
-            disabled: '#a0aec0',
+            primary: '#f9fafb',
+            secondary: '#d1d5db',
+            disabled: '#9ca3af',
         },
         background: {
-            default: '#1a202c',
-            paper: '#2d3748',
+            default: '#111827',
+            paper: '#1f2937',
         },
     }
 };
@@ -116,8 +115,10 @@ export const colors = {
 // Typography configuration
 export const typography = {
     fontFamily: {
+        primary: "'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif", // Primary sans-serif
+        secondary: "'Poppins', sans-serif", // Secondary for headings
         heading: "'Poppins', sans-serif",
-        body: "'Inter', sans-serif",
+        body: "'Inter', system-ui, Avenir, Helvetica, Arial, sans-serif",
     },
     fontSize: {
         xs: '0.75rem',    // 12px
@@ -313,4 +314,5 @@ export const darkTheme = {
     layout
 };
 
+// Export designSystem as default for convenience
 export default designSystem;
