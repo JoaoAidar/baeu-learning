@@ -1,0 +1,151 @@
+/* Layout component specific styles */
+
+/* Responsive animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Responsive navbar styles */
+.responsive-navbar {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .responsive-navbar {
+    grid-template-columns: auto 1fr auto;
+  }
+}
+
+/* Mobile menu responsive styles */
+.responsive-mobile-menu {
+  display: grid;
+  gap: 1rem;
+}
+
+/* Main content responsive grid */
+.responsive-main-content {
+  min-height: calc(100vh - 8rem);
+}
+
+@media (min-width: 1024px) {
+  .responsive-main-content {
+    min-height: calc(100vh - 10rem);
+  }
+}
+
+/* Enhanced button hover effects */
+.layout-button {
+  position: relative;
+  overflow: hidden;
+}
+
+.layout-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s;
+}
+
+.layout-button:hover::before {
+  left: 100%;
+}
+
+/* Navbar glassmorphism effect */
+.navbar-glass {
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.8);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .navbar-glass {
+  background: rgba(31, 41, 55, 0.8);
+  border-bottom: 1px solid rgba(55, 65, 81, 0.3);
+}
+
+/* Mobile breakpoint utilities */
+@media (max-width: 479px) {
+  .xs\:hidden {
+    display: none !important;
+  }
+  
+  .xs\:block {
+    display: block !important;
+  }
+  
+  .xs\:flex {
+    display: flex !important;
+  }
+}
+
+/* Enhanced focus states for accessibility */
+.focus-ring {
+  transition: all 0.2s ease-in-out;
+}
+
+.focus-ring:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.5);
+}
+
+.dark .focus-ring:focus {
+  box-shadow: 0 0 0 3px rgba(214, 40, 40, 0.4);
+}
+
+/* Smooth theme transitions */
+* {
+  transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+/* Custom scrollbar for better UX */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: #475569;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
