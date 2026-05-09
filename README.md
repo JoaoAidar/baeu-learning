@@ -1,127 +1,191 @@
-# Baeu Learning — Korean Practice Engine MVP
+# Aplicativo de Aprendizado de Coreano
 
-Duolingo-style practice engine.
-- **Endless Mode** — infinite questions, checkpoint every 10
-- **Error Intelligence** — deterministic classifier tags wrong answers (vocab, particle, word order, conjugation, formality, hangul, romanization)
-- **Admin Import** — bulk JSON exercise import
+## Visão Geral
+Este aplicativo ajuda os usuários a aprenderem coreano através de lições e exercícios interativos. Possui autenticação de usuários, acompanhamento de progresso nas lições e design responsivo para todos os dispositivos.
 
-## Stack
-
-- **Frontend**: Vite + React → Vercel
-- **Backend**: Express (Node 20+) → Railway
-- **DB**: Neon (Postgres) via `pg`
-- **Auth**: email + password, scrypt hash, JWT (Bearer)
-
-## Layout
-
+## Estrutura do Projeto
 ```
-backend/
-  src/
-    app.js, server.js
-    config/db.js                # picks pg vs in-memory by DATABASE_URL
-    db/{schema.sql, migrate.js, seed.js}
-    repositories/{memoryStore, pgStore}.js
-    services/{AuthService, ErrorClassifier, ExerciseSelector, PracticeService, AdminService}.js
-    middleware/auth.js          # requireUser (JWT), requireAdmin (token or admin role)
-    routes/{auth, practice, admin, exercises}.js
-    controllers/*
-  tests/{auth, errorClassifier, practice}.test.js
-frontend/
-  src/{App.jsx, api.js, pages/{Auth,EndlessPractice}.jsx}
+├── assets/           # Arquivos estáticos (imagens, fontes, etc.)
+├── config/          # Configurações do projeto
+├── controllers/     # Controladores da aplicação
+├── documentos/      # Documentação do projeto
+│   ├── db_schema.drawio  # Diagrama editável do banco de dados
+│   ├── db_diagram.png    # Imagem do diagrama do banco de dados
+│   └── schema.sql        # Script SQL do banco de dados
+├── frontend/        # Código do frontend
+├── lib/            # Bibliotecas e utilitários
+├── middleware/     # Middlewares do Express
+├── models/         # Modelos do banco de dados
+├── routes/         # Rotas da aplicação
+├── scripts/        # Scripts utilitários
+├── services/       # Serviços da aplicação
+├── tests/          # Testes automatizados
+├── views/          # Templates EJS
+├── .env            # Variáveis de ambiente
+├── package.json    # Dependências e scripts
+└── server.js       # Ponto de entrada da aplicação
 ```
 
-## Quickstart (local, no DB)
+## Modelo do Banco de Dados
+O banco de dados utiliza PostgreSQL e possui quatro tabelas principais:
 
+### Tabela de Usuários
+- `id`: UUID (Chave Primária)
+- `username`: VARCHAR(255) (Único)
+- `email`: VARCHAR(255) (Único)
+- `password_hash`: VARCHAR(255)
+- `role`: VARCHAR(50) ('user' ou 'admin')
+- `created_at`: TIMESTAMP
+- `updated_at`: TIMESTAMP
+
+### Tabela de Lições
+- `id`: UUID (Chave Primária)
+- `title`: VARCHAR(255)
+- `description`: TEXT
+- `order_index`: INTEGER
+- `created_at`: TIMESTAMP
+- `updated_at`: TIMESTAMP
+
+### Tabela de Exercícios
+- `id`: UUID (Chave Primária)
+- `lesson_id`: UUID (Chave Estrangeira)
+- `type`: VARCHAR(50)
+- `difficulty`: VARCHAR(20)
+- `prompt`: TEXT
+- `choices`: JSONB
+- `correct_answer`: TEXT
+- `explanation`: TEXT
+- `order_index`: INTEGER
+- `created_at`: TIMESTAMP
+- `updated_at`: TIMESTAMP
+
+### Tabela de Progresso do Usuário
+- `id`: UUID (Chave Primária)
+- `user_id`: UUID (Chave Estrangeira)
+- `lesson_id`: UUID (Chave Estrangeira)
+- `exercise_id`: UUID (Chave Estrangeira)
+- `completed`: BOOLEAN
+- `correct`: BOOLEAN
+- `attempts`: INTEGER
+- `last_attempt_at`: TIMESTAMP
+- `created_at`: TIMESTAMP
+- `updated_at`: TIMESTAMP
+
+![Diagrama do Banco de Dados](documentos/db_diagram.png)
+
+## Requisitos
+- Node.js 14.x ou superior
+- PostgreSQL 12.x ou superior
+- NPM ou Yarn
+- Conta Supabase
+
+## Configuração do Ambiente
+1. Clone o repositório:
 ```bash
-# backend
-cd backend
-cp .env.example .env
-# edit .env: set JWT_SECRET to anything 16+ chars
-npm install
-npm run dev          # http://localhost:3001 (in-memory, auto-seeded)
+git clone [URL_DO_REPOSITÓRIO]
+cd korean-learning-app
+```
 
-# frontend
+2. Instale as dependências:
+```bash
+# Instalar dependências do backend
+npm install
+
+# Instalar dependências do frontend
 cd frontend
 npm install
-npm run dev          # http://localhost:5173
 ```
 
-The frontend Vite dev server proxies `/api` to `http://localhost:3001`.
+3. Configure as variáveis de ambiente:
+Crie um arquivo `.env` na raiz do projeto:
+```env
+# Servidor
+PORT=3000
+JWT_SECRET=sua-chave-secreta
+SESSION_SECRET=sua-chave-de-sessao
 
-## With Neon
+# Banco de Dados
+DATABASE_URL=sua-string-de-conexao-supabase
 
-1. Create a Neon project, copy the connection string (must include `sslmode=require`).
-2. `.env`:
-   ```
-   DATABASE_URL=postgresql://user:pass@ep-xxx.region.aws.neon.tech/baeu?sslmode=require
-   JWT_SECRET=<32+ random bytes>
-   ADMIN_TOKEN=<long random>
-   ```
-3. `npm run migrate` (applies `src/db/schema.sql`, idempotent).
-4. `npm run seed`   (inserts sample exercises if the table is empty).
-5. `npm run dev`.
+# Frontend
+VITE_API_URL=http://localhost:3000/api
+```
 
-## Deploy targets (planning, not deployed yet)
-
-- **Vercel (frontend)**: build = `npm run build` from `frontend/`, output `dist/`. Env: `VITE_API_BASE_URL=https://<railway-app>.up.railway.app`.
-- **Railway (backend)**: root = `backend/`, start = `npm start`. Env: `DATABASE_URL`, `JWT_SECRET`, `ADMIN_TOKEN`, `CORS_ORIGIN=https://<vercel-app>.vercel.app`, `PORT` (Railway sets it).
-- **Neon**: same `DATABASE_URL` injected into Railway.
-- Health check: `GET /api/v1/health`.
-- Graceful shutdown wired (SIGTERM/SIGINT) for Railway redeploys.
-
-## API
-
-| Method | Path | Auth |
-|---|---|---|
-| POST | `/api/v1/auth/signup` | none |
-| POST | `/api/v1/auth/login` | none |
-| GET  | `/api/v1/auth/me` | Bearer |
-| POST | `/api/v1/practice/sessions` | Bearer |
-| GET  | `/api/v1/practice/next?sessionId=…` | Bearer |
-| POST | `/api/v1/practice/answer` | Bearer |
-| GET  | `/api/v1/practice/sessions/:id/summary` | Bearer |
-| GET  | `/api/v1/exercises` | none |
-| GET  | `/api/v1/progress/overview` | Bearer (totals, last 7d, streak days, error tag counts) |
-| GET  | `/api/v1/progress/skills` | Bearer (per-skill level/streak/accuracy/dueAt) |
-| GET  | `/api/v1/admin/attempts/recent?wrongOnly=true` | admin (logged tags + dry-run reclassify, drift flag) |
-| POST | `/api/v1/admin/exercises/import` | `x-admin-token` *or* JWT with `role=admin` |
-| POST | `/api/v1/admin/exercises/generate` | admin (calls LLM, validates, drafts by default) |
-| GET  | `/api/v1/admin/exercises?status=draft` | admin |
-| PATCH | `/api/v1/admin/exercises/:id/status` | admin (publish / archive) |
-| GET  | `/api/v1/health` | none |
-
-## Tests
-
+4. Configure o banco de dados:
 ```bash
-cd backend
-JWT_SECRET=test-secret-must-be-long-enough npm test
+node scripts/reset-db.js
+```
+Este script irá:
+- Criar todas as tabelas necessárias
+- Configurar os relacionamentos
+- Criar usuários de teste (admin/test)
+
+## Executando o Projeto
+1. Inicie o servidor em modo desenvolvimento:
+```bash
+# Iniciar servidor backend (da raiz do projeto)
+npm run dev
+
+# Iniciar servidor frontend (do diretório frontend)
+cd frontend
+npm run dev
 ```
 
-Currently **45/45** passing across auth, classifier, selector, practice, admin import, LLM generator, seed validation, mastery/SRS, and progress.
+## Endpoints da API
 
-## Mastery / SRS
+### Autenticação
+- `POST /api/auth/login` - Login do usuário
+- `POST /api/auth/logout` - Logout do usuário
+- `GET /api/auth/me` - Obter usuário atual
 
-Each correct answer raises a `(user, skill)` row's `level` (0..5) and pushes `next_review_at` further into the future. Wrong answers drop the level and reset the streak. The selector mixes three signals — recent errors, mastery dueness, variety — so practice naturally focuses on weak/due skills without the user choosing.
+### Acompanhamento de Progresso
+- `GET /api/auth/progress` - Obter progresso do usuário
+- `POST /api/auth/progress` - Atualizar progresso
+- `GET /api/auth/progress/lesson/:lessonId` - Obter progresso da lição
 
-Intervals: 0=now · 1=10min · 2=1h · 3=1d · 4=3d · 5=7d.
+### Lições
+- `GET /api/lessons` - Obter todas as lições
+- `GET /api/lessons/:id` - Obter lição por ID
 
-Skill tags that are descriptors (e.g. `vocabulary`, `phrases`, `time`) are ignored for mastery — only concrete skills like `topic_marker`, `verb_conjugation`, `formality`, `native_numbers` are tracked.
+### Exercícios
+- `GET /api/exercises` - Obter todos os exercícios
+- `GET /api/exercises/:id` - Obter exercício por ID
 
-## Progress dashboard
+## Usuários de Teste
 
-`#/progress` (logged in): streak, totals, accuracy 7d, due-skills count, per-skill bars (level + accuracy), error-tag breakdown.
+O script de inicialização do banco de dados cria dois usuários de teste:
 
-## Calibration view (admin)
+1. Usuário Admin:
+   - Usuário: admin
+   - Senha: admin
+   - Função: admin
 
-`#/admin` → **Calibration** tab. Lists recent wrong attempts with the original logged tags vs a fresh re-classification done on the spot. Drift is flagged in yellow — that's how you spot when the classifier rules need tuning against real learner answers.
+2. Usuário Teste:
+   - Usuário: test
+   - Senha: test123
+   - Função: user
 
-## Admin UI
+## Melhorias Recentes
+- **Correções de Bugs:**
+  - Corrigida navegação e passagem de parâmetros para exercícios
+  - Resolvidos avisos de chaves React nas listas de exercícios
+  - Melhorado tratamento de erros para parâmetros ausentes ou inválidos
+  - Adicionadas mensagens de erro robustas
+  - Removido o wrapper Layout duplicado em LessonsPage para evitar renderização recursiva
+  - Corrigido o redirecionamento catch-all para a tela inicial
+  - Garantido que cada lição possui um array de exercícios, evitando erros de renderização
+  - Adicionados logs para depuração dos dados recebidos da API
+  - Ajustada a navegação para evitar loops de renderização ao clicar em 'Lições' no cabeçalho
 
-Visit `http://localhost:5173/#/admin`. Paste your `ADMIN_TOKEN` once (saved to localStorage). Three panels:
-- **Generate via LLM** — topic + count + difficulty, optional auto-publish.
-- **Import JSON** — paste an array of exercises.
-- **Exercises list** — filter by `draft` / `published` / `archived`, publish/archive inline.
+## Suporte a Dispositivos Móveis
+- O aplicativo é totalmente responsivo
+- Páginas de exercícios e lições se adaptam a diferentes tamanhos de tela
+- Fontes e espaçamentos são ajustados automaticamente
 
-## Content (seed)
+## Solução de Problemas
+- Se encontrar erro 404 ou /undefined na URL ao navegar para um exercício, verifique se `exercise.exercise_id` está sendo usado corretamente
+- Se houver avisos de chave React, verifique se a prop key está definida como `exercise.exercise_id`
+- Para erros de parâmetros ausentes, verifique se as rotas e uso de useParams correspondem à estrutura esperada
 
-`backend/src/db/topik1Content.js` builds **165** TOPIK 1 exercises across 30 skills (vocabulary, particles, verbs, numbers, greetings, colors, sentence translation, …) from a small set of source tables. Run `npm run seed` after `npm run migrate` to load them into Neon.
+## Licença
+MIT
