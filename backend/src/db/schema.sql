@@ -2,6 +2,18 @@
 
 create extension if not exists pgcrypto;
 
+create table if not exists modules (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  title text not null,
+  description text,
+  order_index integer not null default 0,
+  icon text,
+  created_at timestamptz default now()
+);
+
+create index if not exists modules_order_idx on modules(order_index);
+
 create table if not exists users (
   id uuid primary key default gen_random_uuid(),
   email text not null unique,
@@ -22,6 +34,7 @@ create table if not exists lessons (
 
 create table if not exists exercises (
   id uuid primary key default gen_random_uuid(),
+  module_id uuid references modules(id) on delete set null,
   lesson_id uuid references lessons(id) on delete set null,
   type text not null check (type in ('multiple_choice','translation','fill_blank','listening')),
   difficulty text not null default 'easy' check (difficulty in ('easy','medium','hard')),
@@ -39,7 +52,11 @@ create table if not exists exercises (
   created_at timestamptz default now()
 );
 
+-- ensure module_id exists on upgrades from older schema (must run before index)
+alter table exercises add column if not exists module_id uuid references modules(id) on delete set null;
+
 create index if not exists exercises_status_idx on exercises(status);
+create index if not exists exercises_module_idx on exercises(module_id);
 create index if not exists exercises_skill_tags_idx on exercises using gin (skill_tags);
 
 create table if not exists practice_sessions (
@@ -87,3 +104,19 @@ create table if not exists user_skill_mastery (
 
 create index if not exists user_skill_mastery_due_idx
   on user_skill_mastery(user_id, next_review_at);
+
+create table if not exists grammar_lessons (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  module_id uuid references modules(id) on delete set null,
+  title text not null,
+  summary text not null default '',
+  body_md text not null,
+  related_error_tags jsonb not null default '[]'::jsonb,
+  related_skill_tags jsonb not null default '[]'::jsonb,
+  order_index integer not null default 0,
+  created_at timestamptz default now()
+);
+
+create index if not exists grammar_lessons_module_idx on grammar_lessons(module_id);
+create index if not exists grammar_lessons_error_tags_idx on grammar_lessons using gin (related_error_tags);

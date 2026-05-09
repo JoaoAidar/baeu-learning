@@ -2,25 +2,54 @@ import { getStore } from '../config/db.js';
 import { classifyAnswer } from './ErrorClassifier.js';
 import { selectNext } from './ExerciseSelector.js';
 import { recordAttempt as recordMasteryAttempt, getMasteryMap } from './MasteryService.js';
+import { findLessonForErrorTag } from './LessonsService.js';
+
+// Auto-recommend a lesson when the same error_tag fires this many times in
+// the last RECENT_WINDOW attempts of the current session. Tuned conservatively
+// so we don't push lessons on every mistake.
+const LESSON_TRIGGER_THRESHOLD = 3;
+const RECENT_WINDOW = 10;
 
 const CHECKPOINT_EVERY = 10;
 
-export async function startSession({ userId }) {
+export async function startSession({ userId, moduleSlug = null }) {
   const store = getStore();
-  return store.createSession({ user_id: userId, mode: 'endless' });
+  let moduleId = null;
+  if (moduleSlug) {
+    const mod = await store.getModuleBySlug(moduleSlug);
+    if (!mod) throw httpError(404, 'module_not_found');
+    moduleId = mod.id;
+  }
+  const session = await store.createSession({
+    user_id: userId,
+    mode: moduleSlug ? `endless:${moduleSlug}` : 'endless',
+  });
+  // Attach module_id for selector use
+  return { ...session, module_id: moduleId, module_slug: moduleSlug };
 }
 
 export async function nextQuestion({ sessionId, focus = null }) {
   const store = getStore();
   const session = await store.getSession(sessionId);
   if (!session) throw httpError(404, 'session_not_found');
+
+  // Parse module slug from session.mode (e.g. "endless:greetings")
+  let moduleId = null;
+  if (session.mode && session.mode.startsWith('endless:')) {
+    const slug = session.mode.slice('endless:'.length);
+    const mod = await store.getModuleBySlug(slug);
+    if (mod) moduleId = mod.id;
+  }
+
   const [exercises, sessionAttempts, recentAttempts, masteryMap] = await Promise.all([
-    store.listPublishedExercises(),
+    store.listPublishedExercises({ moduleId }),
     store.listAttemptsForSession(sessionId),
     store.listAttemptsForUser(session.user_id, { limit: 100 }),
     getMasteryMap(session.user_id),
   ]);
-  if (!exercises.length) throw httpError(409, 'no_published_exercises');
+  if (!exercises.length) {
+    throw httpError(409, moduleId ? 'no_exercises_in_module' : 'no_published_exercises');
+  }
   const ex = selectNext({ exercises, recentAttempts, sessionAttempts, masteryMap, focus });
   return publicExerciseShape(ex);
 }
@@ -63,6 +92,35 @@ export async function submitAnswer({ sessionId, exerciseId, answer, responseMs }
     checkpoint = summarizeWindow(lastTen);
   }
 
+  // Auto-recommend a grammar lesson if the learner just hit the threshold
+  // for any error_tag in the recent session window. We only fire on a wrong
+  // answer and only if the tag has reached the threshold *exactly now* —
+  // otherwise we'd nag every wrong answer afterwards.
+  let recommendedLesson = null;
+  if (!correct && errorTags.length) {
+    const sessionAttempts = await store.listAttemptsForSession(sessionId);
+    const window = sessionAttempts.slice(-RECENT_WINDOW);
+    const tagCounts = {};
+    for (const a of window) {
+      for (const t of a.error_tags || []) tagCounts[t] = (tagCounts[t] || 0) + 1;
+    }
+    // Only emit when the *current* error contributed to crossing the threshold
+    // (avoid spamming on follow-up wrong answers tagged the same).
+    const triggeringTag = errorTags.find(
+      (t) => tagCounts[t] === LESSON_TRIGGER_THRESHOLD
+    );
+    if (triggeringTag) {
+      recommendedLesson = await findLessonForErrorTag(triggeringTag);
+      if (recommendedLesson) {
+        recommendedLesson = {
+          ...recommendedLesson,
+          reason: `${tagCounts[triggeringTag]} recent misses tagged "${triggeringTag}".`,
+          triggering_tag: triggeringTag,
+        };
+      }
+    }
+  }
+
   return {
     attemptId: attempt.id,
     correct,
@@ -78,6 +136,7 @@ export async function submitAnswer({ sessionId, exerciseId, answer, responseMs }
         : 0,
     },
     checkpoint,
+    recommendedLesson,
   };
 }
 

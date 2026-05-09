@@ -2,10 +2,12 @@ import { randomUUID } from 'node:crypto';
 
 const store = {
   users: new Map(),
+  modules: new Map(),
   exercises: new Map(),
   sessions: new Map(),
   attempts: [],
   mastery: new Map(), // key = `${user_id}::${skill}`
+  lessons: new Map(),
 };
 
 export const memoryStore = {
@@ -13,10 +15,74 @@ export const memoryStore = {
 
   reset() {
     store.users.clear();
+    store.modules.clear();
     store.exercises.clear();
     store.sessions.clear();
     store.attempts.length = 0;
     store.mastery.clear();
+    store.lessons.clear();
+  },
+
+  // grammar lessons
+  async listLessons({ moduleId = null } = {}) {
+    const all = [...store.lessons.values()];
+    const filtered = moduleId ? all.filter((l) => l.module_id === moduleId) : all;
+    return filtered.sort((a, b) => a.order_index - b.order_index);
+  },
+  async getLessonBySlug(slug) {
+    for (const l of store.lessons.values()) if (l.slug === slug) return l;
+    return null;
+  },
+  async upsertLesson(row) {
+    const existing = await this.getLessonBySlug(row.slug);
+    const id = existing?.id || randomUUID();
+    const record = {
+      id,
+      slug: row.slug,
+      module_id: row.module_id || null,
+      title: row.title,
+      summary: row.summary || '',
+      body_md: row.body_md,
+      related_error_tags: row.related_error_tags || [],
+      related_skill_tags: row.related_skill_tags || [],
+      order_index: row.order_index ?? 0,
+      created_at: existing?.created_at || new Date().toISOString(),
+    };
+    store.lessons.set(id, record);
+    return record;
+  },
+  async findLessonForErrorTag(errorTag) {
+    for (const l of store.lessons.values()) {
+      if ((l.related_error_tags || []).includes(errorTag)) return l;
+    }
+    return null;
+  },
+
+  // modules
+  async listModules() {
+    return [...store.modules.values()].sort((a, b) => a.order_index - b.order_index);
+  },
+  async getModuleBySlug(slug) {
+    for (const m of store.modules.values()) if (m.slug === slug) return m;
+    return null;
+  },
+  async getModuleById(id) {
+    return store.modules.get(id) || null;
+  },
+  async upsertModule(row) {
+    const existing = await this.getModuleBySlug(row.slug);
+    const id = existing?.id || randomUUID();
+    const record = {
+      id,
+      slug: row.slug,
+      title: row.title,
+      description: row.description || '',
+      order_index: row.order_index ?? 0,
+      icon: row.icon || null,
+      created_at: existing?.created_at || new Date().toISOString(),
+    };
+    store.modules.set(id, record);
+    return record;
   },
 
   // users
@@ -45,8 +111,21 @@ export const memoryStore = {
   },
 
   // exercises
-  async listPublishedExercises() {
-    return [...store.exercises.values()].filter((e) => e.status === 'published');
+  async listPublishedExercises({ moduleId = null } = {}) {
+    return [...store.exercises.values()].filter((e) => {
+      if (e.status !== 'published') return false;
+      if (moduleId && e.module_id !== moduleId) return false;
+      return true;
+    });
+  },
+  async countPublishedByModule() {
+    const counts = {};
+    for (const e of store.exercises.values()) {
+      if (e.status !== 'published') continue;
+      const k = e.module_id || '__none__';
+      counts[k] = (counts[k] || 0) + 1;
+    }
+    return counts;
   },
   async listAllExercises() {
     return [...store.exercises.values()];
@@ -70,6 +149,7 @@ export const memoryStore = {
       const id = row.id || randomUUID();
       const record = {
         id,
+        module_id: row.module_id || null,
         lesson_id: row.lesson_id || null,
         type: row.type,
         difficulty: row.difficulty || 'easy',

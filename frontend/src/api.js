@@ -57,7 +57,16 @@ export const api = {
   signup: (payload) => call('/api/v1/auth/signup', { method: 'POST', body: JSON.stringify(payload) }),
   login:  (payload) => call('/api/v1/auth/login',  { method: 'POST', body: JSON.stringify(payload) }),
   me:     () => call('/api/v1/auth/me'),
-  startSession: () => call('/api/v1/practice/sessions', { method: 'POST' }),
+  modulesList: () => call('/api/v1/modules'),
+  module: (slug) => call(`/api/v1/modules/${encodeURIComponent(slug)}`),
+  lessonsList: (moduleSlug = null) =>
+    call(`/api/v1/lessons${moduleSlug ? `?module=${encodeURIComponent(moduleSlug)}` : ''}`),
+  lesson: (slug) => call(`/api/v1/lessons/${encodeURIComponent(slug)}`),
+  startSession: (moduleSlug = null) =>
+    call('/api/v1/practice/sessions', {
+      method: 'POST',
+      body: JSON.stringify(moduleSlug ? { moduleSlug } : {}),
+    }),
   next: (sessionId, focus = null) => {
     const qs = new URLSearchParams({ sessionId });
     if (focus) qs.set('focus', focus);

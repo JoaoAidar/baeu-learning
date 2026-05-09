@@ -11,7 +11,8 @@ const handle = (fn) => async (req, res) => {
 };
 
 export const startSession = handle(async (req) => {
-  return Practice.startSession({ userId: req.userId });
+  const moduleSlug = req.body?.moduleSlug || req.query?.moduleSlug || null;
+  return Practice.startSession({ userId: req.userId, moduleSlug });
 });
 
 export const nextQuestion = handle(async (req) => {

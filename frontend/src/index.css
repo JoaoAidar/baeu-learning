@@ -137,6 +137,24 @@ img {
   outline-offset: 2px;
 }
 
+/* Markdown lesson body styling (no plugin — keep it lean) */
+.prose-baeu { color: #1f2937; line-height: 1.65; }
+.prose-baeu h1 { font-size: 1.5rem; font-weight: 700; margin: 1.25em 0 0.5em; font-family: 'Poppins', sans-serif; }
+.prose-baeu h2 { font-size: 1.25rem; font-weight: 700; margin: 1.5em 0 0.5em; font-family: 'Poppins', sans-serif; color: #111827; }
+.prose-baeu h3 { font-size: 1.1rem; font-weight: 600; margin: 1.25em 0 0.4em; font-family: 'Poppins', sans-serif; }
+.prose-baeu p { margin: 0.75em 0; }
+.prose-baeu ul, .prose-baeu ol { margin: 0.75em 0; padding-left: 1.5em; }
+.prose-baeu li { margin: 0.25em 0; }
+.prose-baeu strong { font-weight: 700; color: #111827; }
+.prose-baeu em { font-style: italic; color: #4b5563; }
+.prose-baeu code { background: #f3f4f6; padding: 0.1em 0.35em; border-radius: 4px; font-size: 0.9em; }
+.prose-baeu blockquote { border-left: 3px solid #d1d5db; padding-left: 1em; margin: 1em 0; color: #4b5563; font-style: italic; }
+.prose-baeu table { width: 100%; border-collapse: collapse; margin: 1em 0; font-size: 0.95em; }
+.prose-baeu th { background: #f9fafb; text-align: left; padding: 0.5em 0.75em; border-bottom: 2px solid #e5e7eb; font-weight: 600; }
+.prose-baeu td { padding: 0.5em 0.75em; border-bottom: 1px solid #f3f4f6; vertical-align: top; }
+.prose-baeu hr { border: 0; border-top: 1px solid #e5e7eb; margin: 1.5em 0; }
+.prose-baeu a { color: #d62828; }
+
 /* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 8px;

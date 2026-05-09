@@ -1,0 +1,78 @@
+# Deploy
+
+## 1. Neon (database)
+
+1. Create a Neon project. Default branch is fine.
+2. Copy the **pooled** connection string — it looks like:
+   ```
+   postgresql://user:pass@ep-xxx-pooler.region.aws.neon.tech/neondb?sslmode=require
+   ```
+3. From your laptop, with the same string in `backend/.env`:
+   ```bash
+   cd backend
+   npm install
+   DATABASE_URL='<your-string>' npm run migrate
+   DATABASE_URL='<your-string>' npm run seed
+   ```
+   That creates all tables and loads ~165 TOPIK 1 exercises.
+
+## 2. Railway (backend)
+
+1. New project → Deploy from GitHub. Pick this repo.
+2. Set the **Root Directory** to `backend/` in service settings.
+3. Environment variables:
+   ```
+   NODE_ENV=production
+   DATABASE_URL=<the same Neon pooled string>
+   JWT_SECRET=<32+ random bytes — `openssl rand -hex 32`>
+   ADMIN_TOKEN=<long random>
+   CORS_ORIGIN=<your Vercel URL, set after Vercel deploy>
+   LLM_API_KEY=<openrouter key, optional but admin generation needs it>
+   LLM_MODEL=anthropic/claude-3.5-sonnet
+   ```
+4. Railway sets `PORT` automatically. The `railway.toml` declares
+   `healthcheckPath=/api/v1/health` and graceful shutdown is wired (SIGTERM).
+5. Copy the public URL Railway assigns (e.g. `https://baeu-backend.up.railway.app`).
+
+## 3. Vercel (frontend)
+
+1. New project → Import this repo.
+2. **Root Directory**: `frontend/`. Vercel detects Vite via `vercel.json`.
+3. Environment variable:
+   ```
+   VITE_API_BASE_URL=https://<your-railway-app>.up.railway.app
+   ```
+4. Deploy. Copy the Vercel URL.
+
+## 4. Close the loop
+
+Set `CORS_ORIGIN` in Railway to the Vercel URL (no trailing slash). Redeploy
+the Railway service so the change takes effect.
+
+## Smoke test
+
+```bash
+curl https://<railway-app>.up.railway.app/api/v1/health
+# → {"ok":true,"store":"pg"}
+```
+
+Then on the Vercel URL: sign up, do 10 questions, hit a checkpoint, open
+`/#/progress` to see your skill mastery, open `/#/admin` and unlock with the
+admin token to manage content.
+
+## Costs (rough, free tier as of 2025)
+
+- **Neon**: free tier covers 0.5 GB + light traffic. Plenty for MVP.
+- **Railway**: $5 starter credit covers a small Node service running 24/7.
+- **Vercel**: hobby tier is free for personal projects.
+- **OpenRouter / LLM**: only billed when admin generates exercises — pennies
+  per batch with Claude 3.5 Sonnet.
+
+Total: ~$5/mo until you have real traffic.
+
+## Hardening before growing
+
+- [ ] Move JWT to httpOnly cookie (today it's localStorage — XSS-vulnerable).
+- [ ] Add Sentry / similar on backend (Railway captures stdout but no error grouping).
+- [ ] Move rate-limit buckets to Redis if Railway scales beyond 1 instance.
+- [ ] Add a real "forgot password" flow — currently lockout requires admin reset.

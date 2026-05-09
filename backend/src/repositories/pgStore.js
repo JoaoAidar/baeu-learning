@@ -34,8 +34,37 @@ export function createPgStore({ connectionString }) {
       ),
 
     // exercises
-    listPublishedExercises: () =>
-      all(`select * from exercises where status = 'published'`),
+    listPublishedExercises: ({ moduleId = null } = {}) =>
+      moduleId
+        ? all(`select * from exercises where status = 'published' and module_id = $1`, [moduleId])
+        : all(`select * from exercises where status = 'published'`),
+    countPublishedByModule: async () => {
+      const rows = await all(
+        `select coalesce(module_id::text, '__none__') as k, count(*)::int as n
+           from exercises where status = 'published'
+          group by 1`
+      );
+      const out = {};
+      for (const r of rows) out[r.k] = r.n;
+      return out;
+    },
+
+    // modules
+    listModules: () => all('select * from modules order by order_index asc, title asc'),
+    getModuleBySlug: (slug) => one('select * from modules where slug = $1', [slug]),
+    getModuleById: (id) => one('select * from modules where id = $1', [id]),
+    upsertModule: (row) =>
+      one(
+        `insert into modules (slug, title, description, order_index, icon)
+         values ($1,$2,$3,$4,$5)
+         on conflict (slug) do update set
+           title = excluded.title,
+           description = excluded.description,
+           order_index = excluded.order_index,
+           icon = excluded.icon
+         returning *`,
+        [row.slug, row.title, row.description || '', row.order_index ?? 0, row.icon || null]
+      ),
     listAllExercises: () => all(`select * from exercises order by created_at desc limit 500`),
     listExercisesByStatus: (status) =>
       status
@@ -54,12 +83,13 @@ export function createPgStore({ connectionString }) {
         for (const r of rows) {
           const res = await client.query(
             `insert into exercises (
-               lesson_id, type, difficulty, prompt, prompt_locale, options,
+               module_id, lesson_id, type, difficulty, prompt, prompt_locale, options,
                correct_answer, accepted_answers, explanation, skill_tags,
                metadata, status, source, created_by
-             ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+             ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
              returning *`,
             [
+              r.module_id || null,
               r.lesson_id || null,
               r.type,
               r.difficulty || 'easy',
@@ -183,6 +213,48 @@ export function createPgStore({ connectionString }) {
           row.last_correct_at,
           row.next_review_at,
         ]
+      ),
+
+    // grammar lessons
+    listLessons: ({ moduleId = null } = {}) =>
+      moduleId
+        ? all(
+            'select * from grammar_lessons where module_id = $1 order by order_index asc, title asc',
+            [moduleId]
+          )
+        : all('select * from grammar_lessons order by order_index asc, title asc'),
+    getLessonBySlug: (slug) => one('select * from grammar_lessons where slug = $1', [slug]),
+    upsertLesson: (row) =>
+      one(
+        `insert into grammar_lessons
+          (slug, module_id, title, summary, body_md, related_error_tags, related_skill_tags, order_index)
+         values ($1,$2,$3,$4,$5,$6,$7,$8)
+         on conflict (slug) do update set
+           module_id = excluded.module_id,
+           title = excluded.title,
+           summary = excluded.summary,
+           body_md = excluded.body_md,
+           related_error_tags = excluded.related_error_tags,
+           related_skill_tags = excluded.related_skill_tags,
+           order_index = excluded.order_index
+         returning *`,
+        [
+          row.slug,
+          row.module_id || null,
+          row.title,
+          row.summary || '',
+          row.body_md,
+          JSON.stringify(row.related_error_tags || []),
+          JSON.stringify(row.related_skill_tags || []),
+          row.order_index ?? 0,
+        ]
+      ),
+    findLessonForErrorTag: (errorTag) =>
+      one(
+        `select * from grammar_lessons
+          where related_error_tags @> $1::jsonb
+          order by order_index asc limit 1`,
+        [JSON.stringify([errorTag])]
       ),
   };
 }

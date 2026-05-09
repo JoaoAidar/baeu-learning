@@ -3,6 +3,8 @@ import cors from 'cors';
 import authRouter from './routes/auth.js';
 import practiceRouter from './routes/practice.js';
 import progressRouter from './routes/progress.js';
+import modulesRouter from './routes/modules.js';
+import lessonsRouter from './routes/lessons.js';
 import adminRouter from './routes/admin.js';
 import exercisesRouter from './routes/exercises.js';
 import { getStore } from './config/db.js';
@@ -23,6 +25,7 @@ function buildCorsOptions() {
 
 export function createApp() {
   const app = express();
+  app.set('trust proxy', 1); // Railway terminates TLS at the edge
   app.use(cors(buildCorsOptions()));
   app.use(express.json({ limit: '2mb' }));
 
@@ -33,6 +36,8 @@ export function createApp() {
   app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/practice', practiceRouter);
   app.use('/api/v1/progress', progressRouter);
+  app.use('/api/v1/modules', modulesRouter);
+  app.use('/api/v1/lessons', lessonsRouter);
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/exercises', exercisesRouter);
 
