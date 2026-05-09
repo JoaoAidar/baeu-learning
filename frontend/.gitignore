@@ -1,6 +1,15 @@
-node_modules
-dist
-.DS_Store
-.vercel
-test-results
-playwright-report
+# Frontend-specific. Inherits everything from the root .gitignore.
+
+# Vite
+dist/
+
+# Vercel CLI
+.vercel/
+
+# Playwright artifacts
+test-results/
+playwright-report/
+playwright/.cache/
+
+# Storybook (if added later)
+storybook-static/

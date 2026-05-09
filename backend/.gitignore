@@ -1,4 +1,7 @@
-node_modules
-.env
-.DS_Store
-*.log
+# Backend-specific. Inherits everything from the root .gitignore.
+
+# Test coverage (node --test --experimental-test-coverage / jest)
+coverage/
+
+# Optional Railway local cache
+.railway/
