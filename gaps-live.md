@@ -614,3 +614,99 @@ Total: **~7-9h of agent work**, plus the dashboard step + the email blast send +
 2. Confirm we keep the visual design of the auth screens (Stack Auth hooks) vs. embedding Stack Auth's pre-built UI components.
 3. Email sender identity for the migration blast — Stack Auth handles sending, but the "from" address and subject line should be Joao's call.
 4. Decide whether to enable OAuth providers (Google) at cutover or leave for later.
+
+---
+
+## Better Auth cutover — 2026-05-11-late+6
+
+**Status:** LIVE in production. **Path taken:** C (Better Auth direct, not Neon Auth wrapper). Joao confirmed no real users — migration was a clean wipe.
+
+**Commits in cutover order:**
+- `8a753bd` feat(backend): replace custom JWT auth with Better Auth (21 files, +867/−972)
+- `4be5186` fix(backend): polyfill `globalThis.crypto` for Better Auth id generator
+- `f0d68d1` feat(frontend): migrate to Better Auth — Google sign-in, password reset, useSession
+- `3821bdb` fix(schema): drop practice tables explicitly before recreate
+
+### Architecture decision: Better Auth direct (not Neon Auth wrapper)
+
+Research before code revealed that "Neon Auth" (Dec 2025) is a Next.js-focused wrapper over Better Auth; it has no first-class Express server middleware. Better Auth standalone gave us Express integration, Postgres adapter directly on the existing Neon DB, no external API dependency, Google OAuth, password reset, sessions, and "sign out everywhere" — same underlying tech, better fit for our SPA + Express + Neon stack.
+
+### What landed
+
+**Backend (`@better-auth/core` + Better Auth `1.6.10`):**
+- `backend/src/auth.js` (NEW): betterAuth() with PG Pool, trustedOrigins from `CORS_ORIGIN`, `emailAndPassword + sendResetPassword console.log stub`, optional Google socialProvider (gated on both env vars), `user.deleteUser.enabled = true`, prod cookies `sameSite=none; secure; httpOnly`.
+- Handler mounted at `app.all('/api/auth/*', toNodeHandler(getAuth()))` BEFORE `express.json` so Better Auth gets the raw body.
+- `requireUser` rewrite uses `auth.api.getSession({headers: fromNodeHeaders(req.headers)})`. `requireAdmin` keeps the x-admin-token operator path, then session + role check against the new `user_role` table.
+- New `GET /api/v1/me/role` returning `{id, email, role}` so the frontend's `useSession`-driven shell can decide whether to render the Admin link.
+- Schema: legacy `users` cascade-dropped, practice tables explicitly dropped + recreated with `user_id text → "user"(id) on delete cascade`, Better Auth canonical tables (`user`, `session`, `account`, `verification`) inlined into `schema.sql`, new `user_role` table.
+- Deleted: `routes/auth.js`, `controllers/authController.js`, `services/AuthService.js`, `tests/{auth,scrypt,compliance,hardening}.test.js` (Better Auth owns it now).
+- Tests: 67/67 pass — added `authMiddleware.test.js` covering 401 / 403 / x-admin-token paths.
+
+**Frontend (`better-auth` `1.6.10`, ~24 packages):**
+- `lib/auth.js` (NEW): `createAuthClient({ baseURL: VITE_API_BASE_URL })`, re-exports `useSession/signIn/signUp/signOut/forgetPassword/resetPassword`.
+- `Auth.jsx`: three modes (login/signup/forgot), Better Auth email flows, "Continue with Google" button via `signIn.social({provider:'google'})`. Generic toast on forgot-password success in both branches to prevent enumeration.
+- `App.jsx`: `useSession()` boot (replaces `api.me`/`auth.getToken`/`localStorage`), `#/reset-password?token=...` rendered before the auth gate, role lookup via `api.meRole()` (Admin link hidden if endpoint fails).
+- `AccountSettings.jsx`: "Sign out everywhere" = `revokeOtherSessions + signOut`. "Delete account" type-to-confirm-email + optional password input → `authClient.deleteUser({})`.
+- `api.js`: `call()` always sets `credentials: 'include'`; legacy `auth`/`api.signup`/`api.login`/`api.me`/`api.deleteMe`/`api.logoutAll` removed; new `api.meRole()`.
+
+**Env vars on Railway (set this session):**
+- `BETTER_AUTH_SECRET` (random via `openssl rand -base64 32`)
+- `BETTER_AUTH_URL=https://baeu-backend-production.up.railway.app`
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` — **still MISSING**; Google sign-in disabled until Joao creates the OAuth client in Google Cloud Console.
+
+### Verification (live, 2026-05-11)
+
+```
+POST /api/auth/sign-up/email     → 200, returns {token, user{id:text, email, name}}
+GET  /api/auth/get-session       → 200, returns full session+user with cookie
+GET  /api/v1/me/role             → 200 {id, email, role:'user'} with cookie
+POST /api/v1/practice/sessions   → 200 {id, user_id:text, mode:'endless', ...}
+GET  /api/v1/practice/next?...   → 200 returns a real Korean question
+POST /api/auth/delete-user       → 200 {success:true, message:'User deleted'}
+```
+
+Frontend bundle `index-CKMH3qIw.js` contains all Better Auth UI markers (`Build real Korean`, `Continue with Google`, `Welcome back`, `Sign out everywhere`, `Delete account`, `forgetPassword`, `reset-password`).
+
+### Bugs fixed during cutover (lessons)
+
+1. **`ReferenceError: crypto is not defined`** at `@better-auth/utils/random.mjs:41`. Better Auth's id generator expects `globalThis.crypto` (Web Crypto). Railway's Node runtime didn't expose it as a global. Fix: polyfill at the top of `auth.js`:
+   ```js
+   import { webcrypto } from 'node:crypto';
+   if (!globalThis.crypto) globalThis.crypto = webcrypto;
+   ```
+2. **`invalid input syntax for type uuid`** on practice/sessions insert. `drop table users cascade` only drops FK constraints, not the dependent practice tables — they survived with `user_id uuid` columns. Fix: explicit `drop table if exists practice_attempts cascade` etc. before the recreate.
+3. **No Better Auth `/api/v1/me/role` endpoint** in the agent's deliverable. Added post-hoc in `routes/me.js`.
+
+### P1s resolved by Better Auth
+
+| P1 | Status |
+|---|---|
+| Password-reset flow | Built-in. `forgetPassword` + `resetPassword` wired. Email send is currently `console.log(url)` — needs an email-service decision (Resend/Postmark/SES) to actually send. |
+| JWT revocation / "sign out everywhere" | Built-in via Better Auth sessions. `revokeOtherSessions` wired in `AccountSettings.jsx`. |
+| Email enumeration on signup 409 | Better Auth's signup returns a generic `USER_ALREADY_EXISTS` code; our forgot-password UI gives identical success toast for valid + invalid emails. |
+| scrypt tuning concerns | Better Auth uses its own modern hashing. Our legacy scrypt code is gone. |
+| Account-deletion compliance (GDPR/LGPD) | `authClient.deleteUser` cascades through Better Auth's tables → cascades to our practice tables via FK. |
+
+### Still open
+
+| Severity | Finding | Status |
+|---|---|---|
+| P1 | `sendResetPassword` only logs to console — no email sent. | **Awaiting email-service decision.** Resend default proposal stands. |
+| P1 (manual) | Google OAuth credentials. | **Awaiting Joao**: create OAuth 2.0 Client ID in Google Cloud Console with redirect URI `https://baeu-backend-production.up.railway.app/api/auth/callback/google` and set `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` on Railway. Backend auto-enables Google when both env vars are present (next `railway up` picks up the env). |
+| P1 (ops) | Railway has no GitHub source — backend deploys still manual via `railway up`. | Dashboard action — unchanged from prior pass. |
+| P1 | 3 modules with zero lessons (greetings, vocab-daily, reading). | Content work. |
+| P2 batch (remaining) | JWT-in-localStorage (now moot — cookies), `practice_attempts` idempotency on double-submit, listening type in schema with no implementation, per-controller `wrap` redundancy. | Schedule for next pass. |
+
+### Synthetic accounts in prod DB
+
+`audit-smoke-1778523867@test.local` was cleaned up via `npm run cleanup:test-users -- --apply` (deleted 1 row + cascaded). No pollution remaining.
+
+### What Joao needs to do next (to enable Google sign-in)
+
+1. Google Cloud Console → APIs & Services → Credentials → "Create OAuth client ID" → Web application.
+2. Add authorized redirect URI: `https://baeu-backend-production.up.railway.app/api/auth/callback/google` (also `http://localhost:3001/api/auth/callback/google` for local dev).
+3. Copy the Client ID + Client Secret.
+4. Set on Railway: `railway variables --set "GOOGLE_CLIENT_ID=..." --set "GOOGLE_CLIENT_SECRET=..."`.
+5. Trigger a backend redeploy: `cd backend && railway up --service baeu-backend --ci`.
+
+Frontend Google button already exists — it just gracefully toasts an error today because the backend doesn't have Google configured. After step 5, the button works end-to-end.
