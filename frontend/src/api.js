@@ -1,23 +1,5 @@
 const BASE = import.meta.env.VITE_API_BASE_URL || '';
-const TOKEN_KEY = 'baeu_token';
-const USER_KEY = 'baeu_user';
 const ADMIN_TOKEN_KEY = 'baeu_admin_token';
-
-export const auth = {
-  getToken: () => localStorage.getItem(TOKEN_KEY),
-  getUser: () => {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  },
-  set({ token, user }) {
-    localStorage.setItem(TOKEN_KEY, token);
-    localStorage.setItem(USER_KEY, JSON.stringify(user));
-  },
-  clear() {
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(USER_KEY);
-  },
-};
 
 export const adminAuth = {
   getToken: () => localStorage.getItem(ADMIN_TOKEN_KEY),
@@ -30,18 +12,15 @@ async function call(path, opts = {}) {
     'Content-Type': 'application/json',
     ...(opts.headers || {}),
   };
-  const token = auth.getToken();
-  if (token && !headers.Authorization) headers.Authorization = `Bearer ${token}`;
-  const res = await fetch(`${BASE}${path}`, { ...opts, headers });
+  // Always send the Better Auth session cookie cross-origin.
+  const res = await fetch(`${BASE}${path}`, {
+    ...opts,
+    headers,
+    credentials: 'include',
+  });
   const text = await res.text();
   const body = text ? safeJson(text) : {};
   if (!res.ok) {
-    if (res.status === 401) {
-      auth.clear();
-      if (typeof window !== 'undefined' && window.location) {
-        try { window.location.hash = '#/'; } catch { /* ignore */ }
-      }
-    }
     throw new Error(body.error || `HTTP ${res.status}`);
   }
   return body;
@@ -59,11 +38,6 @@ async function adminCall(path, opts = {}) {
 function safeJson(s) { try { return JSON.parse(s); } catch { return {}; } }
 
 export const api = {
-  signup: (payload) => call('/api/v1/auth/signup', { method: 'POST', body: JSON.stringify(payload) }),
-  login:  (payload) => call('/api/v1/auth/login',  { method: 'POST', body: JSON.stringify(payload) }),
-  me:     () => call('/api/v1/auth/me'),
-  deleteMe: () => call('/api/v1/auth/me', { method: 'DELETE' }),
-  logoutAll: () => call('/api/v1/auth/logout-all', { method: 'POST' }),
   modulesList: () => call('/api/v1/modules'),
   module: (slug) => call(`/api/v1/modules/${encodeURIComponent(slug)}`),
   lessonsList: (moduleSlug = null) =>
@@ -83,6 +57,9 @@ export const api = {
   summary: (sessionId) => call(`/api/v1/practice/sessions/${sessionId}/summary`),
   progressOverview: () => call('/api/v1/progress/overview'),
   progressSkills: () => call('/api/v1/progress/skills'),
+  // Optional role lookup. Backend exposes (or will expose) /api/v1/me/role.
+  // Treated as best-effort by callers; failure means "not admin".
+  meRole: () => call('/api/v1/me/role'),
 };
 
 export const adminApi = {

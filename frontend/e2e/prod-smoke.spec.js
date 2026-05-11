@@ -14,35 +14,31 @@ const SHOULD_RUN = process.env.E2E_PROD_SMOKE === '1';
 
 test.skip(!SHOULD_RUN, 'set E2E_PROD_SMOKE=1 to run');
 
-const PROD_API_BASE = 'https://baeu-backend-production.up.railway.app';
-
 // Cleanup hook: delete the synthetic learner created by the smoke so we don't
 // pollute the prod DB or hit signup rate-limits on repeated CI runs. Treated
 // as non-fatal: if cleanup fails the test still validates the journey.
-test.afterEach(async ({ page, request }) => {
-  let token = null;
-  let email = null;
+//
+// With Better Auth the session lives in an http-only cookie, so we drive the
+// delete from the page context (which already has the session) rather than
+// reading a token out of localStorage.
+test.afterEach(async ({ page }) => {
   try {
-    token = await page.evaluate(() => localStorage.getItem('baeu_token'));
-    email = await page.evaluate(() => {
+    const result = await page.evaluate(async () => {
       try {
-        const raw = localStorage.getItem('baeu_user');
-        return raw ? (JSON.parse(raw).email || null) : null;
-      } catch (_) {
-        return null;
+        const mod = await import('/src/lib/auth.js');
+        const r = await mod.authClient.deleteUser({});
+        return { ok: !r?.error, error: r?.error?.message || r?.error?.code || null };
+      } catch (e) {
+        return { ok: false, error: e?.message || String(e) };
       }
     });
-  } catch (_) {
-    // page may already be closed; nothing to clean up
-  }
-  if (!token) return; // signup probably failed before token was set
-  try {
-    const res = await request.delete(`${PROD_API_BASE}/api/v1/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    console.log(`[prod-smoke] cleanup ${email || '(unknown email)'}: ${res.status()}`);
+    if (result?.ok) {
+      console.log('[prod-smoke] cleanup: deleted synthetic learner');
+    } else {
+      console.warn('[prod-smoke] cleanup failed (non-fatal):', result?.error);
+    }
   } catch (e) {
-    console.warn('[prod-smoke] cleanup failed (non-fatal):', e.message);
+    console.warn('[prod-smoke] cleanup skipped (non-fatal):', e.message);
   }
 });
 

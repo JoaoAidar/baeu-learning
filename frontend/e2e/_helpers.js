@@ -18,8 +18,12 @@ export async function signup(page, { email, password = 'e2etest123', displayName
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(password);
   await page.locator('form').getByRole('button', { name: /^sign up$/i }).click();
-  // Wait for home (any post-auth page state) before returning
-  await expect(page.getByRole('heading', { name: /endless practice|module practice/i })).toBeVisible();
+  // Wait for home (any post-auth page state) before returning. Better Auth's
+  // useSession may take a tick longer than the old localStorage-write to
+  // resolve, so the timeout is bumped slightly.
+  await expect(
+    page.getByRole('heading', { name: /endless practice|module practice/i })
+  ).toBeVisible({ timeout: 15_000 });
   return { email, password, displayName };
 }
 

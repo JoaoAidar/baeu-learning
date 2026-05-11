@@ -20,8 +20,9 @@ test('signup → home shows modules', async ({ page }) => {
 
 test('login with wrong password shows error toast', async ({ page }) => {
   const email = uniqueEmail('auth-wrong');
-  const res = await page.request.post('/api/v1/auth/signup', {
-    data: { email, password: 'rightpass1' },
+  // Better Auth sign-up endpoint (cookie-based; we only need the user row).
+  const res = await page.request.post('/api/auth/sign-up/email', {
+    data: { email, password: 'rightpass1', name: 'Wrong Test' },
   });
   expect(res.ok()).toBeTruthy();
 

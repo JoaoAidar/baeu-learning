@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { api, auth } from '../api.js';
+import { authClient } from '../lib/auth.js';
 import { useToast } from './Toast.jsx';
 
 export default function AccountSettings({ user, onCleared }) {
@@ -7,13 +7,14 @@ export default function AccountSettings({ user, onCleared }) {
   const [loggingOutAll, setLoggingOutAll] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [confirmInput, setConfirmInput] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [deleting, setDeleting] = useState(false);
 
   const email = user?.email || '';
-  const canDelete = confirmInput.trim().toLowerCase() === email.trim().toLowerCase() && !!email;
+  const canDelete =
+    confirmInput.trim().toLowerCase() === email.trim().toLowerCase() && !!email;
 
-  function clearLocalAndGoHome() {
-    auth.clear();
+  function goHome() {
     if (typeof onCleared === 'function') onCleared();
     window.location.hash = '#/';
   }
@@ -23,9 +24,16 @@ export default function AccountSettings({ user, onCleared }) {
     if (!window.confirm('Sign out on all devices? You will need to log in again.')) return;
     setLoggingOutAll(true);
     try {
-      await api.logoutAll();
+      // Better Auth's revokeOtherSessions kills every other session; signOut
+      // closes the current one. Combined, the user is fully signed out everywhere.
+      if (typeof authClient.revokeOtherSessions === 'function') {
+        await authClient.revokeOtherSessions();
+      } else if (authClient.multiSession?.revokeOtherSessions) {
+        await authClient.multiSession.revokeOtherSessions();
+      }
+      await authClient.signOut();
       toast.push('Signed out on all devices.', 'success');
-      clearLocalAndGoHome();
+      goHome();
     } catch (e) {
       toast.push(e.message || 'Could not sign out everywhere.', 'error');
     } finally {
@@ -37,9 +45,16 @@ export default function AccountSettings({ user, onCleared }) {
     if (!canDelete || deleting) return;
     setDeleting(true);
     try {
-      await api.deleteMe();
+      // Better Auth's deleteUser. If the server requires a fresh password
+      // confirm, we forward it. Sending an empty password when not required
+      // is harmless (Better Auth ignores unknown fields).
+      const payload = confirmPassword ? { password: confirmPassword } : {};
+      const result = await authClient.deleteUser(payload);
+      if (result?.error) {
+        throw new Error(result.error.message || result.error.code || 'delete_failed');
+      }
       toast.push('Account deleted.', 'success');
-      clearLocalAndGoHome();
+      goHome();
     } catch (e) {
       toast.push(e.message || 'Could not delete account.', 'error');
     } finally {
@@ -52,7 +67,7 @@ export default function AccountSettings({ user, onCleared }) {
       <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6">
         <h1 className="font-heading text-2xl font-bold text-gray-900 mb-1">Account</h1>
         <p className="text-gray-500 text-sm">
-          Signed in as <span className="font-medium text-gray-700">{user?.displayName || email}</span>
+          Signed in as <span className="font-medium text-gray-700">{user?.name || user?.displayName || email}</span>
         </p>
       </div>
 
@@ -101,6 +116,18 @@ export default function AccountSettings({ user, onCleared }) {
               autoComplete="off"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
             />
+            <p className="text-xs text-gray-500">
+              If your account uses a password, enter it to confirm. Leave blank for Google-only accounts.
+            </p>
+            <input
+              data-testid="delete-account-password-input"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder="Current password (if any)"
+              autoComplete="current-password"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none"
+            />
             <div className="flex gap-2">
               <button
                 data-testid="delete-account-confirm-btn"
@@ -111,7 +138,7 @@ export default function AccountSettings({ user, onCleared }) {
                 {deleting ? 'Deleting…' : 'Permanently delete'}
               </button>
               <button
-                onClick={() => { setConfirmOpen(false); setConfirmInput(''); }}
+                onClick={() => { setConfirmOpen(false); setConfirmInput(''); setConfirmPassword(''); }}
                 disabled={deleting}
                 className="bg-transparent hover:bg-gray-100 text-gray-600 font-medium py-2.5 px-5 rounded-lg transition-all"
               >

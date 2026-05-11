@@ -8,8 +8,9 @@ import Module from './pages/Module.jsx';
 import Lesson from './pages/Lesson.jsx';
 import About from './pages/About.jsx';
 import AccountSettings from './components/AccountSettings.jsx';
-import { ToastProvider } from './components/Toast.jsx';
-import { api, auth } from './api.js';
+import { ToastProvider, useToast } from './components/Toast.jsx';
+import { api } from './api.js';
+import { authClient } from './lib/auth.js';
 
 function parseHash(hash) {
   // e.g. "#/practice?module=greetings" → { path: '/practice', query: { module: 'greetings' } }
@@ -44,25 +45,30 @@ export default function App() {
 }
 
 function Shell() {
-  const [user, setUser] = useState(auth.getUser());
-  const [bootChecked, setBootChecked] = useState(false);
+  const { data: session, isPending } = authClient.useSession();
+  const user = session?.user || null;
   const route = useRoute();
+  const [role, setRole] = useState(null);
 
+  // Best-effort role fetch. If the backend hasn't exposed /me/role yet, this
+  // fails silently and the Admin link stays hidden.
+  // TODO(admin-gating): confirm exact endpoint with backend agent. Until then,
+  // any failure keeps the user as non-admin.
   useEffect(() => {
-    if (!auth.getToken()) { setBootChecked(true); return; }
-    api.me()
-      .then((u) => setUser(u))
-      .catch(() => { auth.clear(); setUser(null); })
-      .finally(() => setBootChecked(true));
-  }, []);
+    let cancelled = false;
+    if (!user) { setRole(null); return; }
+    api.meRole()
+      .then((r) => { if (!cancelled) setRole(r?.role || null); })
+      .catch(() => { if (!cancelled) setRole(null); });
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
-  function logout() {
-    auth.clear();
-    setUser(null);
+  async function logout() {
+    try { await authClient.signOut(); } catch { /* ignore */ }
     window.location.hash = '#/';
   }
 
-  if (!bootChecked) {
+  if (isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background-default">
         <div className="text-gray-500">Loading…</div>
@@ -78,6 +84,7 @@ function Shell() {
   const isLesson = path.startsWith('/lesson/');
   const isAbout = path.startsWith('/about');
   const isAccount = path.startsWith('/account');
+  const isResetPassword = path.startsWith('/reset-password');
   const moduleSlug = isModule ? path.slice('/module/'.length) : null;
   const lessonSlug = isLesson ? path.slice('/lesson/'.length) : null;
 
@@ -91,15 +98,26 @@ function Shell() {
           ? 'account'
           : 'practice';
 
+  // Reset-password is reachable WITHOUT a session (you hit it from the email link).
+  if (isResetPassword) {
+    return (
+      <div className="min-h-screen bg-background-default">
+        <Header user={user} role={role} active={active} onLogout={logout} />
+        <main className="container py-8">
+          <ResetPassword query={query} />
+        </main>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background-default">
-      <Header user={user} active={active} onLogout={logout} />
+      <Header user={user} role={role} active={active} onLogout={logout} />
       <main className="container py-8">
         {renderPage({
           path,
           query,
           user,
-          setUser,
           moduleSlug,
           lessonSlug,
           isAdmin,
@@ -115,11 +133,11 @@ function Shell() {
   );
 }
 
-function renderPage({ query, user, setUser, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson, isAbout, isAccount }) {
+function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson, isAbout, isAccount }) {
   if (isAbout) return <About />;
   if (isAdmin) return <Admin />;
-  if (!user) return <Auth onAuthed={setUser} />;
-  if (isAccount) return <AccountSettings user={user} onCleared={() => setUser(null)} />;
+  if (!user) return <Auth />;
+  if (isAccount) return <AccountSettings user={user} />;
   if (isProgress) return <Progress />;
   if (isLesson && lessonSlug) {
     return <Lesson slug={lessonSlug} returnTo={query.from || '#/'} />;
@@ -136,7 +154,64 @@ function renderPage({ query, user, setUser, moduleSlug, lessonSlug, isAdmin, isP
   return <Home />;
 }
 
-function Header({ user, active, onLogout }) {
+function ResetPassword({ query }) {
+  const toast = useToast();
+  const [password, setPassword] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  // Better Auth puts the reset token in ?token=...; the email link redirects
+  // here via callbackURL configured in forgetPassword.
+  const token =
+    query.token ||
+    (typeof window !== 'undefined'
+      ? new URLSearchParams(window.location.search).get('token')
+      : null);
+
+  async function submit(e) {
+    e.preventDefault();
+    if (!token) {
+      toast.push('Missing reset token. Open the link from your email again.', 'error');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const { error } = await authClient.resetPassword({ newPassword: password, token });
+      if (error) throw new Error(error.message || error.code || 'reset_failed');
+      toast.push('Password updated. You can log in now.', 'success');
+      window.location.hash = '#/';
+    } catch (err) {
+      toast.push(err.message || 'Could not reset password.', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="max-w-md mx-auto bg-white rounded-xl shadow-card border border-gray-100 p-6 sm:p-7">
+      <h1 className="font-heading text-xl font-bold text-gray-900 mb-2">Choose a new password</h1>
+      <p className="text-gray-500 text-sm mb-4">At least 8 characters.</p>
+      <form onSubmit={submit} className="space-y-3">
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          minLength={8}
+          required
+          autoComplete="new-password"
+          placeholder="New password"
+          className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition"
+        />
+        <button
+          disabled={submitting}
+          className="w-full bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-semibold py-3 rounded-lg transition-all"
+        >
+          {submitting ? 'Updating…' : 'Update password'}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function Header({ user, role, active, onLogout }) {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="container py-4 flex items-center justify-between">
@@ -153,7 +228,7 @@ function Header({ user, active, onLogout }) {
             </>
           )}
           <NavLink href="#/about" active={active === 'about'}>About</NavLink>
-          {user?.role === 'admin' && (
+          {role === 'admin' && (
             <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
           )}
           {user && (

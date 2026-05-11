@@ -13,6 +13,7 @@
     "e2e:prod-smoke": "E2E_PROD_SMOKE=1 E2E_NO_WEBSERVER=1 E2E_BASE_URL=https://baeu-learning.vercel.app playwright test e2e/prod-smoke.spec.js"
   },
   "dependencies": {
+    "better-auth": "^1.6.10",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-markdown": "^9.0.1",
