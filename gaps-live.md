@@ -710,3 +710,50 @@ Frontend bundle `index-CKMH3qIw.js` contains all Better Auth UI markers (`Build 
 5. Trigger a backend redeploy: `cd backend && railway up --service baeu-backend --ci`.
 
 Frontend Google button already exists — it just gracefully toasts an error today because the backend doesn't have Google configured. After step 5, the button works end-to-end.
+
+---
+
+## Brutal-audit closure pass 5 — P2 residual — 2026-05-11-late+7
+
+**Scope:** the residual P2 batch that wasn't moot after the Better Auth cutover — drop the `listening` exercise type, add `practice_attempts` idempotency for double-submit, remove per-controller `wrap` helpers, pair with a client-side submit debounce. Plus two fixes for the e2e specs that drifted during the Better Auth migration.
+
+**Commit:** `0e6748c` feat: P2 residual — listening drop, idempotency, wrap removal, submit debounce.
+
+### Closures
+
+| Severity | Finding | Closure |
+|---|---|---|
+| P2 | Schema allowed `type = 'listening'` but no end-to-end implementation. | **CLOSED.** `exercises.type` check constraint now `('multiple_choice','translation','fill_blank')`. Idempotent ALTER block in `schema.sql` for the existing prod DB; `AdminService.VALID_TYPES` mirrors. Verified post-migration: `pg_constraint` shows the new 3-value constraint. |
+| P2 | `practice_attempts` non-atomic for double-submit. | **CLOSED.** New partial unique index `practice_attempts_idem_idx on (session_id, exercise_id, response_ms) where exercise_id is not null` enforces uniqueness at the DB level. `PracticeService.submitAnswer` catches Postgres 23505 (or memory-store's synthetic marker) and translates to `httpError(409, 'duplicate_submit')`. memoryStore mirrors with NULL-distinct semantics. New concurrent-submit test in `practice.test.js`. Verified live: a sequential resubmit returns `409 {"error":"duplicate_submit"}` cleanly. |
+| P2 | Per-controller `wrap` helper duplicated 6× — redundant after the global error handler landed. | **CLOSED.** All 5 controllers (`adminController.js`, `lessonsController.js`, `modulesController.js`, `practiceController.js`, `progressController.js`) now use bare `async (req, res, next)` with `try/catch → next(err)`. `LLMGenerator.js` got `err.code` set on its 502/503 codes so they survive the global handler's "unknown 5xx → internal_error" branch. `grep -rn "wrap(" backend/src/controllers/` → 0 hits. |
+| (frontend pair) | Client double-click could fire submit twice before React rendered the disabled state. | **CLOSED.** `EndlessPractice.jsx` uses a `useRef` lock that blocks the second call synchronously. Plus the frontend now suppresses the 409 `duplicate_submit` toast (the first submit already landed; no user-visible action needed). |
+| e2e drift | `auth.spec.js` heading regex still matched the pre-Better Auth copy ("Start learning"); landed under Better Auth's "Create your account". | **CLOSED.** Regex updated. |
+| e2e drift | `prod-smoke.spec.js` cleanup used `import('/src/lib/auth.js')` from `page.evaluate` — works against Vite dev, 404s against the Vercel-built bundle. | **CLOSED.** Replaced with `fetch('/api/auth/delete-user', { credentials: 'include' })` from the page context so the http-only session cookie travels automatically. |
+
+### Verification
+
+- `backend && npm test`: **68/68 pass** (+1 new concurrent-submit test in `practice.test.js`).
+- `frontend && npm run build`: OK (383.21 kB JS — submit ref + lock added).
+- Schema migration applied to prod Neon. `pg_constraint` query confirms `exercises_type_check = check (type in ('multiple_choice','translation','fill_blank'))` and `practice_attempts_idem_idx` partial unique index exists.
+- Railway `railway up` deployed cleanly. Live smoke:
+  ```
+  signup → start session → next → first submit (200) → resubmit same payload (409 duplicate_submit) → cleanup (200)
+  ```
+
+### Notes
+
+- A concurrent-submit smoke via two background curl subshells produced unexpected 500 + 401 instead of 200 + 409. Root cause was Better Auth's session-validation racing on a shared cookie file across two processes, not the idempotency change. The actual concurrency path is covered by the service-level unit test in `practice.test.js`; the user-facing race (browser double-tap) is killed by the useRef debounce before either request leaves the page.
+- The wrap-removal audit confirmed every service throws via `httpError(status, code)` or sets `err.status + err.message = '<short_code>'`. `LLMGenerator` was the only outlier — it was returning 502/503 without `err.code` set; the global handler would have replaced the message with `internal_error`. Fixed: `err.code = code` now mirrors `err.message` so the LLM-specific codes survive the handler.
+
+### Residual P2 budget after this pass
+
+Almost empty. What remains:
+
+| Severity | Finding | Why deferred |
+|---|---|---|
+| P1 | `sendResetPassword` is a `console.log` stub. | Awaiting email-service decision (Resend default proposal). |
+| P1 | Google OAuth creds. | Awaiting manual Google Cloud Console step from Joao + Railway env vars. |
+| P1 (ops) | Railway has no GitHub source linked — manual `railway up` per backend release. | Manual dashboard step. |
+| P1 (content) | 3 of 8 modules with zero lessons. | Korean content expertise. |
+| Watch | `users` email enumeration via signup 409. | Now `USER_ALREADY_EXISTS` from Better Auth. Tradeoff accepted. |
+| Watch | `rehype-raw` if ever added would need `rehype-sanitize`. | Latent risk; not active. |
