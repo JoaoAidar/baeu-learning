@@ -416,3 +416,70 @@ This means the "Railway autodeploy" assumed by `DEPLOY.md` and by every audit cl
 | Severity | Finding | Closure gate |
 |---|---|---|
 | P1 (ops) | Railway service `baeu-backend` has no GitHub source — backend autodeploy never existed. Every backend release requires manual `railway up`. | Link `JoaoAidar/baeu-learning` (branch=`main`, root=`backend/`) as the source in the Railway dashboard. Future audits must check this is wired before treating a `git push` as a backend deploy. |
+
+---
+
+## Brutal-audit closure pass 2 — 2026-05-11-late+4
+
+**Scope:** account deletion, logout-all-devices, business-model surface, second dead-code purge, two P2 cleanups, and an honest DEPLOY.md. Commits `734a38f` + `f86b8e7`. Backend deployed via `railway up`; migration applied to Neon via `npm run migrate`.
+
+### P1 / P2 closures
+
+| Severity | Finding | Closure |
+|---|---|---|
+| P1 | No account-deletion endpoint (GDPR/LGPD gap). | **CLOSED** — `DELETE /api/v1/auth/me` (requires auth, returns 204, cascades sessions/attempts/mastery via existing FK ON DELETE CASCADE). UI: `Account.jsx` with type-to-confirm-email gate. Test: `compliance.test.js` confirms post-delete auth fails. |
+| P1 | No logout-all-devices / no JWT revocation. | **CLOSED** — `POST /api/v1/auth/logout-all` increments `user.token_version` atomically (`token_version = coalesce(token_version,0)+1` returning new value); JWT now carries a `tv` claim; `requireUser` is async and re-fetches the user to compare `payload.tv` vs `user.token_version` on every request. Backward-compat: missing `tv` is treated as 0, and existing users start at `token_version = 0`. UI: "Sign out everywhere" button in `Account.jsx`. |
+| P1 (strategic) | No business-model surface. | **CLOSED (stub)** — public `/about` route with four sections: what / who / today (live module count via `api.modulesList()`) / pricing (single line: "Free during early access"). Gives the buyer/sponsor persona something to articulate without committing to monetization. Stake in the ground, not a paywall. |
+| P2 | `sumPracticedInModule` returned `masteryMap.size` for every module. | **CLOSED** — replaced with `countMasteredSkillsInModule(userId, moduleId)` in both stores; PG version joins `user_skill_mastery` against `exercises.skill_tags` scoped to the module; memory version intersects in-process. `modulesController.js` computes per-module counts in parallel. |
+| P2 | `cleanup-test-users.js` pattern guard used OR. | **CLOSED** — `isPatternAllowed()` now requires BOTH `audit-` prefix AND `@test.local` substring; explicitly refuses bare `%`, empty string, wrong prefix, wrong domain. Test scenarios documented in code and covered by `compliance.test.js`. |
+| Code-debt (continuation) | Remaining dead pages from the brutal audit (9 files, ~2750 LOC). | **CLOSED** — `AboutMe`, `AboutProject`, `AdminDashboard`, `ExercisePage`, `HomePage`, `LessonPage`, `LessonsPage`, `Profile`, `Register` all deleted after grep-confirming zero imports. (`AboutProject` actually depended on `styled-components` not installed — it would have crashed any future contributor that tried to wire it.) |
+| Docs (continuation) | `DEPLOY.md` claimed backend autodeploy that never existed. | **CLOSED** — replaced with explicit "manual via `railway up`" block at the top of the Railway section, with the exact command and the root-cause note. Existing autodeploy steps remain as the target state once the GitHub source is linked. |
+
+### Migration applied to prod
+
+- `alter table users add column if not exists token_version integer not null default 0;` ran via `DATABASE_URL=$(railway variables ...) npm run migrate`. Output: `migrations applied`. Idempotent — safe to re-run.
+
+### Verification (live)
+
+- Frontend: bundle landed via Vercel auto-deploy (commit `f86b8e7`). Build size shrunk to 352.40 kB JS despite adding two pages, because the dead-page purge removed more.
+- Backend: `railway up` produced a fresh deploy. `curl /api/v1/health` returns helmet headers + `{"ok":true,"store":"pg"}`. New endpoints exist and are auth-gated:
+  - `DELETE /api/v1/auth/me` (no auth) → **401**
+  - `POST /api/v1/auth/logout-all` (no auth) → **401**
+- Tests: backend 72/72 pass (added 4 in `compliance.test.js`).
+
+### Still open after this pass
+
+| Severity | Finding | Why deferred |
+|---|---|---|
+| P1 | No password-reset / forgot-password flow. | Requires email service decision (Resend / Postmark / SES). See "Email service for password reset" decision below. |
+| P1 | 3 of 8 modules have zero lessons (greetings, vocab-daily, reading). | Content work; needs Korean expertise. Schedule a content-seed pass with Joao. |
+| P1 (ops) | Railway service has no GitHub source (manual `railway up` only). | Dashboard action — cannot be done from CLI safely. |
+| P2 | JWT in `localStorage` (XSS exfiltratable). | Tradeoff; needs CSRF design if moving to httpOnly cookie. |
+| P2 | scrypt with default params. | Acceptable for MVP; bcrypt/argon2id swap deferred. |
+| P2 | `ssl: { rejectUnauthorized: false }` fallback in pgStore. | Single-line fix; bundle with next backend pass. |
+| P2 | Email enumeration via signup 409. | Tradeoff. |
+| P2 | `prod-smoke.spec.js` writes a user with no cleanup hook. | Pair with the cleanup script next pass. |
+| P2 | `incrementSession` non-atomic for concurrent submits. | Needs DB unique-partial-index + client debounce. |
+| P2 | Listening type in schema, no implementation. | Implement vs. drop decision. |
+| P2 | Per-controller `wrap` duplication (now redundant with global handler). | Audit each controller before removing. |
+| P2 | `pages/admin/` subdir (5 files: Dashboard, Lessons, Overview, Settings, Users) is dead but not deleted. | Out of scope for this pass; flagged for follow-up. |
+| Watch | `users` unique on raw email vs index on `lower(email)`. | Migration work. |
+| Watch | Frontend `security.js` references absent CSRF meta tag. | Cosmetic. |
+
+### Email service for password reset (decision needed)
+
+Three options for the email-flow backend the password-reset P1 requires:
+
+1. **Resend** (resend.com) — modern API, generous free tier (3k emails/mo), drop-in `@resend/node`. Simplest integration. Recommended for an MVP.
+2. **AWS SES** — cheapest at scale, but DNS + sandbox-out + bounce-handling overhead. Worth it once volume justifies it (10k+ emails/mo).
+3. **Postmark** — transactional-only, excellent deliverability, $15/mo for 10k emails. Sweet spot if Resend's free tier becomes a constraint.
+
+Default proposal: Resend. Single env var `RESEND_API_KEY`, single dependency, can be swapped later. Password-reset flow design (after service is chosen):
+- `POST /api/v1/auth/forgot-password` (rate-limited): always returns 200 with generic "if the email exists, a reset link was sent" — no enumeration. Generates a single-use token, stores hash + expiry, emails the link.
+- `POST /api/v1/auth/reset-password`: validates token + sets new password + bumps `token_version` (invalidates existing sessions). Returns 200.
+
+Once Joao picks a service, the implementation is ~2-3 hours of work in a single workstream.
+
+### Synthetic accounts pending cleanup (running total)
+
+`audit-baue-1778512787788`, `audit-1778513949059`, `audit-1778514023594`, `audit-1778514074779`, `audit-1778514128145`, `audit-brutal-1778514955` — all `@test.local`. No new accounts created in this pass.
