@@ -1,5 +1,6 @@
 import crypto from 'node:crypto';
-import { verifyToken } from '../services/AuthService.js';
+import { fromNodeHeaders } from 'better-auth/node';
+import { getAuth } from '../auth.js';
 import { getStore } from '../config/db.js';
 
 function timingSafeEqualStr(a, b) {
@@ -14,64 +15,73 @@ function timingSafeEqualStr(a, b) {
   }
 }
 
+async function getSessionFromReq(req) {
+  try {
+    const auth = getAuth();
+    return await auth.api.getSession({
+      headers: fromNodeHeaders(req.headers),
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function requireUser(req, res, next) {
-  const header = req.header('authorization') || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-  const payload = token ? verifyToken(token) : null;
-  if (!payload?.sub) {
+  const session = await getSessionFromReq(req);
+  if (!session?.user) {
     return res.status(401).json({ error: 'unauthorized' });
   }
-  // Enforce token_version: if the user has bumped (logout-all), old JWTs die.
-  // Backward compat: pre-tv tokens (payload.tv === undefined) are accepted
-  // iff the user's current token_version is 0. Missing column defaults to 0.
-  try {
-    const store = getStore();
-    const user = await store.getUserById(payload.sub);
-    if (!user) {
-      return res.status(401).json({ error: 'unauthorized' });
-    }
-    const currentTv = Number.isFinite(user.token_version) ? user.token_version : 0;
-    const claimTv = payload.tv === undefined ? 0 : Number(payload.tv);
-    if (currentTv !== claimTv) {
-      return res.status(401).json({ error: 'unauthorized' });
-    }
-  } catch (err) {
-    return next(err);
+  req.user = session.user;
+  req.userId = session.user.id;
+  req.userEmail = session.user.email;
+  next();
+}
+
+// Soft auth helper: populates req.userId if a valid session cookie is present,
+// but lets unauthenticated requests through. Used by /modules.
+export async function maybeUser(req, _res, next) {
+  const session = await getSessionFromReq(req);
+  if (session?.user) {
+    req.user = session.user;
+    req.userId = session.user.id;
+    req.userEmail = session.user.email;
   }
-  req.userId = payload.sub;
-  req.userRole = payload.role || 'user';
-  req.userEmail = payload.email;
   next();
 }
 
 export async function requireAdmin(req, res, next) {
+  // 1. Static admin-token path (preserved for operator tooling/CI).
   const expected = process.env.ADMIN_TOKEN;
   const got = req.header('x-admin-token');
   if (expected && got && timingSafeEqualStr(got, expected)) {
     req.adminVia = 'token';
+    req.userRole = 'admin';
     return next();
   }
-  // Fallback: JWT-authenticated user, re-checked against the store.
-  const header = req.header('authorization') || '';
-  const tok = header.startsWith('Bearer ') ? header.slice(7) : null;
-  const payload = tok ? verifyToken(tok) : null;
-  if (!payload?.sub) {
-    return res.status(403).json({ error: 'forbidden' });
+  // 2. Session-based path. User must be authenticated AND have role='admin'
+  //    in the user_role table.
+  const session = await getSessionFromReq(req);
+  if (!session?.user) {
+    return res.status(401).json({ error: 'unauthorized' });
   }
   try {
     const store = getStore();
-    const user = await store.getUserById(payload.sub);
-    if (!user) {
-      return res.status(401).json({ error: 'unauthorized' });
-    }
-    if (user.role !== 'admin') {
+    const role =
+      typeof store.getUserRole === 'function'
+        ? await store.getUserRole(session.user.id)
+        : 'user';
+    if (role !== 'admin') {
       return res.status(403).json({ error: 'forbidden' });
     }
-    req.userId = user.id;
+    req.user = session.user;
+    req.userId = session.user.id;
+    req.userEmail = session.user.email;
     req.userRole = 'admin';
-    req.adminVia = 'jwt';
+    req.adminVia = 'session';
     return next();
   } catch (err) {
     return next(err);
   }
 }
+
+export const _internals = { timingSafeEqualStr };

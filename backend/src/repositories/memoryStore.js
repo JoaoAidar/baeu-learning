@@ -1,7 +1,8 @@
 import { randomUUID } from 'node:crypto';
 
 const store = {
-  users: new Map(),
+  users: new Map(), // dev-only convenience; Better Auth owns auth in prod.
+  userRoles: new Map(), // user_id -> 'user' | 'admin'
   modules: new Map(),
   exercises: new Map(),
   sessions: new Map(),
@@ -15,12 +16,24 @@ export const memoryStore = {
 
   reset() {
     store.users.clear();
+    store.userRoles.clear();
     store.modules.clear();
     store.exercises.clear();
     store.sessions.clear();
     store.attempts.length = 0;
     store.mastery.clear();
     store.lessons.clear();
+  },
+
+  // user roles — application-side authorization. Keyed by Better Auth user id
+  // string (or any opaque string id passed by tests).
+  async getUserRole(userId) {
+    return store.userRoles.get(userId) || 'user';
+  },
+  async setUserRole(userId, role) {
+    if (!['user', 'admin'].includes(role)) throw new Error('invalid_role');
+    store.userRoles.set(userId, role);
+    return { user_id: userId, role };
   },
 
   // grammar lessons
@@ -85,7 +98,9 @@ export const memoryStore = {
     return record;
   },
 
-  // users
+  // users — dev-only convenience. Better Auth owns the real user table in
+  // Postgres. Tests use these helpers to stand up users without going through
+  // the auth router. Roles live in store.userRoles (see getUserRole above).
   async getUserByEmail(email) {
     const norm = String(email).trim().toLowerCase();
     for (const u of store.users.values()) {
@@ -96,44 +111,17 @@ export const memoryStore = {
   async getUserById(id) {
     return store.users.get(id) || null;
   },
-  async createUser({ email, password_hash, display_name, role = 'user' }) {
-    const id = randomUUID();
+  async createUser({ id: forcedId, email, display_name, role = 'user' } = {}) {
+    const id = forcedId || randomUUID();
     const user = {
       id,
-      email,
-      password_hash,
+      email: email || `user-${id}@test.local`,
       display_name: display_name || null,
-      role,
-      token_version: 0,
       created_at: new Date().toISOString(),
     };
     store.users.set(id, user);
+    if (role && role !== 'user') store.userRoles.set(id, role);
     return user;
-  },
-  async deleteUser(id) {
-    store.users.delete(id);
-    // cascade: drop sessions, attempts, mastery owned by this user
-    for (const [sid, s] of store.sessions) {
-      if (s.user_id === id) store.sessions.delete(sid);
-    }
-    for (let i = store.attempts.length - 1; i >= 0; i--) {
-      if (store.attempts[i].user_id === id) store.attempts.splice(i, 1);
-    }
-    for (const [k, m] of store.mastery) {
-      if (m.user_id === id) store.mastery.delete(k);
-    }
-  },
-  async updateUserPasswordHash(id, password_hash) {
-    const u = store.users.get(id);
-    if (!u) return null;
-    u.password_hash = password_hash;
-    return u;
-  },
-  async incrementTokenVersion(id) {
-    const u = store.users.get(id);
-    if (!u) return 0;
-    u.token_version = (u.token_version || 0) + 1;
-    return u.token_version;
   },
   async countMasteredSkillsInModule(userId, moduleId) {
     // collect skill tags for this module's exercises

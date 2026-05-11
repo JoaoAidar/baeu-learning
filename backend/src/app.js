@@ -1,13 +1,15 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
-import authRouter from './routes/auth.js';
+import { toNodeHandler } from 'better-auth/node';
+import { getAuth } from './auth.js';
 import practiceRouter from './routes/practice.js';
 import progressRouter from './routes/progress.js';
 import modulesRouter from './routes/modules.js';
 import lessonsRouter from './routes/lessons.js';
 import adminRouter from './routes/admin.js';
 import exercisesRouter from './routes/exercises.js';
+import meRouter from './routes/me.js';
 import { getStore } from './config/db.js';
 
 function buildCorsOptions() {
@@ -48,19 +50,25 @@ export function createApp() {
   );
 
   app.use(cors(buildCorsOptions()));
+
+  // CRITICAL: mount Better Auth BEFORE express.json so it can read the raw
+  // request body itself. Express's json parser would consume the stream first
+  // and break Better Auth's signup/login/oauth handlers.
+  app.all('/api/auth/*', toNodeHandler(getAuth()));
+
   app.use(express.json({ limit: '2mb' }));
 
   app.get('/api/v1/health', (_req, res) => {
     res.json({ ok: true, store: getStore().__mode || 'unknown' });
   });
 
-  app.use('/api/v1/auth', authRouter);
   app.use('/api/v1/practice', practiceRouter);
   app.use('/api/v1/progress', progressRouter);
   app.use('/api/v1/modules', modulesRouter);
   app.use('/api/v1/lessons', lessonsRouter);
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/exercises', exercisesRouter);
+  app.use('/api/v1/me', meRouter);
 
   app.use((req, res) => res.status(404).json({ error: 'not_found', path: req.path }));
 

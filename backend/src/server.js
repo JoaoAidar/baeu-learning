@@ -4,6 +4,30 @@ import { getStore } from './config/db.js';
 import { runSeedIfEmpty } from './db/seed.js';
 
 const port = Number(process.env.PORT) || 3001;
+
+// Production env-var validation. Fail-closed: refuse to boot if any of the
+// auth-critical knobs are missing. Dev/test stay permissive so contributors
+// can spin the server up without configuring everything.
+if (process.env.NODE_ENV === 'production') {
+  const required = ['BETTER_AUTH_SECRET', 'BETTER_AUTH_URL'];
+  const missing = required.filter((k) => !process.env[k]);
+  if (missing.length) {
+    console.error(
+      `[baeu] FATAL: missing required env vars in production: ${missing.join(', ')}.`
+    );
+    process.exit(1);
+  }
+  // Google OAuth is optional; warn if only one half is set (config typo).
+  const gid = process.env.GOOGLE_CLIENT_ID;
+  const gsec = process.env.GOOGLE_CLIENT_SECRET;
+  if ((gid && !gsec) || (!gid && gsec)) {
+    console.error(
+      '[baeu] FATAL: GOOGLE_CLIENT_ID/GOOGLE_CLIENT_SECRET must be set together.'
+    );
+    process.exit(1);
+  }
+}
+
 const app = createApp();
 const store = getStore();
 

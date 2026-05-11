@@ -33,38 +33,26 @@ export function createPgStore({ connectionString }) {
       await pool.end();
     },
 
-    // users
-    getUserByEmail: (email) =>
-      one('select * from users where lower(email) = lower($1)', [email]),
-    getUserById: (id) => one('select * from users where id = $1', [id]),
-    createUser: ({ email, password_hash, display_name, role = 'user' }) =>
-      one(
-        `insert into users (email, password_hash, display_name, role)
-         values ($1, $2, $3, $4) returning *`,
-        [email, password_hash, display_name || null, role]
-      ),
-    deleteUser: async (id) => {
-      await q('delete from users where id = $1', [id]);
+    // user roles — Better Auth owns the `user` table. Application-level role
+    // lives in `user_role` keyed by the Better Auth text user id.
+    async getUserRole(userId) {
+      const row = await one(
+        'select role from user_role where user_id = $1',
+        [userId]
+      );
+      return row?.role || 'user';
     },
-    updateUserPasswordHash: (id, password_hash) =>
-      one(
-        'update users set password_hash = $2 where id = $1 returning *',
-        [id, password_hash]
-      ),
-    incrementTokenVersion: async (id) => {
-      // Defensive: if the column doesn't exist yet (pre-migration), treat as 0.
-      try {
-        const row = await one(
-          `update users set token_version = coalesce(token_version, 0) + 1
-            where id = $1
-           returning token_version`,
-          [id]
-        );
-        return row?.token_version ?? 0;
-      } catch (err) {
-        if (err && /token_version/.test(String(err.message))) return 0;
-        throw err;
+    async setUserRole(userId, role) {
+      if (!['user', 'admin'].includes(role)) {
+        throw new Error('invalid_role');
       }
+      const row = await one(
+        `insert into user_role (user_id, role) values ($1, $2)
+         on conflict (user_id) do update set role = excluded.role
+         returning *`,
+        [userId, role]
+      );
+      return row;
     },
 
     // exercises

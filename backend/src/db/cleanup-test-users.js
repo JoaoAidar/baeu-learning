@@ -18,13 +18,14 @@ function parseArgs(argv) {
 function usage() {
   console.log(
     [
-      'cleanup-test-users — delete synthetic learner accounts from the users table.',
+      'cleanup-test-users — delete synthetic learner accounts from the Better Auth user table.',
       '',
       'Usage:',
       '  DATABASE_URL=... node src/db/cleanup-test-users.js [--pattern=...] [--apply]',
       '',
-      'Defaults to dry-run with pattern "%@test.local".',
-      'Practice sessions/attempts/mastery cascade automatically (ON DELETE CASCADE).',
+      'Defaults to dry-run with pattern "audit-%@test.local".',
+      'Practice sessions/attempts/mastery and Better Auth session/account rows',
+      'cascade automatically (ON DELETE CASCADE).',
       '',
       'Examples:',
       '  node src/db/cleanup-test-users.js',
@@ -85,11 +86,17 @@ async function main() {
   await client.connect();
 
   try {
+    // Better Auth's user table: text id, `name` instead of `display_name`,
+    // and `createdAt` (camelCase, quoted). Role lives in user_role.
     const { rows } = await client.query(
-      `select id, email, created_at, role
-         from users
-        where email ilike $1
-        order by created_at asc`,
+      `select u.id,
+              u.email,
+              u."createdAt" as created_at,
+              coalesce(r.role, 'user') as role
+         from "user" u
+         left join user_role r on r.user_id = u.id
+        where u.email ilike $1
+        order by u."createdAt" asc`,
       [args.pattern]
     );
 
@@ -108,7 +115,8 @@ async function main() {
 
     console.log(`Matched ${rows.length} synthetic account(s) for pattern "${args.pattern}":`);
     for (const r of rows) {
-      console.log(`  ${maskEmail(r.email)}  created=${r.created_at.toISOString()}`);
+      const created = r.created_at instanceof Date ? r.created_at.toISOString() : String(r.created_at);
+      console.log(`  ${maskEmail(r.email)}  created=${created}`);
     }
 
     if (!args.apply) {
@@ -117,8 +125,8 @@ async function main() {
     }
 
     const ids = rows.map((r) => r.id);
-    const res = await client.query(`delete from users where id = any($1::uuid[])`, [ids]);
-    console.log(`\nDeleted ${res.rowCount} user(s) and cascaded their practice data.`);
+    const res = await client.query(`delete from "user" where id = any($1::text[])`, [ids]);
+    console.log(`\nDeleted ${res.rowCount} user(s) and cascaded their practice + auth data.`);
   } finally {
     await client.end();
   }
