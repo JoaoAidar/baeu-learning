@@ -757,3 +757,74 @@ Almost empty. What remains:
 | P1 (content) | 3 of 8 modules with zero lessons. | Korean content expertise. |
 | Watch | `users` email enumeration via signup 409. | Now `USER_ALREADY_EXISTS` from Better Auth. Tradeoff accepted. |
 | Watch | `rehype-raw` if ever added would need `rehype-sanitize`. | Latent risk; not active. |
+
+---
+
+## Closure pass 6 — Resend integration + RUNBOOK — 2026-05-11-late+8
+
+**Scope:** make password-reset emails actually ship (Resend with graceful fallback), document the remaining manual provider steps in a runbook so Joao can close them without re-reading this file.
+
+**Commit:** `9493eec` feat(backend): Resend password-reset email + RUNBOOK for manual provider steps.
+
+### What landed
+
+- **`backend/src/services/EmailService.js` (new)** — lazy Resend singleton. `sendEmail({to, subject, html, text, replyTo})` returns one of three shapes: `{ok:true, sent:true, id}` / `{ok:true, sent:false, reason:'no_api_key'}` / `{ok:false, sent:false, error}`. Never throws. `renderPasswordResetEmail({name, url})` ships HTML + text; name is HTML-escaped.
+- **`backend/src/auth.js`** — `sendResetPassword` calls EmailService AFTER `console.log`-ing the URL for ops visibility. Error in send is logged but never thrown — Better Auth must always return 200 to the client to preserve no-enumeration semantics.
+- **`backend/.env.example`** — `RESEND_API_KEY` (empty default) + `EMAIL_FROM` (defaults to `Baeu <onboarding@resend.dev>`, Resend's universal test sender; swap to a verified custom domain via env once DNS lands).
+- **`RUNBOOK.md` (new)** — step-by-step operator guide for the 3 remaining manual provider flows (Google OAuth Cloud Console + Railway env, Railway GitHub source link, Resend signup + custom domain) plus a content-seed strategy for the 3 empty modules and an env-var matrix.
+- **`backend/tests/emailService.test.js` (new)** — 4 unit tests: no-key fallback shape, rendered output contains url + name, default name fallback, HTML injection escape.
+
+### Verification (live)
+
+Better Auth 1.6.10's password-reset route is `POST /api/auth/request-password-reset` (the client SDK method is `authClient.forgetPassword()` and maps automatically).
+
+Smoke on prod backend right after deploy:
+```
+POST /api/auth/request-password-reset (real email) → 200
+Railway log:
+  [auth] password reset for audit-reset-…@test.local: https://baeu-backend-production.up.railway.app/api/auth/reset-password/LH0Y…?callbackURL=https%3A%2F%2Fbaeu-learning.vercel.app%2F%23%2Freset-password
+  [email] (no RESEND_API_KEY) to=audit-reset-…@test.local subject=Reset your Baeu password text=…
+```
+
+Both the Better Auth callback AND the EmailService fallback fired correctly. With `RESEND_API_KEY` unset the URL only logs to stdout — that's deliberate so the auth surface stays available before Joao provisions Resend. Once the key is set + `railway up`, Resend ships the email instead.
+
+### Test counts
+
+- Before this pass: 68/68.
+- After: **72/72 pass** (+4 new email tests).
+
+### Closure for the P1 backlog
+
+| P1 | Status |
+|---|---|
+| `sendResetPassword` email send | **CLOSED in code** (Resend wired, graceful fallback when key absent). Effectively shipping pending Joao setting `RESEND_API_KEY` on Railway (RUNBOOK section 3). |
+| Google OAuth credentials | Documented in RUNBOOK section 1. Pure manual user action. |
+| Railway GitHub source link | Documented in RUNBOOK section 2. Pure manual user action. |
+| Content seed for 3 empty modules | Documented in RUNBOOK section 4. Korean expertise needed. |
+
+### What's actually left in the agent-actionable column
+
+Empty. Every remaining item depends on user action in an external provider (Google Cloud, Resend, Railway dashboard) or on Korean-language content authoring. The code surface is at a stable resting state.
+
+### Synthetic accounts created this pass
+
+`audit-reset-1778531035@test.local` and `audit-reset-1778531099@test.local` — both cleaned up in-flight via `delete-user`.
+
+---
+
+## Persona + brutal audit dump — 2026-05-11-1914
+
+**Source reports:**
+- Persona/browser: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-11-1525/persona/baeu-learning.md`
+- Portfolio/deploy: `/Users/joaoadair/Documents/AI/Audits/kairos-audit-2026-05-11-1525.md`
+- Brutal runner: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`
+
+**Readiness:** LIMITED READY / WATCH. Frontend and canonical backend are alive, but first-value practice and deploy truth still need stricter production proof.
+
+| Severity | Persona / stakeholder affected | Finding | Evidence | Closure gate | False-green path | Agent attack rule |
+|---|---|---|---|---|---|---|
+| P1 | First-time Korean learner | Current production smoke failed before first value and the failure is masked by a brittle module selector. | `persona/baeu-learning.md` says signup reached authenticated home, then timed out waiting for `practice-cta`; snapshot still showed home/module grid. | Production smoke reaches `question-card`, submits one answer, sees feedback, and `/progress` reflects the attempt on `https://baeu-learning.vercel.app`. | Do not close with root 200, backend health 200, bundle strings, or local Playwright only. | Fix selector to target module card/link by role/href, assert hash/page heading, then rerun prod smoke with cleanup. |
+| P1 | Product owner / demo operator | Railway backend release truth is manual; Git push does not imply backend deploy. | `persona/baeu-learning.md` and `DEPLOY.md` note Railway source repo is not linked and backend deploys require `railway up --service baeu-backend --ci`. | Railway service links `JoaoAidar/baeu-learning` branch `main`, root `backend/`, or every backend-affecting run includes explicit manual deploy + health/header proof. | Do not trust frontend deploy or latest git commit as backend production truth. | Verify Railway source/deploy path before claiming any backend fix is live. |
+| P1 | Buyer / sponsor | Public trust surface still needs fresh rendered desktop/mobile evidence. | Persona sidecar saw deployed bundle strings, but did not capture fresh rendered screenshots in that pass. | Desktop + mobile screenshots show clear promise, module preview, early-access scope, no unauth Admin nav, no clipping. | Bundle grep is not visual/browser readiness. | Capture screenshots as required evidence for public entry claims. |
+| P1 | Content/admin operator | Admin/content/LLM generation is repo-visible but not production-validated with a sanctioned token. | `persona/baeu-learning.md` found admin UI/e2e coverage but no prod admin token run. | Sanctioned non-destructive prod admin smoke proves import/status and graceful LLM success/failure without exposing token. | Local admin e2e does not prove provider/env behavior in prod. | Keep admin readiness separate from learner readiness until the prod smoke exists. |
+| P2 | Learner / domain reviewer | Lesson depth is uneven: three modules have zero grammar lessons. | Canonical API probe in persona report: Hangul has 1 lesson; greetings, vocab-daily, reading have 0. | Either seed at least one lesson per module or label lesson availability clearly in the UI. | Exercise count alone can hide missing lesson support. | Treat content coverage as a product gap, not just seed-data trivia. |
