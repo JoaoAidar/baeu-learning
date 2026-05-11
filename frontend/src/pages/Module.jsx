@@ -48,13 +48,29 @@ export default function Module({ slug }) {
           </div>
         </div>
 
-        <a
-          href={`#/practice?module=${m.slug}`}
-          data-testid="practice-cta"
-          className="block w-full text-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition-all shadow-card hover:shadow-card-hover no-underline"
-        >
-          Practice this module →
-        </a>
+        {m.exercise_count === 0 ? (
+          <div
+            data-testid="practice-cta"
+            aria-disabled="true"
+            role="button"
+            className="block w-full text-center bg-gray-100 text-gray-400 font-semibold py-3 rounded-lg cursor-not-allowed select-none"
+          >
+            Practice this module →
+          </div>
+        ) : (
+          <a
+            href={`#/practice?module=${m.slug}`}
+            data-testid="practice-cta"
+            className="block w-full text-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition-all shadow-card hover:shadow-card-hover no-underline"
+          >
+            Practice this module →
+          </a>
+        )}
+        {m.exercise_count === 0 && (
+          <p className="text-xs text-gray-500 text-center mt-3">
+            No published exercises yet — check back soon.
+          </p>
+        )}
       </div>
 
       {lessons.length > 0 && (

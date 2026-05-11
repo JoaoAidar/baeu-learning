@@ -6,7 +6,26 @@ export default function Home() {
   const [modules, setModules] = useState([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [showCoachmark, setShowCoachmark] = useState(() => {
+    try {
+      return typeof window !== 'undefined' && !window.localStorage.getItem('baeu_seen_home');
+    } catch {
+      return false;
+    }
+  });
   const toast = useToast();
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('baeu_seen_home', '1');
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  function dismissCoachmark() {
+    setShowCoachmark(false);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +67,27 @@ export default function Home() {
           </p>
         )}
       </section>
+
+      {showCoachmark && (
+        <div
+          data-testid="home-coachmark"
+          className="relative bg-secondary-50 border border-secondary-200 rounded-xl px-5 py-4 pr-12 text-sm text-gray-800"
+        >
+          <p>
+            <span className="font-semibold">New here?</span> Try{' '}
+            <span className="font-semibold">Hangul &amp; Reading</span> first — it
+            builds the alphabet you'll need for everything else.
+          </p>
+          <button
+            type="button"
+            onClick={dismissCoachmark}
+            aria-label="Dismiss tip"
+            className="absolute top-2 right-2 w-7 h-7 rounded-md text-gray-500 hover:text-gray-800 hover:bg-white/60 bg-transparent flex items-center justify-center"
+          >
+            ×
+          </button>
+        </div>
+      )}
 
       <section>
         <h3 className="font-heading text-lg font-bold text-gray-900 mb-3 px-1">

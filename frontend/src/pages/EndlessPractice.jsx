@@ -22,11 +22,18 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
   const [checkpoint, setCheckpoint] = useState(null);
   const [score, setScore] = useState({ total: 0, correct: 0, accuracy: 0 });
   const [loading, setLoading] = useState(false);
+  const [emptyState, setEmptyState] = useState(false);
   const [questionStart, setQuestionStart] = useState(0);
   const toast = useToast();
 
+  function isNoExercisesError(err) {
+    const msg = (err && err.message) || '';
+    return msg === 'no_exercises_in_module' || msg === 'no_published_exercises';
+  }
+
   async function start() {
     setLoading(true);
+    setEmptyState(false);
     try {
       const s = await api.startSession(moduleSlug);
       setSession(s);
@@ -35,7 +42,11 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
       setFeedback(null);
       await loadNext(s.id);
     } catch (e) {
-      toast.push(e.message, 'error');
+      if (isNoExercisesError(e)) {
+        setEmptyState(true);
+      } else {
+        toast.push(e.message, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -51,7 +62,11 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
       setQuestion(q);
       setQuestionStart(Date.now());
     } catch (e) {
-      toast.push(e.message, 'error');
+      if (isNoExercisesError(e)) {
+        setEmptyState(true);
+      } else {
+        toast.push(e.message, 'error');
+      }
     } finally {
       setLoading(false);
     }
@@ -75,6 +90,33 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
     } finally {
       setLoading(false);
     }
+  }
+
+  if (emptyState) {
+    return (
+      <div className="max-w-2xl mx-auto">
+        <div
+          data-testid="practice-empty-state"
+          className="bg-white rounded-xl shadow-card border border-gray-100 p-10 text-center animate-fade-in"
+        >
+          <div className="text-5xl mb-3" aria-hidden>📭</div>
+          <h1 className="font-heading text-2xl font-bold text-gray-900 mb-2">
+            Nothing to practice yet
+          </h1>
+          <p className="text-gray-600 mb-6">
+            {moduleSlug
+              ? 'This module has no published exercises yet.'
+              : 'No published exercises are available yet. Check back soon.'}
+          </p>
+          <a
+            href="#/"
+            className="inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover no-underline"
+          >
+            ← Back to modules
+          </a>
+        </div>
+      </div>
+    );
   }
 
   if (!session) {
