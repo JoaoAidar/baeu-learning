@@ -6,6 +6,7 @@ if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 import { betterAuth } from 'better-auth';
 import pg from 'pg';
+import { sendEmail, renderPasswordResetEmail } from './services/EmailService.js';
 
 const { Pool } = pg;
 
@@ -56,9 +57,16 @@ function buildAuth() {
       requireEmailVerification: false,
       minPasswordLength: 8,
       sendResetPassword: async ({ user, url }) => {
-        // TODO: wire to Resend/Postmark/SES when an email service is chosen.
-        // Logging only — safe for dev. Production callers must set up email.
+        // Operator visibility: keep the URL in stdout so a Railway log
+        // tail still surfaces it if Resend has a hiccup.
         console.log(`[auth] password reset for ${user.email}: ${url}`);
+        const { subject, text, html } = renderPasswordResetEmail({ name: user.name, url });
+        const res = await sendEmail({ to: user.email, subject, text, html });
+        if (!res.ok) {
+          console.error('[auth] reset email failed to send', res.error || res.reason);
+        }
+        // Never throw — Better Auth must continue to return 200 to the
+        // client regardless of email-send outcome (no enumeration).
       },
     },
     ...(socialProviders ? { socialProviders } : {}),
