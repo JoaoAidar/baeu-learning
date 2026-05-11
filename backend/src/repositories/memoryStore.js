@@ -123,6 +123,12 @@ export const memoryStore = {
       if (m.user_id === id) store.mastery.delete(k);
     }
   },
+  async updateUserPasswordHash(id, password_hash) {
+    const u = store.users.get(id);
+    if (!u) return null;
+    u.password_hash = password_hash;
+    return u;
+  },
   async incrementTokenVersion(id) {
     const u = store.users.get(id);
     if (!u) return 0;

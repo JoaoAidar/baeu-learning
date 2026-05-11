@@ -3,9 +3,20 @@ import pg from 'pg';
 const { Pool } = pg;
 
 export function createPgStore({ connectionString }) {
+  // SSL hardening: in production, require sslmode= in the connection string.
+  // Falling back to `rejectUnauthorized: false` silently is a MITM risk.
+  // Dev/test keep the permissive behavior so local Postgres without TLS works.
+  const isProd = process.env.NODE_ENV === 'production';
+  const hasSslMode = typeof connectionString === 'string' && connectionString.includes('sslmode=');
+  if (isProd && !hasSslMode) {
+    throw new Error(
+      'pgStore: DATABASE_URL must include `sslmode=require` (or stricter) in production. ' +
+        'Append `?sslmode=require` to the connection string.'
+    );
+  }
   const pool = new Pool({
     connectionString,
-    ssl: connectionString.includes('sslmode=') ? undefined : { rejectUnauthorized: false },
+    ssl: hasSslMode ? undefined : { rejectUnauthorized: false },
     max: 10,
     idleTimeoutMillis: 30_000,
   });
@@ -35,6 +46,11 @@ export function createPgStore({ connectionString }) {
     deleteUser: async (id) => {
       await q('delete from users where id = $1', [id]);
     },
+    updateUserPasswordHash: (id, password_hash) =>
+      one(
+        'update users set password_hash = $2 where id = $1 returning *',
+        [id, password_hash]
+      ),
     incrementTokenVersion: async (id) => {
       // Defensive: if the column doesn't exist yet (pre-migration), treat as 0.
       try {

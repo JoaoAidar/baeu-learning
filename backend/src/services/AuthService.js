@@ -6,19 +6,103 @@ import { getStore } from '../config/db.js';
 const scrypt = promisify(scryptCb);
 const KEYLEN = 64;
 
-async function hashPassword(password) {
-  const salt = randomBytes(16);
-  const derived = await scrypt(password, salt, KEYLEN);
-  return `scrypt$${salt.toString('hex')}$${derived.toString('hex')}`;
+// Explicit scrypt params, pinned in code so behavior doesn't depend on
+// node:crypto defaults. OWASP minimum (2023+) for scrypt: N=2^17, r=8, p=1.
+// `maxmem` must be raised to fit N*r*128 bytes plus overhead.
+const SCRYPT_PARAMS = Object.freeze({
+  N: 1 << 17, // 131072
+  r: 8,
+  p: 1,
+  maxmem: 256 * 1024 * 1024, // 256 MiB
+});
+
+// Tagged hash format: `scrypt$N$r$p$saltHex$hashHex`.
+// Legacy un-parameterized format (`scrypt$saltHex$hashHex`) was minted with
+// node:crypto scrypt defaults (N=16384, r=8, p=1). We accept it transparently
+// in verify() and re-hash on successful login.
+const LEGACY_SCRYPT_PARAMS = Object.freeze({ N: 16384, r: 8, p: 1 });
+
+async function deriveKey(password, salt, keylen, params) {
+  // Pass through cost params explicitly. maxmem default is too small for N>=2^17.
+  return scrypt(password, salt, keylen, {
+    N: params.N,
+    r: params.r,
+    p: params.p,
+    maxmem: params.maxmem ?? Math.max(32 * 1024 * 1024, 128 * params.N * params.r * 2),
+  });
 }
 
+async function hashPassword(password) {
+  const salt = randomBytes(16);
+  const derived = await deriveKey(password, salt, KEYLEN, SCRYPT_PARAMS);
+  return `scrypt$${SCRYPT_PARAMS.N}$${SCRYPT_PARAMS.r}$${SCRYPT_PARAMS.p}$${salt.toString('hex')}$${derived.toString('hex')}`;
+}
+
+/**
+ * Verify a password against a stored hash.
+ * Returns `{ ok, rehash }`:
+ *   - ok: whether password matches.
+ *   - rehash: a fresh tagged hash if the stored hash was legacy / under-cost,
+ *             so callers can persist the upgraded form. null otherwise.
+ */
 async function verifyPassword(password, stored) {
-  if (!stored || !stored.startsWith('scrypt$')) return false;
-  const [, saltHex, hashHex] = stored.split('$');
-  const salt = Buffer.from(saltHex, 'hex');
-  const expected = Buffer.from(hashHex, 'hex');
-  const derived = await scrypt(password, salt, expected.length);
-  return derived.length === expected.length && timingSafeEqual(derived, expected);
+  if (!stored || typeof stored !== 'string' || !stored.startsWith('scrypt$')) {
+    return { ok: false, rehash: null };
+  }
+  const parts = stored.split('$');
+  // Tagged: ['scrypt', N, r, p, salt, hash]
+  // Legacy: ['scrypt', salt, hash]
+  let params;
+  let saltHex;
+  let hashHex;
+  let isLegacy;
+  if (parts.length === 6) {
+    const [, nStr, rStr, pStr, sHex, hHex] = parts;
+    const N = Number(nStr);
+    const r = Number(rStr);
+    const p = Number(pStr);
+    if (!Number.isFinite(N) || !Number.isFinite(r) || !Number.isFinite(p)) {
+      return { ok: false, rehash: null };
+    }
+    params = { N, r, p, maxmem: Math.max(32 * 1024 * 1024, 256 * 1024 * 1024) };
+    saltHex = sHex;
+    hashHex = hHex;
+    isLegacy = false;
+  } else if (parts.length === 3) {
+    [, saltHex, hashHex] = parts;
+    params = { ...LEGACY_SCRYPT_PARAMS };
+    isLegacy = true;
+  } else {
+    return { ok: false, rehash: null };
+  }
+
+  let salt;
+  let expected;
+  try {
+    salt = Buffer.from(saltHex, 'hex');
+    expected = Buffer.from(hashHex, 'hex');
+  } catch {
+    return { ok: false, rehash: null };
+  }
+  if (!salt.length || !expected.length) return { ok: false, rehash: null };
+
+  let derived;
+  try {
+    derived = await deriveKey(password, salt, expected.length, params);
+  } catch {
+    return { ok: false, rehash: null };
+  }
+  const ok = derived.length === expected.length && timingSafeEqual(derived, expected);
+  if (!ok) return { ok: false, rehash: null };
+
+  // Re-hash if stored used legacy format OR weaker-than-current params.
+  const needsRehash =
+    isLegacy ||
+    params.N < SCRYPT_PARAMS.N ||
+    params.r < SCRYPT_PARAMS.r ||
+    params.p < SCRYPT_PARAMS.p;
+  const rehash = needsRehash ? await hashPassword(password) : null;
+  return { ok: true, rehash };
 }
 
 function getJwtSecret() {
@@ -73,8 +157,16 @@ export async function login({ email, password }) {
   const store = getStore();
   const user = await store.getUserByEmail(normalizeEmail(email));
   if (!user) throw httpError(401, 'invalid_credentials');
-  const ok = await verifyPassword(password, user.password_hash);
+  const { ok, rehash } = await verifyPassword(password, user.password_hash);
   if (!ok) throw httpError(401, 'invalid_credentials');
+  // Transparently upgrade legacy / under-cost hashes on successful login.
+  if (rehash && typeof store.updateUserPasswordHash === 'function') {
+    try {
+      await store.updateUserPasswordHash(user.id, rehash);
+    } catch {
+      // non-fatal: login still succeeds even if the upgrade write fails.
+    }
+  }
   return { user: publicUser(user), token: signToken(user) };
 }
 
@@ -115,4 +207,4 @@ function httpError(status, code) {
   return e;
 }
 
-export const _internals = { hashPassword, verifyPassword };
+export const _internals = { hashPassword, verifyPassword, SCRYPT_PARAMS, LEGACY_SCRYPT_PARAMS };

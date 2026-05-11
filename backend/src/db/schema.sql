@@ -25,6 +25,20 @@ create table if not exists users (
 
 create index if not exists users_email_idx on users(lower(email));
 
+-- Case-insensitive uniqueness on email. The raw `unique` constraint on
+-- users.email lets `Foo@x.com` and `foo@x.com` coexist; enforce uniqueness
+-- on lower(email) instead. The CREATE UNIQUE INDEX below will FAIL if
+-- case-different duplicates already exist in the table; in that case
+-- `npm run migrate` exits non-zero and the duplicates must be resolved
+-- manually before re-running (e.g. merge users, then re-run migrate).
+create unique index if not exists users_email_lower_uniq on users(lower(email));
+-- Drop the auto-named raw unique constraint that Postgres created from
+-- `email text not null unique` above. If it has a non-default name on a
+-- given environment, this is a no-op and the constraint remains; that's
+-- acceptable since the new functional unique index already enforces the
+-- stronger invariant.
+alter table users drop constraint if exists users_email_key;
+
 -- token_version for logout-all-devices: bump to invalidate all existing JWTs.
 alter table users add column if not exists token_version integer not null default 0;
 
