@@ -329,3 +329,90 @@ P2 closed in code. **READY** for buyer/demo first impression and practice flow. 
 ### Synthetic accounts pending cleanup
 
 `audit-baue-1778512787788`, `audit-1778513949059`, `audit-1778514023594`, `audit-1778514074779`, `audit-1778514128145`, `audit-brutal-1778514955` — all `@test.local`. Run `npm run cleanup:test-users -- --apply` from `backend/` with `DATABASE_URL` set.
+
+---
+
+## Brutal-audit closure pass 1 — 2026-05-11-late+3
+
+**Authorization:** Joao authorized commit/push + parallel workstreams. **Scope:** the deploy-dependent P0s, all backend-hardening P0/P1s, all honest-UX P1s. **Commits:** `d9c2ddb` (P2 ship + audit tooling), `595df15` (backend hardening), `239dc11` (honest UX + dead-code purge).
+
+### P0 / P1 closures
+
+| Severity | Finding | Closure |
+|---|---|---|
+| P0 | All P2-closure changes uncommitted/unpushed. | **CLOSED** — commit `d9c2ddb` pushed; Vercel deployed `baeu-learning-2pf03c0dv`. Bundle inspection on `https://baeu-learning.vercel.app/assets/index-6zKsj7jt.js` confirms `Build real Korean fluency`, `landing-hero`, `practice-cta`, `question-card`, and the minified `role)==="admin"` gate. Browser-truth pass deferred (Playwright MCP wants `channel: 'chrome'`; Chrome.app not installed on this Mac). |
+| P0 | Admin link visible to unauth + non-admin users in prod. | **CLOSED via deploy** — `App.jsx` gate landed; bundle-confirmed. |
+| P0 | Pre-auth landing was a bare login card. | **CLOSED via deploy** — new two-column landing in production. |
+| P0 | `CORS_ORIGIN` unset → `origin: true` with `credentials: true`. | **CLOSED** — `backend/src/app.js:13-36` throws at startup when `NODE_ENV=production` and `CORS_ORIGIN` is empty; dev/test unchanged; comma-separated origins supported. Regression test `backend/tests/hardening.test.js`. |
+| P0 | No global Express error handler; controllers leak `err.message`. | **CLOSED** — `backend/src/app.js:69-87` final `app.use((err,req,res,_next)=>…)`. Logs full stack server-side; client gets `{error: code-or-internal_error}`. Per-controller `wrap` deliberately left in place pending a per-controller audit. |
+| P1 | In-memory store fallback can be silently selected in production. | **CLOSED** — `backend/src/server.js:10-17` exits with a fatal log if `NODE_ENV=production` and `store.__mode === 'memory'`. |
+| P1 | No `helmet` / security headers. | **CLOSED** — `helmet@^8.1.0` installed; registered first in middleware chain at `backend/src/app.js:43-49` with defaults (HSTS on). CSP/COEP explicitly deferred to a strict-CSP commit (marked in code). |
+| P1 | `requireAdmin` used non-timing-safe `===` on `ADMIN_TOKEN`. | **CLOSED** — `backend/src/middleware/auth.js` uses `crypto.timingSafeEqual` via `timingSafeEqualStr` helper with safe length-mismatch handling. |
+| P1 | Admin role from JWT not re-checked against DB. | **CLOSED** — `requireAdmin` is now `async`; after decoding the JWT it re-fetches the user via the store and requires `user.role === 'admin'`. Stolen-JWT regression test in `hardening.test.js`. |
+| P1 | 401 mid-session was not centralized. | **CLOSED** — `frontend/src/api.js:39-46` clears auth + redirects to `#/` on any 401, then rethrows. |
+| P1 | `no_exercises_in_module` rendered raw as toast. | **CLOSED** — `frontend/src/pages/EndlessPractice.jsx` renders a `data-testid="practice-empty-state"` card with friendly copy + "Back to modules" link on 409; `Module.jsx` also disables the practice CTA visually when `exercise_count === 0` so the practice screen is never reached for empty modules. |
+| P1 | Hardcoded `streak={125}/5/3` fixtures shipping to real users. | **CLOSED** — fixtures lived in dead files (`components/layout/Layout.jsx`, `components/shared/layout/Layout.jsx`, `pages/Dashboard.jsx`, `pages/ResultPage.jsx`, `pages/LoginPage.jsx`, plus `Layout.css`). All 6 files deleted. `grep -rnE 'streak\s*[:=]\s*\{?(125\|5\|3)' frontend/src/` returns zero hits. |
+| P1 | No onboarding / first-time learner hint. | **CLOSED (minimal)** — `frontend/src/pages/Home.jsx` renders a `data-testid="home-coachmark"` above the modules grid, dismissible, persisted via `localStorage` flag `baeu_seen_home`. Points learners at Hangul & Reading. |
+| Code-debt | ~2800 LOC dead pages in `frontend/src/pages/` shadow the wired set. | **PARTIALLY CLOSED** — 6 files deleted in this pass (the streak-fixture set). Remaining dead pages: `AboutMe`, `AboutProject`, `AdminDashboard`, `ExercisePage`, `HomePage`, `LessonPage`, `LessonsPage`, `Profile`, `Register`. Promote to a follow-up cleanup commit. |
+
+### Still open (not addressed in this pass)
+
+| Severity | Finding | Why deferred |
+|---|---|---|
+| P1 | No password-reset / account-deletion / logout-all (GDPR/LGPD gap). | Out of scope for the brutal-audit close pass; needs a dedicated email-flow design + compliance copy. Next workstream candidate. |
+| P1 | 3 of 8 modules have zero lessons (`findLessonForErrorTag` silently no-ops). | Content work, not engineering. Schedule a content-seed pass for `greetings`, `vocab-daily`, `reading`. |
+| P1 (strategic) | No business model surface. | Product/strategy decision, not closure-by-code. |
+| P2 | JWT in `localStorage` (XSS exfiltratable). | Tradeoff decision: needs CSRF design if moving to httpOnly cookie. |
+| P2 | scrypt with default params. | Acceptable for current MVP; switch deferred to bcrypt/argon2id later. |
+| P2 | `ssl: { rejectUnauthorized: false }` fallback in pgStore. | Easy fix; bundle with the next backend pass. |
+| P2 | Email enumeration via signup 409. | Tradeoff; acceptable for MVP. |
+| P2 | `cleanup-test-users.js` pattern guard uses OR. | Tighten to AND in next pass. |
+| P2 | `prod-smoke.spec.js` writes a user with no cleanup hook. | Pair with the cleanup-script tightening. |
+| P2 | `incrementSession` non-atomic for concurrent submits. | Needs DB unique-partial-index + client debounce. |
+| P2 | `sumPracticedInModule` returns the same value for every module. | Single-line fix; bundle with next backend pass. |
+| P2 | Listening type in schema, no implementation. | Decide implement vs. drop. |
+| P2 | Per-controller `wrap` duplication (now redundant with global handler). | Audit each controller before removing — separate commit. |
+| Watch | `users` unique on raw `email` vs. index on `lower(email)`. | Migration work; pair with next schema change. |
+| Watch | Frontend `security.js` references absent CSRF meta tag. | Cosmetic; remove when frontend cleanup is bundled. |
+
+### Verification
+
+- `backend/tests`: **68/68 pass** (64 pre-existing + 4 new in `hardening.test.js` covering CORS fail-closed, error-handler sanitization, stolen-JWT admin rejection).
+- `frontend && npm run build`: **OK** (288 modules, 346.79 kB JS).
+- `git push origin main`: `7562de3 → d9c2ddb → 595df15 → 239dc11`. All three commits pushed.
+- Vercel auto-deploy status: pending verification at time of writing (`baeu-learning-2pf03c0dv` confirmed READY for `d9c2ddb`; deploy of `239dc11` polling).
+- Browser-truth verification: deferred. Bundle inspection consistent with closure; full DOM/screenshot pass requires either Chrome install (`brew install --cask google-chrome`) or use of the Claude-in-Chrome MCP with a live tab.
+
+### Verdict update
+
+- Demo-ready: **CLOSED** (subject to one browser-truth pass).
+- Sponsor/buyer-ready: still needs a pricing/about stub + content seed for empty modules.
+- Paying-customer-ready: still needs password-reset / account-deletion / JWT-cookie + CSP.
+
+### Synthetic accounts pending cleanup (running total)
+
+`audit-baue-1778512787788`, `audit-1778513949059`, `audit-1778514023594`, `audit-1778514074779`, `audit-1778514128145`, `audit-brutal-1778514955` — all `@test.local`. No new accounts created in this pass (verification was bundle-only, no signup).
+
+### Railway auto-deploy root cause + fix
+
+**Root cause** (discovered after the brutal-audit close pass found backend changes hadn't landed in prod despite a successful `git push`): the Railway service `baeu-backend` has **no GitHub source linked**. `railway status --json` shows `serviceInstances[0].source = {repo: null, image: null}`. Every prior production backend deploy has been a manual `railway up` from a local checkout — including the `244a89ca` deploy from `2026-05-09T18:07:36` that was treated as "current prod" through three audits.
+
+This means the "Railway autodeploy" assumed by `DEPLOY.md` and by every audit closure gate (including the 2026-05-11-0905 correction package and the 2026-05-11-late+2 brutal audit) **does not exist for this service**. Backend commits sit in `main` indefinitely until someone manually runs `railway up`. The Vercel side does auto-deploy (confirmed); only the backend is manual.
+
+**This pass:** the backend hardening commit `595df15` was deployed via `cd backend && railway up --service baeu-backend --ci`. Verified live: `curl -I https://baeu-backend-production.up.railway.app/api/v1/health` now returns `strict-transport-security`, `x-content-type-options: nosniff`, `referrer-policy: no-referrer`, `cross-origin-opener-policy: same-origin`, `x-frame-options: SAMEORIGIN`, and friends — all helmet defaults. Hardening is in production.
+
+**Durable fix (deferred):** link `JoaoAidar/baeu-learning` to the Railway service with branch=`main` and root=`backend/`, then prune the `railway up` muscle memory from runbooks. Cannot be done from the CLI alone in a safe read-only way — needs dashboard action OR an authenticated GraphQL mutation. Promoted as a P1 deploy-pipeline gap.
+
+**Update DEPLOY.md** to reflect that backend deploys are currently manual via `railway up`, until the GitHub source is linked.
+
+### Verification (final, this pass)
+
+- Frontend: bundle `assets/index-BsMMMYky.js` on `https://baeu-learning.vercel.app/` contains `Build real Korean fluency`, `landing-hero`, `practice-cta`, `home-coachmark`, `practice-empty-state` (5/5 markers).
+- Backend: `https://baeu-backend-production.up.railway.app/api/v1/health` returns 200 with full helmet header set (HSTS 1 year + includeSubDomains, nosniff, no-referrer, frame SAMEORIGIN, COOP same-origin, CORP same-origin, etc.). Hardening live.
+- Browser-truth pass still deferred (Chrome.app missing for Playwright MCP).
+
+### New P1 added
+
+| Severity | Finding | Closure gate |
+|---|---|---|
+| P1 (ops) | Railway service `baeu-backend` has no GitHub source — backend autodeploy never existed. Every backend release requires manual `railway up`. | Link `JoaoAidar/baeu-learning` (branch=`main`, root=`backend/`) as the source in the Railway dashboard. Future audits must check this is wired before treating a `git push` as a backend deploy. |
