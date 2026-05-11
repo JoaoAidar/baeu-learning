@@ -36,7 +36,12 @@ async function call(path, opts = {}) {
   const text = await res.text();
   const body = text ? safeJson(text) : {};
   if (!res.ok) {
-    if (res.status === 401) auth.clear();
+    if (res.status === 401) {
+      auth.clear();
+      if (typeof window !== 'undefined' && window.location) {
+        try { window.location.hash = '#/'; } catch { /* ignore */ }
+      }
+    }
     throw new Error(body.error || `HTTP ${res.status}`);
   }
   return body;

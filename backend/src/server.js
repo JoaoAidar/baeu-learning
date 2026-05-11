@@ -7,6 +7,15 @@ const port = Number(process.env.PORT) || 3001;
 const app = createApp();
 const store = getStore();
 
+// Refuse to boot in production with the in-memory fallback store.
+if (process.env.NODE_ENV === 'production' && store.__mode === 'memory') {
+  console.error(
+    '[baeu] FATAL: refusing to start in production with in-memory store. ' +
+      'Set DATABASE_URL to a Postgres instance.'
+  );
+  process.exit(1);
+}
+
 if (store.__mode === 'memory') {
   await runSeedIfEmpty();
   console.log('[baeu] in-memory store seeded');
