@@ -483,3 +483,134 @@ Once Joao picks a service, the implementation is ~2-3 hours of work in a single 
 ### Synthetic accounts pending cleanup (running total)
 
 `audit-baue-1778512787788`, `audit-1778513949059`, `audit-1778514023594`, `audit-1778514074779`, `audit-1778514128145`, `audit-brutal-1778514955` — all `@test.local`. No new accounts created in this pass.
+
+---
+
+## Brutal-audit closure pass 3 — 2026-05-11-late+5
+
+**Scope:** P2 batch (low-risk cleanups) — scrypt cost tuning with transparent legacy migration, `users` unique on `lower(email)`, pgStore SSL hardening, dead `pages/admin/` subdir + dead `config/security.js`, prod-smoke cleanup hook. Commits `c70591d` + `d99c5da`. Backend deployed via `railway up`; migration applied to Neon.
+
+### P2 closures
+
+| Severity | Finding | Closure |
+|---|---|---|
+| P2 | scrypt with `node:crypto` defaults (no explicit params). | **CLOSED** — `SCRYPT_PARAMS = { N: 1<<17, r: 8, p: 1, maxmem: 256 MiB }` pinned in code (OWASP minimum). New tagged hash format `scrypt$N$r$p$salt$hash`. `verifyPassword` transparently handles legacy 3-part hashes under `LEGACY_SCRYPT_PARAMS` and returns a `rehash` field on success, which `login` opportunistically persists via `updateUserPasswordHash`. Existing users get auto-upgraded on next login, no flag day. |
+| P2 | `ssl: { rejectUnauthorized: false }` fallback in pgStore. | **CLOSED** — production now throws at init if `DATABASE_URL` lacks `sslmode=`. Dev/test keep permissive fallback. Verified prod URL already has `sslmode=` before shipping, so no operational risk. |
+| Watch | `users` unique on raw `email` vs index on `lower(email)`. | **CLOSED** — `create unique index if not exists users_email_lower_uniq on users(lower(email))` + drop raw column unique. Migration applied via `npm run migrate`. Idempotent. |
+| P2 (code-debt) | `pages/admin/` subdir (5 files: Dashboard, Lessons, Overview, Settings, Users) dead but not deleted. | **CLOSED** — entire subdir removed after grep confirmed zero imports. |
+| Watch | Frontend `security.js` references absent CSRF meta tag. | **CLOSED** — file deleted (was never imported anywhere); empty `frontend/src/config/` directory also removed. |
+| P2 | `prod-smoke.spec.js` writes a synthetic user with no cleanup hook. | **CLOSED** — `afterEach` reads `baeu_token`/`baeu_user` from `localStorage`, calls `DELETE /api/v1/auth/me` against prod backend with the bearer. Non-fatal on failure. Closes the pollution + signup rate-limit risk. |
+
+### Verification (live)
+
+- `npm test` (backend): **80/80 pass** (was 72; +9 across `scrypt.test.js` + `pgStoreSsl.test.js`).
+- `npm run build` (frontend): OK (290 modules, 352.40 kB).
+- `npm run migrate` against prod Neon: `migrations applied`. `lower(email)` unique index created without conflict — no case-different duplicate emails in prod users table.
+- Backend deploy via `railway up`: live. `/api/v1/health` returns 200; `/api/v1/modules` returns 8 modules / 412 published exercises. No regression.
+
+### Still open after this pass
+
+| Severity | Finding | Status |
+|---|---|---|
+| P1 | Password-reset flow. | **Decision made: Neon Auth (full auth replacement).** Migration plan below. |
+| P1 | JWT in `localStorage` (XSS exfiltratable). | Will be obsolete after Neon Auth migration (Stack Auth handles tokens). |
+| P1 | Email enumeration via signup 409. | Will be obsolete after Neon Auth (provider-managed signup). |
+| P1 | 3 of 8 modules with zero lessons. | Content work; deferred to a content-seed pass with Joao. |
+| P1 (ops) | Railway service has no GitHub source. | Dashboard action — manual. |
+| P2 | Per-controller `wrap` (now redundant). | Refactor; needs per-controller error-code audit. |
+| P2 | `practice_attempts` idempotency on double-submit. | Needs DB unique partial index + client debounce. |
+| P2 | Listening type in schema, no implementation. | Decision: implement audio vs. drop constraint. |
+
+---
+
+## Workstream plan — Neon Auth migration (option A)
+
+**Goal:** replace the custom JWT + scrypt + users-table auth with Neon Auth (Stack Auth), unlocking password reset, email verification, JWT revocation, OAuth, and password-change flows out of the box. Decided 2026-05-11 — explicit pick over Resend/Postmark/SES because the substitution eliminates ongoing auth maintenance entirely.
+
+### Phase 0 — Neon Auth provisioning (manual, Joao)
+
+1. In the Neon dashboard for project `ancient-butterfly-19493910`, enable **Neon Auth**.
+2. Neon provisions a `neon_auth.users_sync` table that mirrors Stack Auth identities (id, primary_email, display_name, raw_json, created_at, etc.).
+3. Capture the Stack Auth project ID, publishable client key, and secret server key. These become env vars on Vercel + Railway.
+
+This is the only step that **must** be a human dashboard action. Everything below is code Joao authorizes me to run.
+
+### Phase 1 — Backend integration
+
+- Install `@stackframe/stack` SDK on the backend.
+- New `backend/src/middleware/neonAuth.js`: `requireUser` that validates Stack Auth tokens from the `Authorization: Bearer …` header (or a session cookie if we choose that path) and resolves to `{ stackUserId, email, displayName }`.
+- Migrate the existing `users` table to reference Stack Auth ids: add `users.stack_user_id uuid unique` column; the rest of our schema continues to reference `users.id` via FK (no churn on practice_sessions / attempts / mastery).
+- Keep our `users.role` column (Stack Auth has roles but it's cleaner to keep ours since admin gating is already wired). Sync logic: a Stack Auth signup creates a `users` row via webhook OR lazy-on-first-request.
+- Account deletion now does TWO things: call Stack Auth's delete-user endpoint, then cascade-delete in our `users` row (which already cascades to practice data).
+- Remove: `AuthService.signToken`, `signupOrLogin` flows, `signupController` / `loginController` write paths, `token_version` logic (Stack Auth handles revocation). Keep `requireAdmin` since it's an admin-check, not an auth check.
+
+### Phase 2 — Frontend integration
+
+- Install `@stackframe/react` SDK on the frontend.
+- Replace `Auth.jsx` (signup/login form) with Stack Auth's components OR build a minimal wrapper around its hooks if we want to keep the current visual design. Recommend keeping the visual design and using hooks — better consistency with the brand.
+- Replace the localStorage `baeu_token`/`baeu_user` pattern with Stack Auth's session management.
+- Add `/account` redirect to Stack Auth's account-management screen (free password change, email change, sessions list — all built in).
+- Replace our custom logout-all with Stack Auth's session-revocation API.
+- Add password-reset entry point on the login screen (Stack Auth ships the flow).
+
+### Phase 3 — User migration
+
+**Problem:** existing scrypt passwords aren't extractable. We can't transparently move users to Stack Auth without involving them.
+
+**Recommended approach: bulk password-reset.**
+
+1. Export the existing `users` table (just `id, email, display_name, created_at` — no hashes).
+2. Use Stack Auth's user-import API to create Stack Auth identities for every existing email, **without** a password. Each new Stack Auth user is flagged "must reset password before login."
+3. Map `users.id` → `users.stack_user_id` via the new column.
+4. Send one email blast: "Baeu has upgraded its login. Click here to set your new password." Links to a Stack Auth password-reset page scoped to their email.
+5. On first successful Stack Auth signin, our backend reconciles `users.stack_user_id` and the user is back in business with all their progress preserved.
+
+**Why this approach:**
+- Existing scrypt passwords can't be migrated transparently — any path involves users acting.
+- "Set your new password" is gentler UX than "create a new account."
+- Practice progress (sessions, attempts, mastery) is preserved across the migration because we keep `users.id` stable.
+
+**Fallback option** for users who don't reset within 30 days: their `users` row remains but they can't log in until they reset. No data loss; they just need to click the link.
+
+### Phase 4 — Cutover
+
+1. Deploy backend with **both** auth paths active: legacy JWT path still works for existing users; Stack Auth path active for new users. Read-only feature flag if needed (`AUTH_MODE=dual`).
+2. Run the migration script (Phase 3 steps 1–3).
+3. Send the email blast.
+4. After 30 days OR when migration is ≥95% complete: flip `AUTH_MODE=stack-only`, remove legacy JWT signing code in the next commit.
+5. Drop the legacy `password_hash` column in a follow-up migration.
+
+### Estimated effort
+
+- Phase 0: ~10 min (Joao, dashboard).
+- Phase 1: ~3-4h of focused work (one agent, backend-only, write-authorized).
+- Phase 2: ~2-3h (one agent, frontend-only).
+- Phase 3: ~1h to build the import + email-trigger script + run it.
+- Phase 4: ~30 min cutover + ~10 min follow-up cleanup.
+
+Total: **~7-9h of agent work**, plus the dashboard step + the email blast send + the 30-day observation window.
+
+### What Neon Auth resolves on the way
+
+- ✅ Password reset (built-in)
+- ✅ JWT revocation (Stack Auth tokens)
+- ✅ Email verification (built-in, opt-in)
+- ✅ scrypt tuning concern (Stack Auth uses modern hashing internally)
+- ✅ Email enumeration on signup (provider-managed)
+- ✅ Password change without admin intervention
+- ✅ Session list / "sign out everywhere" (UI provided)
+- ✅ Optional: OAuth providers (Google, GitHub) as a future upgrade with zero new code
+
+### What remains our responsibility
+
+- Practice data deletion on account close (cascade from our `users` row).
+- `requireAdmin` check (we keep our `role` column).
+- Onboarding coachmark / first-time hint (not auth).
+- Content depth (not auth).
+
+### Open questions for Joao before kicking off
+
+1. Confirm bulk password-reset is the right user-migration approach.
+2. Confirm we keep the visual design of the auth screens (Stack Auth hooks) vs. embedding Stack Auth's pre-built UI components.
+3. Email sender identity for the migration blast — Stack Auth handles sending, but the "from" address and subject line should be Joao's call.
+4. Decide whether to enable OAuth providers (Google) at cutover or leave for later.
