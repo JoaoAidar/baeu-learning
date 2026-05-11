@@ -45,3 +45,4 @@ yarn-error.log*
 PROMPT_01_GF_META_CLOUD_WHATSAPP.md
 PROMPT_02_ARCHITRACK_META_CLOUD_MIGRATION.md
 audit-artifacts/
+.vercel

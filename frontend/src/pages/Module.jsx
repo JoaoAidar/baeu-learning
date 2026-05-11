@@ -50,6 +50,7 @@ export default function Module({ slug }) {
 
         <a
           href={`#/practice?module=${m.slug}`}
+          data-testid="practice-cta"
           className="block w-full text-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 rounded-lg transition-all shadow-card hover:shadow-card-hover no-underline"
         >
           Practice this module →

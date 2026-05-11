@@ -108,7 +108,9 @@ SESSION_SECRET=sua-chave-de-sessao
 DATABASE_URL=sua-string-de-conexao-supabase
 
 # Frontend
-VITE_API_URL=http://localhost:3000/api
+# Dev can leave VITE_API_BASE_URL empty when using the Vite proxy.
+# Production backend:
+VITE_API_BASE_URL=https://baeu-backend-production.up.railway.app
 ```
 
 4. Configure o banco de dados:
@@ -123,7 +125,8 @@ Este script irá:
 ## Executando o Projeto
 1. Inicie o servidor em modo desenvolvimento:
 ```bash
-# Iniciar servidor backend (da raiz do projeto)
+# Iniciar servidor backend
+cd backend
 npm run dev
 
 # Iniciar servidor frontend (do diretório frontend)
@@ -131,25 +134,35 @@ cd frontend
 npm run dev
 ```
 
+## Produção Atual
+
+- Frontend: `https://baeu-learning.vercel.app`
+- Backend canônico: `https://baeu-backend-production.up.railway.app`
+- Health: `GET https://baeu-backend-production.up.railway.app/api/v1/health`
+- Backend antigo/deprecado: `https://baeu-learning-api-production.up.railway.app`
+
+O frontend atual usa `VITE_API_BASE_URL` no build. Para produção, esse valor
+deve apontar para `https://baeu-backend-production.up.railway.app`.
+
 ## Endpoints da API
 
 ### Autenticação
-- `POST /api/auth/login` - Login do usuário
-- `POST /api/auth/logout` - Logout do usuário
-- `GET /api/auth/me` - Obter usuário atual
+- `POST /api/v1/auth/login` - Login do usuário
+- `POST /api/v1/auth/signup` - Cadastro do usuário
+- `GET /api/v1/auth/me` - Obter usuário atual
 
 ### Acompanhamento de Progresso
-- `GET /api/auth/progress` - Obter progresso do usuário
-- `POST /api/auth/progress` - Atualizar progresso
-- `GET /api/auth/progress/lesson/:lessonId` - Obter progresso da lição
+- `GET /api/v1/progress/overview` - Obter progresso agregado
+- `GET /api/v1/progress/skills` - Obter progresso por habilidade
 
 ### Lições
-- `GET /api/lessons` - Obter todas as lições
-- `GET /api/lessons/:id` - Obter lição por ID
+- `GET /api/v1/lessons` - Obter todas as lições
+- `GET /api/v1/lessons/:slug` - Obter lição por slug
 
 ### Exercícios
-- `GET /api/exercises` - Obter todos os exercícios
-- `GET /api/exercises/:id` - Obter exercício por ID
+- `POST /api/v1/practice/sessions` - Iniciar sessão de prática
+- `GET /api/v1/practice/next` - Obter próximo exercício
+- `POST /api/v1/practice/answer` - Enviar resposta
 
 ## Usuários de Teste
 

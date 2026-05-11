@@ -32,7 +32,10 @@
    ```
 4. Railway sets `PORT` automatically. The `railway.toml` declares
    `healthcheckPath=/api/v1/health` and graceful shutdown is wired (SIGTERM).
-5. Copy the public URL Railway assigns (e.g. `https://baeu-backend.up.railway.app`).
+5. Canonical production backend URL:
+   `https://baeu-backend-production.up.railway.app`.
+   The old `https://baeu-learning-api-production.up.railway.app` URL is stale
+   and currently returns Railway `Application not found`.
 
 ## 3. Vercel (frontend)
 
@@ -40,9 +43,15 @@
 2. **Root Directory**: `frontend/`. Vercel detects Vite via `vercel.json`.
 3. Environment variable:
    ```
-   VITE_API_BASE_URL=https://<your-railway-app>.up.railway.app
+   VITE_API_BASE_URL=https://baeu-backend-production.up.railway.app
    ```
 4. Deploy. Copy the Vercel URL.
+
+Current Vercel project note: if the project root directory is left at the repo
+root, the root `vercel.json` delegates install/build to `frontend/` and serves
+`frontend/dist`. The preferred provider setting remains **Root Directory:
+`frontend/`**, but the root config keeps Git deployments from failing when that
+setting drifts.
 
 ## 4. Close the loop
 
@@ -52,7 +61,7 @@ the Railway service so the change takes effect.
 ## Smoke test
 
 ```bash
-curl https://<railway-app>.up.railway.app/api/v1/health
+curl https://baeu-backend-production.up.railway.app/api/v1/health
 # → {"ok":true,"store":"pg"}
 ```
 
@@ -63,7 +72,9 @@ admin token to manage content.
 ## Costs (rough, free tier as of 2025)
 
 - **Neon**: free tier covers 0.5 GB + light traffic. Plenty for MVP.
-- **Railway**: $5 starter credit covers a small Node service running 24/7.
+- **Railway**: enable sleep for this backend unless there is a concrete
+  always-on requirement. The API has no webhook/worker loop today, so
+  `sleepApplication=true` is the lower-cost default posture.
 - **Vercel**: hobby tier is free for personal projects.
 - **OpenRouter / LLM**: only billed when admin generates exercises — pennies
   per batch with Claude 3.5 Sonnet.
@@ -76,3 +87,4 @@ Total: ~$5/mo until you have real traffic.
 - [ ] Add Sentry / similar on backend (Railway captures stdout but no error grouping).
 - [ ] Move rate-limit buckets to Redis if Railway scales beyond 1 instance.
 - [ ] Add a real "forgot password" flow — currently lockout requires admin reset.
+- [ ] In Railway provider settings, set `healthcheckPath=/api/v1/health`.
