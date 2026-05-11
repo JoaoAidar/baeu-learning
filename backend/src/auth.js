@@ -1,3 +1,9 @@
+// Polyfill globalThis.crypto for environments where Web Crypto isn't exposed
+// as a global (older Node, certain runtime configs). Better Auth's id generator
+// calls `crypto.getRandomValues`, which throws ReferenceError without this.
+import { webcrypto } from 'node:crypto';
+if (!globalThis.crypto) globalThis.crypto = webcrypto;
+
 import { betterAuth } from 'better-auth';
 import pg from 'pg';
 
