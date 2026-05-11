@@ -14,6 +14,38 @@ const SHOULD_RUN = process.env.E2E_PROD_SMOKE === '1';
 
 test.skip(!SHOULD_RUN, 'set E2E_PROD_SMOKE=1 to run');
 
+const PROD_API_BASE = 'https://baeu-backend-production.up.railway.app';
+
+// Cleanup hook: delete the synthetic learner created by the smoke so we don't
+// pollute the prod DB or hit signup rate-limits on repeated CI runs. Treated
+// as non-fatal: if cleanup fails the test still validates the journey.
+test.afterEach(async ({ page, request }) => {
+  let token = null;
+  let email = null;
+  try {
+    token = await page.evaluate(() => localStorage.getItem('baeu_token'));
+    email = await page.evaluate(() => {
+      try {
+        const raw = localStorage.getItem('baeu_user');
+        return raw ? (JSON.parse(raw).email || null) : null;
+      } catch (_) {
+        return null;
+      }
+    });
+  } catch (_) {
+    // page may already be closed; nothing to clean up
+  }
+  if (!token) return; // signup probably failed before token was set
+  try {
+    const res = await request.delete(`${PROD_API_BASE}/api/v1/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    console.log(`[prod-smoke] cleanup ${email || '(unknown email)'}: ${res.status()}`);
+  } catch (e) {
+    console.warn('[prod-smoke] cleanup failed (non-fatal):', e.message);
+  }
+});
+
 test('prod: fresh learner reaches question-card on first practice', async ({ page }) => {
   const email = `audit-${Date.now()}@test.local`;
   const password = 'audit-smoke-1234';
