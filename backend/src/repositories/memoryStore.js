@@ -228,6 +228,26 @@ export const memoryStore = {
 
   // attempts
   async insertAttempt(row) {
+    // Mirror the partial unique index from schema.sql:
+    //   practice_attempts_idem_idx (session_id, exercise_id, response_ms)
+    //   where exercise_id is not null
+    // so memory-mode behaves like Postgres for double-submit guard.
+    // Postgres treats NULLs as distinct in a unique index by default, so
+    // only collide when response_ms is a real number AND matches an existing
+    // (session_id, exercise_id, response_ms) tuple.
+    if (row.exercise_id != null && row.response_ms != null) {
+      const dup = store.attempts.find(
+        (a) =>
+          a.session_id === row.session_id &&
+          a.exercise_id === row.exercise_id &&
+          a.response_ms === row.response_ms
+      );
+      if (dup) {
+        const err = new Error('duplicate_submit');
+        err.code = 'duplicate_submit';
+        throw err;
+      }
+    }
     const record = {
       id: randomUUID(),
       created_at: new Date().toISOString(),

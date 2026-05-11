@@ -18,24 +18,31 @@ test.skip(!SHOULD_RUN, 'set E2E_PROD_SMOKE=1 to run');
 // pollute the prod DB or hit signup rate-limits on repeated CI runs. Treated
 // as non-fatal: if cleanup fails the test still validates the journey.
 //
-// With Better Auth the session lives in an http-only cookie, so we drive the
-// delete from the page context (which already has the session) rather than
-// reading a token out of localStorage.
+// Better Auth sessions live in an http-only cookie. We call the delete-user
+// endpoint via `fetch` in the page context — the cookie travels automatically
+// (same-origin since the page can reach the backend directly via CORS).
+const BACKEND = 'https://baeu-backend-production.up.railway.app';
+
 test.afterEach(async ({ page }) => {
   try {
-    const result = await page.evaluate(async () => {
+    const result = await page.evaluate(async (backend) => {
       try {
-        const mod = await import('/src/lib/auth.js');
-        const r = await mod.authClient.deleteUser({});
-        return { ok: !r?.error, error: r?.error?.message || r?.error?.code || null };
+        const res = await fetch(`${backend}/api/auth/delete-user`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: '{}',
+        });
+        const body = await res.json().catch(() => ({}));
+        return { ok: res.ok, status: res.status, body };
       } catch (e) {
         return { ok: false, error: e?.message || String(e) };
       }
-    });
+    }, BACKEND);
     if (result?.ok) {
       console.log('[prod-smoke] cleanup: deleted synthetic learner');
     } else {
-      console.warn('[prod-smoke] cleanup failed (non-fatal):', result?.error);
+      console.warn('[prod-smoke] cleanup failed (non-fatal):', JSON.stringify(result));
     }
   } catch (e) {
     console.warn('[prod-smoke] cleanup skipped (non-fatal):', e.message);

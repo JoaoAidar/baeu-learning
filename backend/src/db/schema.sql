@@ -56,7 +56,7 @@ create table if not exists exercises (
   id uuid primary key default gen_random_uuid(),
   module_id uuid references modules(id) on delete set null,
   lesson_id uuid references lessons(id) on delete set null,
-  type text not null check (type in ('multiple_choice','translation','fill_blank','listening')),
+  type text not null check (type in ('multiple_choice','translation','fill_blank')),
   difficulty text not null default 'easy' check (difficulty in ('easy','medium','hard')),
   prompt text not null,
   prompt_locale text not null default 'en',
@@ -196,6 +196,14 @@ create index if not exists practice_attempts_user_idx on practice_attempts(user_
 create index if not exists practice_attempts_error_tags_idx on practice_attempts using gin (error_tags);
 create index if not exists practice_attempts_created_idx on practice_attempts(user_id, created_at desc);
 
+-- Double-submit guard. A user submitting the same exercise to the same session
+-- with the same response_ms is a double-tap. response_ms won't generally repeat
+-- for legitimate retries since the selector advances to a different exercise_id,
+-- so this won't false-trigger on real retries.
+create unique index if not exists practice_attempts_idem_idx
+  on practice_attempts(session_id, exercise_id, response_ms)
+  where exercise_id is not null;
+
 create table if not exists user_skill_mastery (
   user_id text not null references "user"(id) on delete cascade,
   skill text not null,
@@ -211,3 +219,15 @@ create table if not exists user_skill_mastery (
 
 create index if not exists user_skill_mastery_due_idx
   on user_skill_mastery(user_id, next_review_at);
+
+-- ============================================================================
+-- 6. Idempotent migrations for existing databases. The CREATE TABLE statements
+-- above carry the current shape; these ALTERs bring previously-deployed DBs
+-- in line. Safe to re-run.
+-- ============================================================================
+
+-- Drop the legacy 'listening' option from exercises.type — never produced,
+-- no rows in prod, no frontend renderer. Schema now reflects reality.
+alter table exercises drop constraint if exists exercises_type_check;
+alter table exercises add constraint exercises_type_check
+  check (type in ('multiple_choice','translation','fill_blank'));

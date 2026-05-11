@@ -63,16 +63,28 @@ export async function submitAnswer({ sessionId, exerciseId, answer, responseMs }
 
   const { correct, errorTags, skillTags, expected } = classifyAnswer(exercise, answer);
 
-  const attempt = await store.insertAttempt({
-    session_id: sessionId,
-    user_id: session.user_id,
-    exercise_id: exerciseId,
-    answer: String(answer ?? ''),
-    correct,
-    response_ms: Number.isFinite(responseMs) ? responseMs : null,
-    error_tags: errorTags,
-    skill_tags: skillTags,
-  });
+  let attempt;
+  try {
+    attempt = await store.insertAttempt({
+      session_id: sessionId,
+      user_id: session.user_id,
+      exercise_id: exerciseId,
+      answer: String(answer ?? ''),
+      correct,
+      response_ms: Number.isFinite(responseMs) ? responseMs : null,
+      error_tags: errorTags,
+      skill_tags: skillTags,
+    });
+  } catch (err) {
+    // Postgres unique_violation OR memory-store synthetic duplicate marker.
+    // The partial unique index on (session_id, exercise_id, response_ms)
+    // catches double-tap submits within milliseconds; surface as 409 so the
+    // client sees a clean code instead of a 500.
+    if (err && (err.code === '23505' || err.code === 'duplicate_submit')) {
+      throw httpError(409, 'duplicate_submit');
+    }
+    throw err;
+  }
 
   const updated = await store.incrementSession(sessionId, { correct });
 

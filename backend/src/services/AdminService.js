@@ -1,7 +1,7 @@
 import { getStore } from '../config/db.js';
 import { generateExercises } from './LLMGenerator.js';
 
-const VALID_TYPES = ['multiple_choice', 'translation', 'fill_blank', 'listening'];
+const VALID_TYPES = ['multiple_choice', 'translation', 'fill_blank'];
 const VALID_STATUS = ['draft', 'published', 'archived'];
 const VALID_DIFFICULTY = ['easy', 'medium', 'hard'];
 const VALID_LOCALES = ['en', 'pt', 'ko'];

@@ -127,5 +127,8 @@ function stripFences(s) {
 function httpError(status, code) {
   const e = new Error(code);
   e.status = status;
+  // Mark code explicitly so the global error handler in app.js surfaces it
+  // even on 5xx statuses (otherwise 5xx becomes a generic 'internal_error').
+  e.code = code;
   return e;
 }

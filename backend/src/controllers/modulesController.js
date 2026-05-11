@@ -1,12 +1,10 @@
 import { getStore } from '../config/db.js';
 import { getMasteryMap } from '../services/MasteryService.js'; // fallback path only
 
-const wrap = (fn) => async (req, res) => {
-  try { res.json(await fn(req)); }
-  catch (err) { res.status(err.status || 500).json({ error: err.message || 'internal_error' }); }
-};
+// Error propagation handled by global error handler in app.js.
 
-export const list = wrap(async (req) => {
+export const list = async (req, res, next) => {
+ try {
   const store = getStore();
   const [modules, counts] = await Promise.all([
     store.listModules(),
@@ -31,7 +29,7 @@ export const list = wrap(async (req) => {
     }
   }
 
-  return {
+  res.json({
     modules: modules.map((m) => ({
       id: m.id,
       slug: m.slug,
@@ -43,19 +41,22 @@ export const list = wrap(async (req) => {
       practiced: practicedByModule ? practicedByModule[m.id] || 0 : null,
     })),
     total_published: Object.values(counts).reduce((a, b) => a + b, 0),
-  };
-});
+  });
+ } catch (err) { next(err); }
+};
 
-export const get = wrap(async (req) => {
-  const store = getStore();
-  const mod = await store.getModuleBySlug(req.params.slug);
-  if (!mod) { const e = new Error('module_not_found'); e.status = 404; throw e; }
-  const exercises = await store.listPublishedExercises({ moduleId: mod.id });
-  return {
-    module: { ...mod, exercise_count: exercises.length },
-    sample_skill_tags: aggregateSkills(exercises).slice(0, 12),
-  };
-});
+export const get = async (req, res, next) => {
+  try {
+    const store = getStore();
+    const mod = await store.getModuleBySlug(req.params.slug);
+    if (!mod) { const e = new Error('module_not_found'); e.status = 404; throw e; }
+    const exercises = await store.listPublishedExercises({ moduleId: mod.id });
+    res.json({
+      module: { ...mod, exercise_count: exercises.length },
+      sample_skill_tags: aggregateSkills(exercises).slice(0, 12),
+    });
+  } catch (err) { next(err); }
+};
 
 function aggregateSkills(exs) {
   const counts = new Map();

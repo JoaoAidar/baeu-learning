@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { api } from '../api.js';
 import { useToast } from '../components/Toast.jsx';
 
@@ -23,6 +23,10 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
   const [score, setScore] = useState({ total: 0, correct: 0, accuracy: 0 });
   const [loading, setLoading] = useState(false);
   const [emptyState, setEmptyState] = useState(false);
+  // Synchronous lock for the submit handler. setLoading(true) only takes effect
+  // after the next render, so a rapid double-tap can fire submit() twice before
+  // the disabled state lands. The ref blocks the second call immediately.
+  const submittingRef = useRef(false);
   const [questionStart, setQuestionStart] = useState(0);
   const toast = useToast();
 
@@ -73,7 +77,9 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
   }
 
   async function submit() {
+    if (submittingRef.current) return;
     if (!question || !answer.trim()) return;
+    submittingRef.current = true;
     setLoading(true);
     try {
       const r = await api.answer({
@@ -86,9 +92,15 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
       setScore(r.sessionScore);
       if (r.checkpoint) setCheckpoint(r.checkpoint);
     } catch (e) {
-      toast.push(e.message, 'error');
+      // The backend translates double-submit unique-violations to 409
+      // `duplicate_submit`. That's a user-visible no-op — the first submit
+      // already landed; suppress the scary toast.
+      if (e.message !== 'duplicate_submit') {
+        toast.push(e.message, 'error');
+      }
     } finally {
       setLoading(false);
+      submittingRef.current = false;
     }
   }
 

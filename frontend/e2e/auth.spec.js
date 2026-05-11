@@ -5,7 +5,7 @@ test('signup → home shows modules', async ({ page }) => {
   const email = uniqueEmail('auth');
   await page.goto('/');
 
-  await expect(page.getByRole('heading', { name: /welcome back|start learning/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /welcome back|create your account/i })).toBeVisible();
 
   await page.getByRole('button', { name: /^sign up$/i }).click();
   await page.locator('input[autocomplete="name"]').fill('Auth Test');
@@ -42,5 +42,5 @@ test('signup with weak password is blocked', async ({ page }) => {
   await page.locator('form').getByRole('button', { name: /^sign up$/i }).click();
 
   // Either browser-level minLength validation blocks navigation, or backend rejects.
-  await expect(page.getByRole('heading', { name: /start learning|welcome back/i })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /create your account|welcome back/i })).toBeVisible();
 });

@@ -82,6 +82,30 @@ test('summary aggregates errorTagCounts', async () => {
   assert.ok(sum.recommendations.length > 0);
 });
 
+test('double-submit of same (session, exercise, responseMs) yields 409 duplicate_submit', async () => {
+  const session = await Practice.startSession({ userId: 'u-dup' });
+  const exes = await memoryStore.listPublishedExercises();
+  const ex = exes[0];
+  const args = {
+    sessionId: session.id,
+    exerciseId: ex.id,
+    answer: ex.correct_answer,
+    responseMs: 1234,
+  };
+  // Concurrent submit. With the partial unique index on
+  // (session_id, exercise_id, response_ms), exactly one should land.
+  const results = await Promise.allSettled([
+    Practice.submitAnswer(args),
+    Practice.submitAnswer(args),
+  ]);
+  const fulfilled = results.filter((r) => r.status === 'fulfilled');
+  const rejected = results.filter((r) => r.status === 'rejected');
+  assert.equal(fulfilled.length, 1, 'exactly one submit should succeed');
+  assert.equal(rejected.length, 1, 'exactly one submit should fail');
+  assert.equal(rejected[0].reason.status, 409);
+  assert.equal(rejected[0].reason.message, 'duplicate_submit');
+});
+
 test('admin import: valid items create, invalid items fail', async () => {
   const result = await Admin.importExercises(
     [
