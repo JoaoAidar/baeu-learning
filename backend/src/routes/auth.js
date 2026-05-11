@@ -21,4 +21,6 @@ const signupLimit = rateLimit({
 router.post('/signup', signupLimit, ctrl.signup);
 router.post('/login', loginLimit, ctrl.login);
 router.get('/me', requireUser, ctrl.me);
+router.delete('/me', requireUser, ctrl.deleteMe);
+router.post('/logout-all', requireUser, ctrl.logoutAll);
 export default router;

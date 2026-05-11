@@ -32,6 +32,24 @@ export function createPgStore({ connectionString }) {
          values ($1, $2, $3, $4) returning *`,
         [email, password_hash, display_name || null, role]
       ),
+    deleteUser: async (id) => {
+      await q('delete from users where id = $1', [id]);
+    },
+    incrementTokenVersion: async (id) => {
+      // Defensive: if the column doesn't exist yet (pre-migration), treat as 0.
+      try {
+        const row = await one(
+          `update users set token_version = coalesce(token_version, 0) + 1
+            where id = $1
+           returning token_version`,
+          [id]
+        );
+        return row?.token_version ?? 0;
+      } catch (err) {
+        if (err && /token_version/.test(String(err.message))) return 0;
+        throw err;
+      }
+    },
 
     // exercises
     listPublishedExercises: ({ moduleId = null } = {}) =>
@@ -116,6 +134,22 @@ export function createPgStore({ connectionString }) {
         client.release();
       }
       return created;
+    },
+
+    // distinct skills user has mastery for, restricted to a module's skill tag set
+    async countMasteredSkillsInModule(userId, moduleId) {
+      const row = await one(
+        `select count(distinct m.skill)::int as n
+           from user_skill_mastery m
+          where m.user_id = $1
+            and exists (
+              select 1 from exercises e
+               where e.module_id = $2
+                 and e.skill_tags @> jsonb_build_array(m.skill)
+            )`,
+        [userId, moduleId]
+      );
+      return row?.n || 0;
     },
 
     // sessions

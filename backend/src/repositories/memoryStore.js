@@ -104,10 +104,44 @@ export const memoryStore = {
       password_hash,
       display_name: display_name || null,
       role,
+      token_version: 0,
       created_at: new Date().toISOString(),
     };
     store.users.set(id, user);
     return user;
+  },
+  async deleteUser(id) {
+    store.users.delete(id);
+    // cascade: drop sessions, attempts, mastery owned by this user
+    for (const [sid, s] of store.sessions) {
+      if (s.user_id === id) store.sessions.delete(sid);
+    }
+    for (let i = store.attempts.length - 1; i >= 0; i--) {
+      if (store.attempts[i].user_id === id) store.attempts.splice(i, 1);
+    }
+    for (const [k, m] of store.mastery) {
+      if (m.user_id === id) store.mastery.delete(k);
+    }
+  },
+  async incrementTokenVersion(id) {
+    const u = store.users.get(id);
+    if (!u) return 0;
+    u.token_version = (u.token_version || 0) + 1;
+    return u.token_version;
+  },
+  async countMasteredSkillsInModule(userId, moduleId) {
+    // collect skill tags for this module's exercises
+    const modSkills = new Set();
+    for (const e of store.exercises.values()) {
+      if (e.module_id !== moduleId) continue;
+      for (const t of e.skill_tags || []) modSkills.add(t);
+    }
+    let n = 0;
+    for (const m of store.mastery.values()) {
+      if (m.user_id !== userId) continue;
+      if (modSkills.has(m.skill)) n += 1;
+    }
+    return n;
   },
 
   // exercises

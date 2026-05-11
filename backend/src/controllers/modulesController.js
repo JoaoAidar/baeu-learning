@@ -1,5 +1,5 @@
 import { getStore } from '../config/db.js';
-import { getMasteryMap } from '../services/MasteryService.js';
+import { getMasteryMap } from '../services/MasteryService.js'; // fallback path only
 
 const wrap = (fn) => async (req, res) => {
   try { res.json(await fn(req)); }
@@ -13,10 +13,22 @@ export const list = wrap(async (req) => {
     store.countPublishedByModule(),
   ]);
 
-  // If authenticated, also include per-module mastery summary
-  let masteryMap = null;
+  // If authenticated, also include per-module mastery summary.
+  // Count distinct mastered skills that overlap each module's exercise skill_tags.
+  let practicedByModule = null;
   if (req.userId) {
-    masteryMap = await getMasteryMap(req.userId);
+    practicedByModule = {};
+    if (typeof store.countMasteredSkillsInModule === 'function') {
+      await Promise.all(
+        modules.map(async (m) => {
+          practicedByModule[m.id] = await store.countMasteredSkillsInModule(req.userId, m.id);
+        })
+      );
+    } else {
+      // safety fallback: total tracked skills (legacy behavior)
+      const masteryMap = await getMasteryMap(req.userId);
+      for (const m of modules) practicedByModule[m.id] = masteryMap.size;
+    }
   }
 
   return {
@@ -28,9 +40,7 @@ export const list = wrap(async (req) => {
       icon: m.icon,
       order_index: m.order_index,
       exercise_count: counts[m.id] || 0,
-      // mastery hint: how many tracked skills the user has touched in this module's space
-      // (cheap heuristic — full mastery view lives on /progress)
-      practiced: masteryMap ? sumPracticedInModule(masteryMap, m) : null,
+      practiced: practicedByModule ? practicedByModule[m.id] || 0 : null,
     })),
     total_published: Object.values(counts).reduce((a, b) => a + b, 0),
   };
@@ -46,12 +56,6 @@ export const get = wrap(async (req) => {
     sample_skill_tags: aggregateSkills(exercises).slice(0, 12),
   };
 });
-
-function sumPracticedInModule(masteryMap, mod) {
-  // Without a join we can't know exactly which mastery rows belong to which module.
-  // Return total tracked skills as a coarse signal — UI just shows "in progress" if > 0.
-  return masteryMap.size;
-}
 
 function aggregateSkills(exs) {
   const counts = new Map();

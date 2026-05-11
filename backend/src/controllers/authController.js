@@ -21,3 +21,14 @@ export const login = wrap((req) =>
 );
 
 export const me = wrap((req) => Auth.me({ userId: req.userId }));
+
+export const deleteMe = async (req, res) => {
+  try {
+    await Auth.deleteAccount({ userId: req.userId });
+    res.status(204).end();
+  } catch (err) {
+    res.status(err.status || 500).json({ error: err.message || 'internal_error' });
+  }
+};
+
+export const logoutAll = wrap((req) => Auth.logoutAll({ userId: req.userId }));

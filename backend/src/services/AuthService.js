@@ -31,7 +31,7 @@ function getJwtSecret() {
 
 export function signToken(user) {
   return jwt.sign(
-    { sub: user.id, email: user.email, role: user.role },
+    { sub: user.id, email: user.email, role: user.role, tv: user.token_version ?? 0 },
     getJwtSecret(),
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
@@ -83,6 +83,21 @@ export async function me({ userId }) {
   const user = await store.getUserById(userId);
   if (!user) throw httpError(404, 'user_not_found');
   return publicUser(user);
+}
+
+export async function deleteAccount({ userId }) {
+  const store = getStore();
+  const user = await store.getUserById(userId);
+  if (!user) throw httpError(404, 'user_not_found');
+  await store.deleteUser(userId);
+}
+
+export async function logoutAll({ userId }) {
+  const store = getStore();
+  const user = await store.getUserById(userId);
+  if (!user) throw httpError(404, 'user_not_found');
+  const tv = await store.incrementTokenVersion(userId);
+  return { ok: true, token_version: tv };
 }
 
 function publicUser(u) {

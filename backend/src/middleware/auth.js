@@ -14,12 +14,29 @@ function timingSafeEqualStr(a, b) {
   }
 }
 
-export function requireUser(req, res, next) {
+export async function requireUser(req, res, next) {
   const header = req.header('authorization') || '';
   const token = header.startsWith('Bearer ') ? header.slice(7) : null;
   const payload = token ? verifyToken(token) : null;
   if (!payload?.sub) {
     return res.status(401).json({ error: 'unauthorized' });
+  }
+  // Enforce token_version: if the user has bumped (logout-all), old JWTs die.
+  // Backward compat: pre-tv tokens (payload.tv === undefined) are accepted
+  // iff the user's current token_version is 0. Missing column defaults to 0.
+  try {
+    const store = getStore();
+    const user = await store.getUserById(payload.sub);
+    if (!user) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+    const currentTv = Number.isFinite(user.token_version) ? user.token_version : 0;
+    const claimTv = payload.tv === undefined ? 0 : Number(payload.tv);
+    if (currentTv !== claimTv) {
+      return res.status(401).json({ error: 'unauthorized' });
+    }
+  } catch (err) {
+    return next(err);
   }
   req.userId = payload.sub;
   req.userRole = payload.role || 'user';

@@ -62,6 +62,8 @@ export const api = {
   signup: (payload) => call('/api/v1/auth/signup', { method: 'POST', body: JSON.stringify(payload) }),
   login:  (payload) => call('/api/v1/auth/login',  { method: 'POST', body: JSON.stringify(payload) }),
   me:     () => call('/api/v1/auth/me'),
+  deleteMe: () => call('/api/v1/auth/me', { method: 'DELETE' }),
+  logoutAll: () => call('/api/v1/auth/logout-all', { method: 'POST' }),
   modulesList: () => call('/api/v1/modules'),
   module: (slug) => call(`/api/v1/modules/${encodeURIComponent(slug)}`),
   lessonsList: (moduleSlug = null) =>

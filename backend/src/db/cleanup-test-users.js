@@ -3,7 +3,7 @@ import pg from 'pg';
 
 const { Client } = pg;
 
-const DEFAULT_PATTERN = '%@test.local';
+const DEFAULT_PATTERN = 'audit-%@test.local';
 
 function parseArgs(argv) {
   const args = { pattern: DEFAULT_PATTERN, apply: false };
@@ -34,6 +34,27 @@ function usage() {
   );
 }
 
+// Fail-closed pattern guard. Must:
+//   1. start with literal "audit-"
+//   2. contain "@test.local"
+//   3. not be a bare "%" or otherwise wildcard-dominated
+// Test scenarios that must REFUSE (return false):
+//   - "%"                                  (bare wildcard)
+//   - "%@test.local"                       (no audit- prefix)
+//   - "admin%@test.local"                  (no audit- prefix)
+//   - "audit-%"                            (no @test.local domain)
+//   - "audit-%@example.com"                (wrong domain)
+// Scenarios that must ACCEPT (return true):
+//   - "audit-%@test.local"
+//   - "audit-2025-%@test.local"
+export function isPatternAllowed(pattern) {
+  if (typeof pattern !== 'string') return false;
+  if (pattern === '%' || pattern === '') return false;
+  if (!pattern.startsWith('audit-')) return false;
+  if (!pattern.includes('@test.local')) return false;
+  return true;
+}
+
 function maskEmail(email) {
   const [local, domain] = email.split('@');
   if (!local || !domain) return '***';
@@ -50,9 +71,9 @@ async function main() {
     console.error('DATABASE_URL not set.');
     process.exit(1);
   }
-  if (!args.pattern.includes('@test.local') && !args.pattern.includes('audit-')) {
+  if (!isPatternAllowed(args.pattern)) {
     console.error(
-      `Refusing pattern "${args.pattern}" — must match @test.local or start with audit-.`
+      `Refusing pattern "${args.pattern}" — must contain "@test.local" AND start with "audit-".`
     );
     process.exit(2);
   }
@@ -103,7 +124,16 @@ async function main() {
   }
 }
 
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only run the CLI when this file is executed directly, not when imported by tests.
+const invokedDirectly =
+  typeof process !== 'undefined' &&
+  Array.isArray(process.argv) &&
+  process.argv[1] &&
+  import.meta.url === `file://${process.argv[1]}`;
+
+if (invokedDirectly) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

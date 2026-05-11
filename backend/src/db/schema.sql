@@ -25,6 +25,9 @@ create table if not exists users (
 
 create index if not exists users_email_idx on users(lower(email));
 
+-- token_version for logout-all-devices: bump to invalidate all existing JWTs.
+alter table users add column if not exists token_version integer not null default 0;
+
 create table if not exists lessons (
   id uuid primary key default gen_random_uuid(),
   title text not null,
