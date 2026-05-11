@@ -18,6 +18,19 @@
 
 ## 2. Railway (backend)
 
+> **Deploys are manual today.** `railway status --json` shows
+> `source.repo: null` for the `baeu-backend` service, so GitHub pushes do
+> **not** trigger a Railway build. Ship backend changes with:
+>
+> ```bash
+> cd backend
+> railway up --service baeu-backend --ci
+> ```
+>
+> **P1 ops gap:** link the GitHub repo to the Railway service in the dashboard
+> (Service → Settings → Source) so future pushes autodeploy. Until then, treat
+> backend deploys as a manual step.
+
 1. New project → Deploy from GitHub. Pick this repo.
 2. Set the **Root Directory** to `backend/` in service settings.
 3. Environment variables:

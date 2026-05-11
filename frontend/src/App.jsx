@@ -6,6 +6,8 @@ import Progress from './pages/Progress.jsx';
 import Home from './pages/Home.jsx';
 import Module from './pages/Module.jsx';
 import Lesson from './pages/Lesson.jsx';
+import About from './pages/About.jsx';
+import AccountSettings from './components/AccountSettings.jsx';
 import { ToastProvider } from './components/Toast.jsx';
 import { api, auth } from './api.js';
 
@@ -74,16 +76,24 @@ function Shell() {
   const isPractice = path.startsWith('/practice');
   const isModule = path.startsWith('/module/');
   const isLesson = path.startsWith('/lesson/');
+  const isAbout = path.startsWith('/about');
+  const isAccount = path.startsWith('/account');
   const moduleSlug = isModule ? path.slice('/module/'.length) : null;
   const lessonSlug = isLesson ? path.slice('/lesson/'.length) : null;
 
+  const active = isAdmin
+    ? 'admin'
+    : isProgress
+      ? 'progress'
+      : isAbout
+        ? 'about'
+        : isAccount
+          ? 'account'
+          : 'practice';
+
   return (
     <div className="min-h-screen bg-background-default">
-      <Header
-        user={user}
-        active={isAdmin ? 'admin' : isProgress ? 'progress' : 'practice'}
-        onLogout={logout}
-      />
+      <Header user={user} active={active} onLogout={logout} />
       <main className="container py-8">
         {renderPage({
           path,
@@ -97,15 +107,19 @@ function Shell() {
           isPractice,
           isModule,
           isLesson,
+          isAbout,
+          isAccount,
         })}
       </main>
     </div>
   );
 }
 
-function renderPage({ query, user, setUser, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson }) {
+function renderPage({ query, user, setUser, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson, isAbout, isAccount }) {
+  if (isAbout) return <About />;
   if (isAdmin) return <Admin />;
   if (!user) return <Auth onAuthed={setUser} />;
+  if (isAccount) return <AccountSettings user={user} onCleared={() => setUser(null)} />;
   if (isProgress) return <Progress />;
   if (isLesson && lessonSlug) {
     return <Lesson slug={lessonSlug} returnTo={query.from || '#/'} />;
@@ -138,14 +152,22 @@ function Header({ user, active, onLogout }) {
               <NavLink href="#/progress" active={active === 'progress'}>Progress</NavLink>
             </>
           )}
+          <NavLink href="#/about" active={active === 'about'}>About</NavLink>
           {user?.role === 'admin' && (
             <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
           )}
           {user && (
             <div className="flex items-center gap-2 ml-2 pl-3 border-l border-gray-200">
-              <span className="text-gray-600 hidden sm:inline">
-                {user.displayName || user.email}
-              </span>
+              <a
+                href="#/account"
+                data-testid="account-link"
+                className={`no-underline transition-colors ${
+                  active === 'account' ? 'text-primary-700 font-semibold' : 'text-gray-600 hover:text-primary-500'
+                }`}
+              >
+                Account
+              </a>
+              <span className="text-gray-300">·</span>
               <button
                 onClick={onLogout}
                 className="text-gray-500 hover:text-primary-500 transition-colors bg-transparent"
