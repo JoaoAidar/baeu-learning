@@ -20,6 +20,15 @@ create extension if not exists pgcrypto;
 
 drop table if exists users cascade;
 
+-- ALSO drop the practice tables explicitly. `drop ... cascade` on `users`
+-- removes FK constraints that pointed at users.id, but does NOT drop the
+-- practice tables themselves — so they would survive with stale `user_id uuid`
+-- columns and break inserts of Better Auth's text ids. Force the recreate.
+-- Safe per Joao: no real users / no real practice data.
+drop table if exists practice_attempts cascade;
+drop table if exists user_skill_mastery cascade;
+drop table if exists practice_sessions cascade;
+
 -- ============================================================================
 -- 2. Module / lesson / exercise content tables. Unchanged.
 -- ============================================================================
