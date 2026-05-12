@@ -6,6 +6,7 @@ if (!globalThis.crypto) globalThis.crypto = webcrypto;
 
 import { betterAuth } from 'better-auth';
 import pg from 'pg';
+import { buildPgSslConfig } from './db/ssl.js';
 import { sendEmail, renderPasswordResetEmail } from './services/EmailService.js';
 
 const { Pool } = pg;
@@ -19,10 +20,9 @@ let _auth = null;
 function buildPool() {
   const url = process.env.DATABASE_URL;
   if (!url) return null;
-  const hasSslMode = url.includes('sslmode=');
   return new Pool({
     connectionString: url,
-    ssl: hasSslMode ? undefined : { rejectUnauthorized: false },
+    ssl: buildPgSslConfig(url, { requireInProduction: true, label: 'better-auth db' }),
     max: 5,
     idleTimeoutMillis: 30_000,
   });

@@ -1,0 +1,10 @@
+{
+  "service": "vercel",
+  "generated_at": "2026-05-12T15:41:13.063797+00:00",
+  "target": "https://baeu-learning.vercel.app",
+  "ok": true,
+  "text": "Fetching deployment \"baeu-learning.vercel.app\" in joaoaidars-projects\n> Fetched deployment \"baeu-learning-afxxw8i1j-joaoaidars-projects.vercel.app\" in joaoaidars-projects [508ms]\n\n  General\n\n    id\t\tdpl_6hk8Yj2Y66DovigWtWo9B4zgrnQd\n    name\tbaeu-learning\n    target\tproduction\n    status\t● Ready\n    url\t\thttps://baeu-learning-afxxw8i1j-joaoaidars-projects.vercel.app\n    created\tMon May 11 2026 17:26:33 GMT-0300 (Brasilia Standard Time) [19h ago]\n\n\n  Aliases\n\n    ╶ https://baeu-learning.vercel.app\n    ╶ https://baeu-learning-joaoaidars-projects.vercel.app\n    ╶ https://baeu-learning-git-main-joaoaidars-projects.vercel.app\n    \n\n  Builds\n\n    ╶ .        [0ms]\n    \n",
+  "env_loaded_keys": [
+    "VERCEL_TOKEN"
+  ]
+}

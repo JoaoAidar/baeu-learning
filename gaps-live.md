@@ -246,6 +246,22 @@ All three (Resend + Google ID/Secret) trigger automatic Railway redeploy via the
 ### Content seed gap
 
 Persona/product audits still flag (`worker-c-baeu-anamnese-fazenda.md`, 2026-05-11-2322) that 3 of 8 modules have zero grammar lessons (`greetings`, `vocab-daily`, `reading`). Closure requires Korean-language content authoring; no LLM seed path planned. Tracked in `RUNBOOK.md §4`. Not a code or infra gate.
+
+## Lessons + hardening + persona browser audit — 2026-05-12
+
+**Source report:** `/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/PERSONA_BROWSER_AUDIT.md`
+
+**Verdict:** READY for controlled learner validation; WATCH for buyer/demo trust and provider-gated Google/Resend flows.
+
+| Severity | Surface | Finding | Evidence | Closure gate |
+|---|---|---|---|---|
+| OK | Smokes | Backend `npm test` passed 77/77; frontend build passed; local Playwright passed 16 with prod smoke skipped by design; production smoke passed after redeploy. | Local command outputs; `npm run e2e:prod-smoke` passed in 9.2s. | Keep these as release gates. |
+| OK | Production deploy | Backend Railway latest status SUCCESS at 2026-05-12T18:09Z; frontend Vercel production deploy `baeu-learning-6us6fh6s2-joaoaidars-projects.vercel.app` is READY and aliased to canonical URL. | Railway status wrapper; Vercel deploy output. | Keep backend/frontend deploy proof paired with prod smoke. |
+| OK | Content | The previously empty grammar-lesson modules now have 3 lessons each: `greetings`, `vocab-daily`, `reading`. | Public API counts and persona screenshots `04-greetings-module-with-lessons.png`, `05-greeting-lesson.png`. | Add deeper content QA later; not a core flow blocker. |
+| OK | Hardening | Backend health returns 200 with `store:"pg"` and CSP/Helmet headers; Postgres clients now fail closed in production without `sslmode`. | `GET /api/v1/health` headers; backend tests `dbSsl` and `securityHeaders`. | Consider `sslmode=verify-full` later to silence future pg semantic warning. |
+| OK | Persona browser | Fresh synthetic learner completed signup, lesson discovery, lesson read, practice feedback, progress, invalid-route recovery, mobile relogin/progress, and logout. No console errors, page errors, or browser responses >=400 were captured. Cleanup succeeded. | `persona-evidence.json`; screenshots 01-10. | Repeat after buyer/about, provider auth, or nav/header changes. |
+| P2 | Buyer/demo trust | About exists but remains light for pricing/pilot/proof/caveats. | Screenshot `02-about-buyer-trust.png`. | Add compact buyer/demo trust section before claiming buyer-ready. |
+| Watch | Provider flows | Google OAuth and Resend delivery remain env/provider-gated. | `RUNBOOK.md`; not browser-observed in this run. | Configure provider envs, redeploy, and run targeted browser smoke. |
 ---
 
 ## Engineering closure history (May 9–11, 2026)
@@ -1062,3 +1078,54 @@ Empty. Every remaining item depends on user action in an external provider (Goog
 
 ---
 
+<!-- deployed-brutal-audit:baeu-learning:start -->
+## Brutal Audit Deploy - 2026-05-12
+
+Source: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`.
+
+**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 3/3 [200] p95=482.6ms, api_health 3/3 [200] p95=431.5ms.
+
+| Priority | Finding | Evidence | Closure gate |
+| --- | --- | --- | --- |
+| P1 | Learner first-value path must be proven in production, not inferred from frontend/backend liveness. | Use Baeu gaps-live.md and prod smoke artifacts; backend canonical URL is baeu-backend, not the stale baeu-learning-api alias. | Signup/login -> practice question -> answer feedback -> progress update passes on production with cleanup notes. |
+| P2 | Local checkout has uncommitted changes, so repo evidence may be ahead of deploy. | `git status --short` was not clean during the audit. | Record deploy/source commit before claiming fixes are live. |
+
+**False-green path:** HTTP 200 is liveness only; it does not prove authenticated browser journeys, tenant/privacy, billing, provider E2E, data truth, import persistence, or report governance.
+
+**Agent attack rule:** future agents should start from this section plus the linked report, pick one P0/P1 gate, and return evidence that closes or reclassifies it.
+
+<!-- deployed-brutal-audit:baeu-learning:end -->
+
+---
+
+## Kairos fix pass 2026-05-12-1403 — Baeu learner first-value gate — 2026-05-12 14:40 -03
+
+**Gate:** signup/login -> practice question -> answer feedback -> progress persisted.
+
+**Status:** BLOCKED / PARTIAL, not closed. The production smoke reached signup, module practice, a visible question, answer feedback, and a Progress screen showing `Total = 1`, but the run failed before logout/login persistence verification because the deployed Progress page did not expose the expected `data-testid="stat-total"` locator. This is not a health-check green and not enough to claim the full persisted-progress gate.
+
+**Evidence inspected:**
+
+- Consolidated audit `/Users/joaoadair/Documents/AI/Audits/kairos-audit-2026-05-12-1403.md`: marks Baeu-Learning as `LIMITED READY` with P1 gate `signup/login -> question -> feedback -> progress`.
+- Run artifacts under `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-12-1403/`: browser smoke only proves public entrypoint/title, not authenticated learner flow.
+- Repo scripts: `/Users/joaoadair/Documents/AI/Baeu_Learning/frontend/package.json` has `npm run e2e:prod-smoke`.
+- Test read: `/Users/joaoadair/Documents/AI/Baeu_Learning/frontend/e2e/prod-smoke.spec.js` asserts signup -> module -> practice -> feedback -> progress -> logout/login -> persisted progress and cleanup.
+- Source read: `/Users/joaoadair/Documents/AI/Baeu_Learning/frontend/src/pages/Progress.jsx` has a local dynamic `data-testid` generator that should produce `stat-total` for the Total card.
+- Working tree note: repo is dirty with existing changes in `DEPLOY.md`, e2e files, app pages, `.github/`, `audit-smokes/`, `ops/`, and `gaps-live.md`; no product code was edited in this pass.
+
+**Command run:**
+
+```bash
+cd /Users/joaoadair/Documents/AI/Baeu_Learning/frontend
+npm run e2e:prod-smoke -- --workers=1
+```
+
+**Result:** failed `1/1`.
+
+- Cleanup succeeded: `[prod-smoke] cleanup: deleted synthetic learner`.
+- Failure location: `/Users/joaoadair/Documents/AI/Baeu_Learning/frontend/e2e/prod-smoke.spec.js:78`.
+- Failure: `getByTestId('stat-total')` not found within 15s.
+- Playwright error context snapshot shows the Progress page rendered authenticated data with `Total` value `"1"`, `Streak 1d`, `Accuracy 100%`, `Last 7d 1`, and skill rows, so practice attempt aggregation appeared on screen.
+- Generated artifacts: `/Users/joaoadair/Documents/AI/Baeu_Learning/frontend/test-results/prod-smoke-prod-fresh-lear-f9483-d-progress-survives-relogin-chromium/error-context.md`, `test-failed-1.png`, `trace.zip`.
+
+**Next step:** do not broaden scope. Align the production frontend and the prod smoke selector contract for Progress (`stat-total` or an equivalent stable assertion), confirm the deployed bundle contains it, then rerun the exact same command with `--workers=1`. Only close this gate after the smoke passes through logout/login and re-verifies persisted progress after relogin.

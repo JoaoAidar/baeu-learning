@@ -76,7 +76,7 @@ export async function answerOne(page, prevQuestionId = null) {
   if (optionCount > 0) {
     await mcOptions.first().click();
   } else {
-    await page.getByPlaceholder(/type your answer/i).fill('x');
+    await card.locator('input').fill('x');
   }
   await page.getByRole('button', { name: /^submit$/i }).click();
 

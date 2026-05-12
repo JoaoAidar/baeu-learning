@@ -96,8 +96,10 @@ Total: ~$5/mo until you have real traffic.
 
 ## Hardening before growing
 
-- [ ] Move JWT to httpOnly cookie (today it's localStorage — XSS-vulnerable).
+- [x] Move auth sessions to httpOnly cookie via Better Auth.
 - [ ] Add Sentry / similar on backend (Railway captures stdout but no error grouping).
 - [ ] Move rate-limit buckets to Redis if Railway scales beyond 1 instance.
-- [ ] Add a real "forgot password" flow — currently lockout requires admin reset.
-- [ ] In Railway provider settings, set `healthcheckPath=/api/v1/health`.
+- [x] Add forgot-password/reset-password flow. Resend is wired; production email delivery still requires `RESEND_API_KEY`.
+- [ ] Link Railway `baeu-backend` to GitHub so backend deploys are no longer manual.
+- [ ] Set Google OAuth credentials or hide/label the Google sign-in button until configured.
+- [ ] Prove observability in Grafana/OTEL, or explicitly mark Baeu as not instrumented.

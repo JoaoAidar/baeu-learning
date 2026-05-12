@@ -1,0 +1,14 @@
+{
+  "service": "vercel",
+  "generated_at": "2026-05-12T15:41:17.871895+00:00",
+  "project": "baeu-learning",
+  "ok": true,
+  "events": 0,
+  "level_counts": {},
+  "status_counts": {},
+  "samples": [],
+  "error": "",
+  "env_loaded_keys": [
+    "VERCEL_TOKEN"
+  ]
+}

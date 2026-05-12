@@ -87,6 +87,16 @@ function Shell() {
   const isResetPassword = path.startsWith('/reset-password');
   const moduleSlug = isModule ? path.slice('/module/'.length) : null;
   const lessonSlug = isLesson ? path.slice('/lesson/'.length) : null;
+  const isKnownRoute =
+    path === '/' ||
+    isAdmin ||
+    isProgress ||
+    isPractice ||
+    isModule ||
+    isLesson ||
+    isAbout ||
+    isAccount ||
+    isResetPassword;
 
   const active = isAdmin
     ? 'admin'
@@ -127,15 +137,17 @@ function Shell() {
           isLesson,
           isAbout,
           isAccount,
+          isKnownRoute,
         })}
       </main>
     </div>
   );
 }
 
-function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson, isAbout, isAccount }) {
+function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson, isAbout, isAccount, isKnownRoute }) {
   if (isAbout) return <About />;
   if (isAdmin) return <Admin />;
+  if (!isKnownRoute) return <NotFound />;
   if (!user) return <Auth />;
   if (isAccount) return <AccountSettings user={user} />;
   if (isProgress) return <Progress />;
@@ -152,6 +164,28 @@ function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, 
   }
   if (isModule && moduleSlug) return <Module slug={moduleSlug} />;
   return <Home />;
+}
+
+function NotFound() {
+  return (
+    <div data-testid="not-found-page" className="max-w-xl mx-auto bg-white rounded-xl shadow-card border border-gray-100 p-8 text-center">
+      <p className="text-sm font-semibold uppercase tracking-wide text-primary-600 mb-2">
+        Page not found
+      </p>
+      <h1 className="font-heading text-2xl font-bold text-gray-900 mb-3">
+        This route does not exist.
+      </h1>
+      <p className="text-gray-600 mb-6">
+        Head back to practice or use the navigation above.
+      </p>
+      <a
+        href="#/"
+        className="inline-flex items-center justify-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all no-underline"
+      >
+        Back to practice
+      </a>
+    </div>
+  );
 }
 
 function ResetPassword({ query }) {
@@ -214,13 +248,13 @@ function ResetPassword({ query }) {
 function Header({ user, role, active, onLogout }) {
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
-      <div className="container py-4 flex items-center justify-between">
-        <a href="#/" className="flex items-center gap-2 no-underline">
-          <span className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold text-sm">배</span>
-          <span className="font-heading font-bold text-xl text-gray-900">Baeu</span>
+      <div className="container py-3 sm:py-4 flex flex-wrap items-center gap-2 sm:gap-4">
+        <a href="#/" className="flex items-center gap-2 no-underline flex-shrink-0">
+          <span className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">배</span>
+          <span className="font-heading font-bold text-xl text-gray-900 leading-none">Baeu</span>
           <span className="text-gray-400 text-sm hidden sm:inline">· Korean practice</span>
         </a>
-        <nav className="flex items-center gap-1 sm:gap-3 text-sm">
+        <nav className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-1 sm:gap-3 text-sm">
           {user && (
             <>
               <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
@@ -232,20 +266,22 @@ function Header({ user, role, active, onLogout }) {
             <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
           )}
           {user && (
-            <div className="flex items-center gap-2 ml-2 pl-3 border-l border-gray-200">
+            <div className="flex items-center gap-1 sm:gap-2 ml-auto sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200">
               <a
                 href="#/account"
                 data-testid="account-link"
-                className={`no-underline transition-colors ${
+                className={`px-2 py-1.5 rounded-md no-underline transition-colors whitespace-nowrap ${
                   active === 'account' ? 'text-primary-700 font-semibold' : 'text-gray-600 hover:text-primary-500'
                 }`}
               >
                 Account
               </a>
-              <span className="text-gray-300">·</span>
+              <span className="text-gray-300 hidden sm:inline">·</span>
               <button
+                type="button"
+                data-testid="logout-btn"
                 onClick={onLogout}
-                className="text-gray-500 hover:text-primary-500 transition-colors bg-transparent"
+                className="px-2 py-1.5 rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent whitespace-nowrap"
               >
                 Log out
               </button>
@@ -261,7 +297,7 @@ function NavLink({ href, active, children }) {
   return (
     <a
       href={href}
-      className={`px-3 py-1.5 rounded-md no-underline transition-colors ${
+      className={`px-2 sm:px-3 py-1.5 rounded-md no-underline transition-colors whitespace-nowrap ${
         active
           ? 'bg-primary-50 text-primary-700 font-semibold'
           : 'text-gray-600 hover:text-primary-500'

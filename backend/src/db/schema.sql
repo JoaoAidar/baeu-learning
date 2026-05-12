@@ -114,6 +114,10 @@ create table if not exists "user" (
   "updatedAt" timestamptz not null default current_timestamp
 );
 
+-- Better Auth's default unique(email) is case-sensitive. This index prevents
+-- Foo@example.com and foo@example.com from becoming separate accounts.
+create unique index if not exists user_email_lower_uniq on "user"(lower(email));
+
 create table if not exists "session" (
   id text primary key not null,
   "expiresAt" timestamptz not null,

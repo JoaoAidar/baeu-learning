@@ -1,0 +1,110 @@
+{
+  "service": "vercel",
+  "generated_at": "2026-05-12T15:39:00.894359+00:00",
+  "source": "api",
+  "count": 9,
+  "projects": [
+    {
+      "name": "anamnese",
+      "id": "prj_xWoK9dbfEV99OgTJJNFh7XqvwxZd",
+      "framework": "nextjs",
+      "updatedAt": 1778600153015,
+      "latest": {
+        "url": "anamnese-eq1l2dgq9-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778600122313
+      }
+    },
+    {
+      "name": "architrack",
+      "id": "prj_gkf6sELpkyg034f08xOFHoWBflYZ",
+      "framework": null,
+      "updatedAt": 1778599848215,
+      "latest": {
+        "url": "architrack-qzxkyclcz-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778599828278
+      }
+    },
+    {
+      "name": "vitrine-ai",
+      "id": "prj_WzR7QDYOl1nOYG1VJv5wxVjE6wRg",
+      "framework": "services",
+      "updatedAt": 1778599437725,
+      "latest": {
+        "url": "vitrine-9t7tmlgbv-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778599381404
+      }
+    },
+    {
+      "name": "gestor-financeiro-web",
+      "id": "prj_H87pUmPpBu59n4Eea0kfgofy0j6a",
+      "framework": "nextjs",
+      "updatedAt": 1778544959189,
+      "latest": {
+        "url": "gestor-financeiro-7y0sahjep-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778544880197
+      }
+    },
+    {
+      "name": "fazenda",
+      "id": "prj_lc3tykWevnftFBR1QkE76CEGEjc3",
+      "framework": "nextjs",
+      "updatedAt": 1778544284671,
+      "latest": {
+        "url": "fazenda-70ug7ukox-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778544284141
+      }
+    },
+    {
+      "name": "valuation-valuation-web",
+      "id": "prj_vtyAhipOmySlqj9t4ThZ1rDI1lwm",
+      "framework": "nextjs",
+      "updatedAt": 1778543677664,
+      "latest": {
+        "url": "valuation-valuation-84cti58ta-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778543605928
+      }
+    },
+    {
+      "name": "baeu-learning",
+      "id": "prj_ToPmeEe67FhH4eRhCXLcE27c9byl",
+      "framework": "vite",
+      "updatedAt": 1778531202664,
+      "latest": {
+        "url": "baeu-learning-afxxw8i1j-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778531193546
+      }
+    },
+    {
+      "name": "prato-cheio",
+      "id": "prj_jAmz3rbkqopLK18Ye3md12Nm4JVJ",
+      "framework": "nextjs",
+      "updatedAt": 1778520665720,
+      "latest": {
+        "url": "prato-cheio-d47h5qsx5-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778520371018
+      }
+    },
+    {
+      "name": "ecommify",
+      "id": "prj_kLpoICTL6v2Vuzb97NfSJ4Cwtvqe",
+      "framework": "nextjs",
+      "updatedAt": 1778520444090,
+      "latest": {
+        "url": "ecommify-ceobiqqul-joaoaidars-projects.vercel.app",
+        "state": null,
+        "createdAt": 1778520341087
+      }
+    }
+  ],
+  "env_loaded_keys": [
+    "VERCEL_TOKEN"
+  ]
+}

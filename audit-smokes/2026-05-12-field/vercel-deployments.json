@@ -1,0 +1,53 @@
+{
+  "service": "vercel",
+  "generated_at": "2026-05-12T15:41:08.598450+00:00",
+  "project": "baeu-learning",
+  "ok": true,
+  "deployments": [
+    {
+      "uid": null,
+      "url": "baeu-learning-afxxw8i1j-joaoaidars-projects.vercel.app",
+      "state": "READY",
+      "created": 1778531193546,
+      "target": "production",
+      "creator": "joaoaidar"
+    },
+    {
+      "uid": null,
+      "url": "baeu-learning-lbbcq5nro-joaoaidars-projects.vercel.app",
+      "state": "READY",
+      "created": 1778525296711,
+      "target": "production",
+      "creator": "joaoaidar"
+    },
+    {
+      "uid": null,
+      "url": "baeu-learning-bsfs3mhqo-joaoaidars-projects.vercel.app",
+      "state": "READY",
+      "created": 1778524939582,
+      "target": "production",
+      "creator": "joaoaidar"
+    },
+    {
+      "uid": null,
+      "url": "baeu-learning-90y1c02yj-joaoaidars-projects.vercel.app",
+      "state": "READY",
+      "created": 1778524658669,
+      "target": "production",
+      "creator": "joaoaidar"
+    },
+    {
+      "uid": null,
+      "url": "baeu-learning-oujf103dx-joaoaidars-projects.vercel.app",
+      "state": "READY",
+      "created": 1778524175968,
+      "target": "production",
+      "creator": "joaoaidar"
+    }
+  ],
+  "error": "",
+  "raw_preview": "",
+  "env_loaded_keys": [
+    "VERCEL_TOKEN"
+  ]
+}

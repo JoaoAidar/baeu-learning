@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import pg from 'pg';
+import { buildPgSslConfig } from './ssl.js';
 
 const { Client } = pg;
 
@@ -81,7 +82,7 @@ async function main() {
 
   const client = new Client({
     connectionString: url,
-    ssl: url.includes('sslmode=') ? undefined : { rejectUnauthorized: false },
+    ssl: buildPgSslConfig(url, { requireInProduction: true, label: 'cleanup db' }),
   });
   await client.connect();
 

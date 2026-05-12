@@ -1,0 +1,79 @@
+{
+  "service": "railway",
+  "generated_at": "2026-05-12T15:41:09.209083+00:00",
+  "cwd": "backend",
+  "ok": true,
+  "source": "cli",
+  "token_preference": "api",
+  "events": 22,
+  "level_counts": {
+    "info": 12,
+    "error": 10
+  },
+  "status_counts": {
+    "unknown": 22
+  },
+  "samples": [
+    {
+      "timestamp": "2026-05-12T15:34:42.268978754Z",
+      "level": "info",
+      "status": null,
+      "path": null,
+      "message": "Starting Container"
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.777986239Z",
+      "level": "info",
+      "status": null,
+      "path": null,
+      "message": "[baeu] listening on :8080 (store=pg)"
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.777994610Z",
+      "level": "error",
+      "status": null,
+      "path": null,
+      "message": "(node:1) Warning: SECURITY WARNING: The SSL modes 'prefer', 'require', and 'verify-ca' are treated as aliases for 'verify-full'."
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.777999510Z",
+      "level": "error",
+      "status": null,
+      "path": null,
+      "message": "In the next major version (pg-connection-string v3.0.0 and pg v9.0.0), these modes will adopt standard libpq semantics, which have weaker security guarantees."
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.778004591Z",
+      "level": "error",
+      "status": null,
+      "path": null,
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.778009488Z",
+      "level": "error",
+      "status": null,
+      "path": null,
+      "message": "To prepare for this change:"
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.778014078Z",
+      "level": "error",
+      "status": null,
+      "path": null,
+      "message": "- If you want the current behavior, explicitly use 'sslmode=verify-full'"
+    },
+    {
+      "timestamp": "2026-05-12T15:34:43.778017815Z",
+      "level": "error",
+      "status": null,
+      "path": null,
+      "message": "- If you want libpq compatibility now, use 'uselibpqcompat=true&sslmode=require'"
+    }
+  ],
+  "error": "",
+  "env_loaded_keys": [
+    "RAILWAY_API_TOKEN",
+    "RAILWAY_TOKEN"
+  ]
+}

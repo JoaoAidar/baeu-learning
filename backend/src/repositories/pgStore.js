@@ -1,22 +1,12 @@
 import pg from 'pg';
+import { buildPgSslConfig } from '../db/ssl.js';
 
 const { Pool } = pg;
 
 export function createPgStore({ connectionString }) {
-  // SSL hardening: in production, require sslmode= in the connection string.
-  // Falling back to `rejectUnauthorized: false` silently is a MITM risk.
-  // Dev/test keep the permissive behavior so local Postgres without TLS works.
-  const isProd = process.env.NODE_ENV === 'production';
-  const hasSslMode = typeof connectionString === 'string' && connectionString.includes('sslmode=');
-  if (isProd && !hasSslMode) {
-    throw new Error(
-      'pgStore: DATABASE_URL must include `sslmode=require` (or stricter) in production. ' +
-        'Append `?sslmode=require` to the connection string.'
-    );
-  }
   const pool = new Pool({
     connectionString,
-    ssl: hasSslMode ? undefined : { rejectUnauthorized: false },
+    ssl: buildPgSslConfig(connectionString, { requireInProduction: true, label: 'pgStore' }),
     max: 10,
     idleTimeoutMillis: 30_000,
   });

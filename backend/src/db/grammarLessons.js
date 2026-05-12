@@ -424,4 +424,277 @@ Treating 이에요 like a verb you conjugate. It's not — it just attaches to t
 Not "Topic 은/는 verb-conjugate-thing".
 `,
   },
+
+  {
+    slug: 'greeting-register-map',
+    module_slug: 'greetings',
+    title: 'Greetings and register: 안녕하세요 vs 안녕',
+    summary: 'Pick the greeting that matches the relationship. Korean greetings carry social distance.',
+    related_error_tags: ['honorific_formality'],
+    related_skill_tags: ['greetings', 'phrases', 'register', 'formality'],
+    order_index: 100,
+    body_md: `## The rule
+
+Use **안녕하세요** as your safe default. It is polite, natural, and works with strangers, teachers, shop staff, and older people.
+
+Use **안녕** only with close friends, children, or people who have clearly agreed to casual speech.
+
+| Situation | Use | Why |
+|---|---|---|
+| First meeting | 안녕하세요 | polite and neutral |
+| Teacher / older person | 안녕하세요 | shows respect |
+| Close same-age friend | 안녕 | casual |
+| Business or service setting | 안녕하세요 | safest register |
+
+## Common mistake
+
+Learners see **안녕** first and use it everywhere. That can sound too casual, like saying "hey" to a professor.
+
+If you are unsure, choose **안녕하세요**.
+`,
+  },
+
+  {
+    slug: 'thank-you-and-sorry',
+    module_slug: 'greetings',
+    title: 'Thank you and sorry: 감사합니다 / 죄송합니다',
+    summary: 'Two high-frequency polite phrases that make beginner Korean sound respectful immediately.',
+    related_error_tags: ['honorific_formality', 'unknown'],
+    related_skill_tags: ['greetings', 'phrases', 'thanks', 'apology', 'formality'],
+    order_index: 110,
+    body_md: `## Core phrases
+
+| Korean | English | Register |
+|---|---|---|
+| 감사합니다 | thank you | formal-polite |
+| 고마워요 | thank you | polite-casual |
+| 죄송합니다 | I am sorry | formal-polite |
+| 미안해요 | I am sorry | polite-casual |
+
+For TOPIK 1 and real beginner conversations, **감사합니다** and **죄송합니다** are the safest public forms.
+
+## The pattern
+
+- Use the **-습니다** style when you want to sound respectful or careful.
+- Use **-아요/어요** style when the setting is polite but more everyday.
+
+## Common mistake
+
+Do not use **고마워** or **미안해** with strangers. Those are casual forms. They are fine with close friends, but not as a default.
+`,
+  },
+
+  {
+    slug: 'introducing-yourself',
+    module_slug: 'greetings',
+    title: 'Introducing yourself with 저는 ...이에요',
+    summary: 'A simple first-meeting pattern: name, nationality, role, and Korean-learning identity.',
+    related_error_tags: ['particle', 'unknown'],
+    related_skill_tags: ['greetings', 'identity', 'topic_marker', 'copula'],
+    order_index: 120,
+    body_md: `## The pattern
+
+Use **저는** to introduce yourself:
+
+> 저는 [name]이에요/예요.
+> 저는 [nationality] 사람이에요.
+> 저는 한국어를 배워요.
+
+**저는** means "as for me" or "I". It is the natural topic marker for self-introductions.
+
+## Examples
+
+| Korean | English |
+|---|---|
+| 저는 주앙이에요. | I am Joao. |
+| 저는 브라질 사람이에요. | I am Brazilian. |
+| 저는 학생이에요. | I am a student. |
+| 저는 한국어를 배워요. | I am learning Korean. |
+
+## Common mistake
+
+Do not start beginner introductions with **제가** unless you are answering "who?" specifically. For normal introductions, **저는** sounds much more natural.
+`,
+  },
+
+  {
+    slug: 'daily-noun-chunks',
+    module_slug: 'vocab-daily',
+    title: 'Daily vocabulary as chunks, not isolated words',
+    summary: 'Learn everyday nouns in small usable chunks: object + action + place.',
+    related_error_tags: ['vocabulary', 'word_order'],
+    related_skill_tags: ['vocabulary', 'daily_life', 'objects', 'verbs'],
+    order_index: 130,
+    body_md: `## The rule
+
+Do not memorize daily vocabulary as a loose list. Attach each noun to an action.
+
+| Noun | Chunk | Meaning |
+|---|---|---|
+| 밥 | 밥을 먹어요 | eat a meal |
+| 물 | 물을 마셔요 | drink water |
+| 책 | 책을 읽어요 | read a book |
+| 커피 | 커피를 마셔요 | drink coffee |
+
+This helps you practice vocabulary and particles at the same time.
+
+## Why it works
+
+Korean sentences often make the role of each noun clear through particles. A word list teaches recognition. A chunk teaches use.
+
+## Common mistake
+
+Learners know **책 = book**, but freeze when asked to say "I read a book." Build the full chunk: **책을 읽어요**.
+`,
+  },
+
+  {
+    slug: 'food-and-preferences',
+    module_slug: 'vocab-daily',
+    title: 'Food and preferences: 좋아해요 / 잘 못 먹어요',
+    summary: 'Say what you like, dislike, and cannot eat using safe TOPIK 1 patterns.',
+    related_error_tags: ['vocabulary', 'verb_conjugation'],
+    related_skill_tags: ['food', 'preferences', 'negation', 'daily_life'],
+    order_index: 140,
+    body_md: `## Useful patterns
+
+| Pattern | Meaning | Example |
+|---|---|---|
+| X을/를 좋아해요 | I like X | 한국 음식을 좋아해요. |
+| X을/를 안 좋아해요 | I do not like X | 매운 음식을 안 좋아해요. |
+| X을/를 잘 못 먹어요 | I cannot eat X well | 매운 음식을 잘 못 먹어요. |
+
+## Particle reminder
+
+Food is usually the object of 좋아하다 or 먹다, so it takes **을/를**:
+
+- 김치**를** 좋아해요.
+- 밥**을** 먹어요.
+
+## Common mistake
+
+Do not translate "I like spicy food" word by word into a be-verb sentence. Korean uses **좋아해요** as an action verb:
+
+> 저는 매운 음식을 좋아해요.
+`,
+  },
+
+  {
+    slug: 'time-and-place-mini-sentences',
+    module_slug: 'vocab-daily',
+    title: 'Time and place mini-sentences',
+    summary: 'Combine daily places and times with 에/에서 to make practical beginner sentences.',
+    related_error_tags: ['particle', 'vocabulary'],
+    related_skill_tags: ['time', 'places', 'daily_life', 'location'],
+    order_index: 150,
+    body_md: `## Two particles for place and time
+
+Use **에** for time and destination/static location. Use **에서** for where an action happens.
+
+| Korean | English | Why |
+|---|---|---|
+| 아침에 공부해요. | I study in the morning. | time uses 에 |
+| 학교에 가요. | I go to school. | destination uses 에 |
+| 도서관에서 공부해요. | I study at the library. | action location uses 에서 |
+| 집에서 쉬어요. | I rest at home. | action location uses 에서 |
+
+## Common mistake
+
+Learners often use one location particle everywhere. Ask yourself: destination/time/static location (**에**) or action happening there (**에서**)?
+`,
+  },
+
+  {
+    slug: 'reading-short-sentences',
+    module_slug: 'reading',
+    title: 'Reading short Korean sentences',
+    summary: 'Read for particles and verb endings first, then translate the sentence.',
+    related_error_tags: ['hangul_reading', 'word_order'],
+    related_skill_tags: ['reading', 'sentence', 'particles', 'verbs'],
+    order_index: 160,
+    body_md: `## Reading order
+
+When a Korean sentence looks dense, do three passes:
+
+1. Find the verb at the end.
+2. Find particles: 은/는, 이/가, 을/를, 에, 에서.
+3. Translate the sentence by role, not by English word order.
+
+Example:
+
+> 저는 도서관에서 한국어를 공부해요.
+
+- 저는 = as for me
+- 도서관에서 = at the library, action location
+- 한국어를 = Korean language, object
+- 공부해요 = study
+
+Natural English: **I study Korean at the library.**
+`,
+  },
+
+  {
+    slug: 'reading-without-romanization',
+    module_slug: 'reading',
+    title: 'Stop leaning on romanization',
+    summary: 'Romanization helps at first, then slows reading. Build direct Hangul-to-sound recognition.',
+    related_error_tags: ['romanization_dependency', 'hangul_reading'],
+    related_skill_tags: ['reading', 'hangul', 'fluency'],
+    order_index: 170,
+    body_md: `## The problem
+
+Romanization creates a middle step:
+
+> 한국어 → hangugeo → "Korean language"
+
+That middle step is slow and often misleading. Korean spelling is more consistent than English spelling; use it directly.
+
+## Practice method
+
+Take a short sentence and cover any romanization. Read each block aloud:
+
+> 저는 한국어를 배워요.
+
+Read: 저 / 는 / 한 / 국 / 어 / 를 / 배 / 워 / 요
+
+Then attach meaning.
+
+## Common mistake
+
+Do not judge Korean vowels through English spelling. For example, **어** is not exactly "uh" and **으** has no clean English match. Listen, imitate, and connect the sound to Hangul itself.
+`,
+  },
+
+  {
+    slug: 'reading-for-main-idea',
+    module_slug: 'reading',
+    title: 'Reading for the main idea',
+    summary: 'For TOPIK-style short passages, identify who, where, time, and final verb before translating details.',
+    related_error_tags: ['word_order', 'unknown'],
+    related_skill_tags: ['reading', 'paragraph', 'comprehension'],
+    order_index: 180,
+    body_md: `## The scan
+
+For short passages, scan for four things:
+
+1. Who is the sentence about?
+2. Where does it happen?
+3. When does it happen?
+4. What is the final verb?
+
+Example:
+
+> 오늘은 비가 와요. 우산이 필요해요.
+
+- 오늘은 = today
+- 비가 와요 = it rains
+- 우산이 필요해요 = an umbrella is needed
+
+Main idea: **It is raining today, so an umbrella is needed.**
+
+## Common mistake
+
+Do not translate every word before understanding the situation. Korean reading becomes easier when you find the sentence frame first.
+`,
+  },
 ];

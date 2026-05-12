@@ -25,6 +25,7 @@ test('login with wrong password shows error toast', async ({ page }) => {
     data: { email, password: 'rightpass1', name: 'Wrong Test' },
   });
   expect(res.ok()).toBeTruthy();
+  await page.context().clearCookies();
 
   await page.goto('/');
   await page.locator('input[type="email"]').fill(email);
@@ -43,4 +44,12 @@ test('signup with weak password is blocked', async ({ page }) => {
 
   // Either browser-level minLength validation blocks navigation, or backend rejects.
   await expect(page.getByRole('heading', { name: /create your account|welcome back/i })).toBeVisible();
+});
+
+test('unknown route shows recovery instead of silently rendering practice', async ({ page }) => {
+  await page.goto('/#/not-a-real-route-e2e');
+
+  await expect(page.getByTestId('not-found-page')).toBeVisible();
+  await expect(page.getByRole('heading', { name: /route does not exist/i })).toBeVisible();
+  await expect(page.getByRole('link', { name: /back to practice/i })).toBeVisible();
 });

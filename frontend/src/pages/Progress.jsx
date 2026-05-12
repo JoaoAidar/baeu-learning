@@ -84,8 +84,12 @@ export default function Progress() {
 }
 
 function Stat({ label, value, sub, accent }) {
+  const testId = `stat-${label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
   return (
-    <div className={`bg-white rounded-xl shadow-card border p-4 ${accent ? 'border-primary-200' : 'border-gray-100'}`}>
+    <div
+      data-testid={testId}
+      className={`bg-white rounded-xl shadow-card border p-4 ${accent ? 'border-primary-200' : 'border-gray-100'}`}
+    >
       <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</div>
       <div className="font-heading text-3xl font-bold text-gray-900 mt-1">{value}</div>
       {sub && <div className="text-xs text-gray-500 mt-0.5">{sub}</div>}

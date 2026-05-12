@@ -1,0 +1,78 @@
+{
+  "service": "railway",
+  "generated_at": "2026-05-12T15:41:11.943337+00:00",
+  "cwd": "backend",
+  "ok": true,
+  "source": "cli",
+  "token_preference": "api",
+  "events": 10,
+  "level_counts": {
+    "unknown": 10
+  },
+  "status_counts": {
+    "404": 10
+  },
+  "samples": [
+    {
+      "timestamp": "2026-05-11T20:24:00.092446150Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/forget-password",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-11T20:24:00.641657675Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/forget-password",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-11T20:25:01.191638214Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/forget-password",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-11T20:25:01.763645415Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/forgot-password",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-11T20:25:03.184331969Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/send-reset-password",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-11T20:25:03.746891033Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/password/forget",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-11T20:25:04.476160930Z",
+      "level": null,
+      "status": 404,
+      "path": "/api/auth/password/reset-request",
+      "message": ""
+    },
+    {
+      "timestamp": "2026-05-12T01:59:09.913468196Z",
+      "level": null,
+      "status": 404,
+      "path": "/health",
+      "message": ""
+    }
+  ],
+  "error": "",
+  "env_loaded_keys": [
+    "RAILWAY_API_TOKEN",
+    "RAILWAY_TOKEN"
+  ]
+}

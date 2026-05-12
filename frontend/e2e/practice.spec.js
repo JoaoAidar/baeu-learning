@@ -14,10 +14,10 @@ test('global endless practice: start → answer → continue', async ({ page }) 
 test('module-scoped practice only pulls from that module', async ({ page }) => {
   await signup(page);
 
-  await page.getByText(/Hangul & Reading/i).first().click();
+  await page.getByRole('link', { name: /Hangul & Reading/i }).click();
   await expect(page.getByRole('heading', { name: /Hangul & Reading/i })).toBeVisible();
 
-  await page.getByRole('link', { name: /practice this module/i }).click();
+  await page.getByTestId('practice-cta').click();
   await expect(page.getByRole('heading', { name: /module practice/i })).toBeVisible();
   await page.getByRole('button', { name: /^start$/i }).click();
 

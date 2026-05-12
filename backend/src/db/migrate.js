@@ -3,6 +3,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import pg from 'pg';
+import { buildPgSslConfig } from './ssl.js';
 
 const { Client } = pg;
 
@@ -17,7 +18,7 @@ async function main() {
 
   const client = new Client({
     connectionString: url,
-    ssl: url.includes('sslmode=') ? undefined : { rejectUnauthorized: false },
+    ssl: buildPgSslConfig(url, { requireInProduction: true, label: 'migration db' }),
   });
   await client.connect();
   try {

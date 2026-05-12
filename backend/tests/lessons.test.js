@@ -21,7 +21,7 @@ beforeEach(async () => {
   await runSeedIfEmpty();
 });
 
-test('seed inserts all 9 grammar lessons', async () => {
+test('seed inserts all grammar lessons', async () => {
   const all = await memoryStore.listLessons();
   assert.equal(all.length, LESSONS.length);
 });
@@ -44,6 +44,13 @@ test('listLessons can filter by module', async () => {
   const particlesMod = await memoryStore.getModuleBySlug('particles');
   for (const l of r.lessons) {
     assert.equal(l.module_id, particlesMod.id);
+  }
+});
+
+test('seed includes minimum lessons for buyer-trust modules', async () => {
+  for (const slug of ['greetings', 'vocab-daily', 'reading']) {
+    const r = await Lessons.listLessons({ moduleSlug: slug });
+    assert.ok(r.lessons.length >= 3, `expected at least 3 lessons in ${slug}`);
   }
 });
 

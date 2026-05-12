@@ -1,0 +1,119 @@
+{
+  "generatedAt": "2026-05-12T18:19:01.263Z",
+  "base": "https://baeu-learning.vercel.app",
+  "backend": "https://baeu-backend-production.up.railway.app",
+  "email": "audit-persona-1778609941263@test.local",
+  "events": [
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:03.765Z",
+      "name": "01-desktop-entry",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/01-desktop-entry.png",
+      "url": "https://baeu-learning.vercel.app/"
+    },
+    {
+      "type": "claim",
+      "at": "2026-05-12T18:19:03.770Z",
+      "claim": "public entry loads",
+      "observed": "배\nBaeu\n· Korean practice\nAbout\n\nKOREAN PRACTICE, DAILY\n\nBuild real Korean fluency one question at a time.\n\nMixed questions across Hangul, grammar, and vocabulary. The selector prioritizes your weak skills and items due for review — so every session targets what you actually need.\n\n✓\nHangul, grammar,"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:03.871Z",
+      "name": "02-about-buyer-trust",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/02-about-buyer-trust.png",
+      "url": "https://baeu-learning.vercel.app/#/about"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:05.771Z",
+      "name": "03-after-signup-home",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/03-after-signup-home.png",
+      "url": "https://baeu-learning.vercel.app/"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:06.583Z",
+      "name": "04-greetings-module-with-lessons",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/04-greetings-module-with-lessons.png",
+      "url": "https://baeu-learning.vercel.app/#/module/greetings"
+    },
+    {
+      "type": "claim",
+      "at": "2026-05-12T18:19:06.585Z",
+      "claim": "greetings module has grammar lessons",
+      "observed": true
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:06.626Z",
+      "name": "05-greeting-lesson",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/05-greeting-lesson.png",
+      "url": "https://baeu-learning.vercel.app/#/lesson/greeting-register-map?from=%23%2Fmodule%2Fgreetings"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:09.076Z",
+      "name": "06-practice-feedback",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/06-practice-feedback.png",
+      "url": "https://baeu-learning.vercel.app/#/practice?module=hangul"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:09.906Z",
+      "name": "07-progress-after-practice",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/07-progress-after-practice.png",
+      "url": "https://baeu-learning.vercel.app/#/progress"
+    },
+    {
+      "type": "claim",
+      "at": "2026-05-12T18:19:09.906Z",
+      "claim": "progress reflects practice attempt",
+      "observed": "Total1"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:09.929Z",
+      "name": "08-not-found-recovery",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/08-not-found-recovery.png",
+      "url": "https://baeu-learning.vercel.app/#/not-real-persona-route"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:13.295Z",
+      "name": "09-mobile-progress-relogin",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/09-mobile-progress-relogin.png",
+      "url": "https://baeu-learning.vercel.app/#/progress"
+    },
+    {
+      "type": "screenshot",
+      "at": "2026-05-12T18:19:13.362Z",
+      "name": "10-mobile-logged-out",
+      "path": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/10-mobile-logged-out.png",
+      "url": "https://baeu-learning.vercel.app/#/progress"
+    }
+  ],
+  "console": [],
+  "pageErrors": [],
+  "badResponses": [],
+  "screenshots": [
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/01-desktop-entry.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/02-about-buyer-trust.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/03-after-signup-home.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/04-greetings-module-with-lessons.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/05-greeting-lesson.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/06-practice-feedback.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/07-progress-after-practice.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/08-not-found-recovery.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/09-mobile-progress-relogin.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-12-lessons-hardening-persona/10-mobile-logged-out.png"
+  ],
+  "cleanup": {
+    "ok": true,
+    "status": 200,
+    "body": {
+      "success": true,
+      "message": "User deleted"
+    }
+  }
+}

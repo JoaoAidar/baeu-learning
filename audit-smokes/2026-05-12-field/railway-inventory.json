@@ -1,0 +1,383 @@
+{
+  "service": "railway",
+  "generated_at": "2026-05-12T15:39:06.449900+00:00",
+  "ok": true,
+  "source": "api",
+  "workspace": {
+    "id": "a8365daf-8997-471f-bff9-9b9f652f4a31",
+    "name": "João Aidar's Projects",
+    "plan": "PRO",
+    "projectCount": 8
+  },
+  "projects": [
+    {
+      "id": "0bb85cca-aa45-44a1-b9e4-15d71d7ca46a",
+      "name": "Anamnese",
+      "updatedAt": "2026-05-11T19:20:53.941Z",
+      "environments": [
+        {
+          "id": "f4f076f7-5323-4d2e-9afe-0ed10ffcee38",
+          "name": "production",
+          "services": [
+            {
+              "id": "12e567bd-6eec-428f-bdab-a5aa3e6bf615",
+              "name": "anamnese-api",
+              "updatedAt": "2026-05-11T19:49:40.011Z",
+              "environmentId": "f4f076f7-5323-4d2e-9afe-0ed10ffcee38",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/readyz",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "9d6f5924-f462-4beb-9669-fc9e068b590f",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-12T15:35:21.728Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "9399e1c1-152e-4d29-993a-4d62f397e67a",
+      "name": "fazenda",
+      "updatedAt": "2026-05-11T18:50:32.877Z",
+      "environments": [
+        {
+          "id": "93c794ae-41e5-4230-b4d8-b161da42171a",
+          "name": "production",
+          "services": [
+            {
+              "id": "af00364c-0e18-4086-a6fc-a2bf89767ce4",
+              "name": "fazenda-bot",
+              "updatedAt": "2026-05-11T18:50:58.875Z",
+              "environmentId": "93c794ae-41e5-4230-b4d8-b161da42171a",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": false,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "9aee3fa0-2cee-421a-980b-72804cfa1d4f",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-11T20:53:57.704Z"
+                }
+              },
+              "instanceError": ""
+            },
+            {
+              "id": "b0551ed0-3174-4fda-a4ae-865f5278678d",
+              "name": "fazenda-api",
+              "updatedAt": "2026-05-11T18:50:55.652Z",
+              "environmentId": "93c794ae-41e5-4230-b4d8-b161da42171a",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": false,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "a01f7ab2-5ed5-499e-a26e-1c3835ede594",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-11T20:53:57.291Z"
+                }
+              },
+              "instanceError": ""
+            },
+            {
+              "id": "ec410462-5f3e-4e26-b119-921b9b65f7c3",
+              "name": "evolution-fazenda",
+              "updatedAt": "2026-05-11T18:50:44.936Z",
+              "environmentId": "93c794ae-41e5-4230-b4d8-b161da42171a",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": false,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": null,
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "c0dbb9b8-2125-47f0-85c9-a7e517a2460b",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-11T20:43:31.975Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "b8a71097-a023-496f-9764-94b91ef49786",
+      "name": "baeu-learning",
+      "updatedAt": "2026-05-09T01:39:13.187Z",
+      "environments": [
+        {
+          "id": "576fc98f-46f0-4747-9f97-ae8bb71527a9",
+          "name": "production",
+          "services": [
+            {
+              "id": "abf4f7f2-68a9-4b3a-acd1-ae0d4fd6fcf0",
+              "name": "baeu-backend",
+              "updatedAt": "2026-05-09T01:39:37.101Z",
+              "environmentId": "576fc98f-46f0-4747-9f97-ae8bb71527a9",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/api/v1/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "ae497b58-a625-4fc9-9028-40c2de51f175",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-11T18:48:30.880Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "930170b4-8c3e-431b-bba4-69af8611c45f",
+      "name": "Ecommify",
+      "updatedAt": "2026-05-06T14:04:22.588Z",
+      "environments": [
+        {
+          "id": "9b4809f1-d5c7-4484-89a5-771167f3e01f",
+          "name": "production",
+          "services": [
+            {
+              "id": "7383c47f-8e19-4482-b257-9245c95b02e3",
+              "name": "ecommify-reconciler-cron",
+              "updatedAt": "2026-05-03T06:13:33.864Z",
+              "environmentId": "9b4809f1-d5c7-4484-89a5-771167f3e01f",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": 1,
+                "region": null,
+                "healthcheckPath": null,
+                "cronSchedule": "0 */2 * * *",
+                "latestDeployment": {
+                  "id": "83e6a93c-c276-4392-8059-6c4bfc754380",
+                  "status": "SLEEPING",
+                  "createdAt": "2026-05-12T14:04:35.698Z"
+                }
+              },
+              "instanceError": ""
+            },
+            {
+              "id": "8d350db9-d2f8-4cf1-8fac-c23fa2d0faf4",
+              "name": "ecommify-api",
+              "updatedAt": "2026-04-30T08:59:23.834Z",
+              "environmentId": "9b4809f1-d5c7-4484-89a5-771167f3e01f",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": null,
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "0dc2de6d-b81e-4dfc-814e-1cd81a88daa4",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-11T16:52:29.984Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "466d5cee-3bd2-4402-b73a-d39a016b7219",
+      "name": "arquitetos",
+      "updatedAt": "2026-05-03T05:05:37.904Z",
+      "environments": [
+        {
+          "id": "7a9b6fa0-f1f7-4ae5-863d-a84e84fc7e3a",
+          "name": "production",
+          "services": [
+            {
+              "id": "97ef49fb-5159-464f-a9d3-141a3edd72f9",
+              "name": "architrack-api",
+              "updatedAt": "2026-04-30T00:56:55.280Z",
+              "environmentId": "7a9b6fa0-f1f7-4ae5-863d-a84e84fc7e3a",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/api/v1/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "61440d42-3d5f-48c6-98a8-5c2d5f5d4e9b",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-12T15:30:27.383Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "9b1ec14d-d2d1-4761-b13e-2a477cc1dcf3",
+      "name": "VitrineAI",
+      "updatedAt": "2026-05-03T05:04:50.146Z",
+      "environments": [
+        {
+          "id": "1024de70-3988-46b7-a224-2eb7b5901ba1",
+          "name": "production",
+          "services": [
+            {
+              "id": "c070e87a-fbc5-452f-bda2-237e1d4624bd",
+              "name": "vitrine-api",
+              "updatedAt": "2026-04-30T20:14:58.485Z",
+              "environmentId": "1024de70-3988-46b7-a224-2eb7b5901ba1",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": false,
+                "numReplicas": 1,
+                "region": null,
+                "healthcheckPath": "/api/v1/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "9a121984-2466-4e40-8d8c-5d41cfb90012",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-12T15:23:00.681Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "23ba7210-1fc3-47ed-9fe9-155672739c57",
+      "name": "gestor-financeiro",
+      "updatedAt": "2026-05-03T01:28:28.158Z",
+      "environments": [
+        {
+          "id": "9a6ed1d6-ee21-4be9-b768-8c812d9d68d0",
+          "name": "production",
+          "services": [
+            {
+              "id": "478db8d8-855d-4d35-a4c3-f6f76b104851",
+              "name": "gestor-financeiro-bot",
+              "updatedAt": "2026-04-30T01:03:30.283Z",
+              "environmentId": "9a6ed1d6-ee21-4be9-b768-8c812d9d68d0",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": null,
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "7215829c-15cb-45b8-b510-70fd2e90b895",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-12T00:14:39.363Z"
+                }
+              },
+              "instanceError": ""
+            },
+            {
+              "id": "6fa7a65c-a26c-42f4-a377-2a2c69a53837",
+              "name": "gestor-financeiro-api",
+              "updatedAt": "2026-04-30T01:03:28.962Z",
+              "environmentId": "9a6ed1d6-ee21-4be9-b768-8c812d9d68d0",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": false,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "f7a2d3f0-fcae-4c46-98ff-05d48304968f",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-12T00:14:39.557Z"
+                }
+              },
+              "instanceError": ""
+            },
+            {
+              "id": "9492b509-ff09-4930-98a0-f5b643ef779f",
+              "name": "evolution-api",
+              "updatedAt": "2026-05-02T21:52:40.481Z",
+              "environmentId": "9a6ed1d6-ee21-4be9-b768-8c812d9d68d0",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": null,
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "06aedf27-28b9-4f2b-a21e-9e0c55b3890d",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-03T01:43:23.625Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "4a9ba0e2-1a71-4d4a-8072-613f64ebf670",
+      "name": "Valuation",
+      "updatedAt": "2026-04-30T01:07:15.078Z",
+      "environments": [
+        {
+          "id": "2ca0063d-8ece-4a94-b8dd-801b61b98a94",
+          "name": "production",
+          "services": [
+            {
+              "id": "39ddb3b8-57a3-4d63-84bc-124b8835b79d",
+              "name": "valuation-api",
+              "updatedAt": "2026-04-15T21:05:13.942Z",
+              "environmentId": "2ca0063d-8ece-4a94-b8dd-801b61b98a94",
+              "environmentName": "production",
+              "instance": {
+                "sleepApplication": true,
+                "numReplicas": null,
+                "region": null,
+                "healthcheckPath": "/health",
+                "cronSchedule": null,
+                "latestDeployment": {
+                  "id": "a5f41ea5-3726-4dc9-ad63-019c3d9d9f45",
+                  "status": "SUCCESS",
+                  "createdAt": "2026-05-11T23:53:24.983Z"
+                }
+              },
+              "instanceError": ""
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "error": "",
+  "env_loaded_keys": [
+    "RAILWAY_API_TOKEN",
+    "RAILWAY_TOKEN"
+  ]
+}

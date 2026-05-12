@@ -254,7 +254,11 @@ function QuestionCard({ question, answer, setAnswer, submit, loading }) {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          placeholder="Type your answer in Hangul…"
+          placeholder={
+            question.type === 'translation'
+              ? 'Type the meaning in English...'
+              : 'Type your answer...'
+          }
           className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
         />
       )}

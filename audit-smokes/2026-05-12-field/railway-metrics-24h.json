@@ -1,0 +1,76 @@
+{
+  "service": "railway",
+  "generated_at": "2026-05-12T15:42:06.355438+00:00",
+  "ok": true,
+  "source": "api",
+  "window_hours": 24,
+  "projectId": "b8a71097-a023-496f-9764-94b91ef49786",
+  "serviceId": "abf4f7f2-68a9-4b3a-acd1-ae0d4fd6fcf0",
+  "environmentId": "576fc98f-46f0-4747-9f97-ae8bb71527a9",
+  "metrics": [
+    {
+      "measurement": "MEMORY_USAGE_GB",
+      "summary": {
+        "points": 211,
+        "avg": 0.06800400500473934,
+        "max": 0.10921984,
+        "min": 0.023023616,
+        "last": 0.054718464
+      },
+      "first_ts": 1778514120,
+      "last_ts": 1778600520
+    },
+    {
+      "measurement": "CPU_USAGE",
+      "summary": {
+        "points": 226,
+        "avg": 0.00039044024090462143,
+        "max": 0.007768916666666666,
+        "min": 0.0,
+        "last": 2.4222222222252614e-06
+      },
+      "first_ts": 1778514120,
+      "last_ts": 1778600520
+    },
+    {
+      "measurement": "NETWORK_TX_GB",
+      "summary": {
+        "points": 228,
+        "avg": 5.404425438596491e-06,
+        "max": 0.000274536,
+        "min": 0.0,
+        "last": 0.0
+      },
+      "first_ts": 1778514120,
+      "last_ts": 1778600520
+    },
+    {
+      "measurement": "NETWORK_RX_GB",
+      "summary": {
+        "points": 228,
+        "avg": 1.8090574561403508e-05,
+        "max": 0.000433879,
+        "min": 0.0,
+        "last": 0.0
+      },
+      "first_ts": 1778514120,
+      "last_ts": 1778600520
+    }
+  ],
+  "cost_estimates": {
+    "memory_monthly_usd_estimated": 0.6786255667432949,
+    "cpu_monthly_usd_estimated": 0.007809429522477876,
+    "network_tx_usd_estimated_from_window_last": 0.0,
+    "total_monthly_compute_usd_estimated": 0.6864349962657728
+  },
+  "pricing_assumption": {
+    "memory_usd_per_gb_min_estimated": 0.000231,
+    "cpu_usd_per_vcpu_min_estimated": 0.000463,
+    "network_tx_usd_per_gb_estimated": 0.1
+  },
+  "error": "",
+  "env_loaded_keys": [
+    "RAILWAY_API_TOKEN",
+    "RAILWAY_TOKEN"
+  ]
+}

@@ -12,12 +12,12 @@ test('admin token gate accepts valid token', async ({ page }) => {
   await expect(page.getByRole('button', { name: /^calibration$/i })).toBeVisible();
 });
 
-test('admin token gate rejects bogus token (toast forbidden)', async ({ page }) => {
+test('admin token gate rejects bogus token', async ({ page }) => {
   await page.goto('/#/admin');
   await page.getByPlaceholder(/x-admin-token/i).fill('not-the-token');
   await page.getByRole('button', { name: /^unlock$/i }).click();
-  // List call after unlock fires with bad token → toast 'forbidden'.
-  await expect(page.getByText(/forbidden/i)).toBeVisible({ timeout: 8_000 });
+  await expect(page.getByText(/unauthorized|forbidden/i)).toBeVisible({ timeout: 8_000 });
+  await expect(page.getByRole('button', { name: /^unlock$/i })).toBeVisible();
 });
 
 test('admin: paste JSON → import → published list contains the new exercise', async ({ page }) => {

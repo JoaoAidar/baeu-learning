@@ -1,5 +1,6 @@
 // Production smoke. Runs against a deployed frontend (E2E_BASE_URL) and asserts
-// the first-value path: signup → module → practice CTA → Start → question-card.
+// the first-value path: signup -> module -> practice -> feedback -> progress ->
+// logout/login -> persisted progress.
 //
 // Run with:
 //   E2E_NO_WEBSERVER=1 E2E_BASE_URL=https://baeu-learning.vercel.app \
@@ -49,7 +50,7 @@ test.afterEach(async ({ page }) => {
   }
 });
 
-test('prod: fresh learner reaches question-card on first practice', async ({ page }) => {
+test('prod: fresh learner gets feedback and progress survives relogin', async ({ page }) => {
   const email = `audit-${Date.now()}@test.local`;
   const password = 'audit-smoke-1234';
 
@@ -64,13 +65,42 @@ test('prod: fresh learner reaches question-card on first practice', async ({ pag
     page.getByRole('heading', { name: /endless practice|module practice/i })
   ).toBeVisible({ timeout: 15_000 });
 
-  await page.getByText(/Hangul & Reading/i).first().click();
+  await page.getByRole('link', { name: /Hangul & Reading/i }).click();
   await page.getByTestId('practice-cta').click();
 
   await expect(page.getByRole('heading', { name: /module practice/i })).toBeVisible();
   await page.getByRole('button', { name: /^start$/i }).click();
 
-  await expect(page.getByTestId('question-card')).toBeVisible({ timeout: 15_000 });
+  await answerCurrentQuestion(page);
+  await expect(page.getByTestId('feedback-card')).toBeVisible({ timeout: 15_000 });
+
+  await page.getByRole('link', { name: /^progress$/i }).click();
+  await expect(page.getByTestId('stat-total')).toContainText('1', { timeout: 15_000 });
+
+  await page.getByTestId('logout-btn').click();
+  await expect(page.getByRole('heading', { name: /welcome back|create your account/i })).toBeVisible({ timeout: 15_000 });
+
+  await page.locator('input[type="email"]').fill(email);
+  await page.locator('input[type="password"]').fill(password);
+  await page.getByRole('button', { name: /^log in$/i }).click();
+  await expect(page.getByRole('heading', { name: /endless practice|module practice/i })).toBeVisible({ timeout: 15_000 });
+
+  await page.getByRole('link', { name: /^progress$/i }).click();
+  await expect(page.getByTestId('stat-total')).toContainText('1', { timeout: 15_000 });
 
   console.log(`[prod-smoke] synthetic account: ${email}`);
 });
+
+async function answerCurrentQuestion(page) {
+  const card = page.getByTestId('question-card');
+  await expect(card).toBeVisible({ timeout: 15_000 });
+
+  const mcOptions = card.getByTestId('mc-option');
+  if (await mcOptions.count()) {
+    await mcOptions.first().click();
+  } else {
+    await card.locator('input').fill('x');
+  }
+
+  await page.getByRole('button', { name: /^submit$/i }).click();
+}

@@ -41,10 +41,18 @@ export function createApp() {
   app.set('trust proxy', 1); // Railway terminates TLS at the edge
 
   // Security headers. HSTS on by default in helmet; CSP is intentionally
-  // left off here — a strict, route-aware CSP comes in a later commit.
+  // narrow for API responses. The Vite frontend ships separately on Vercel.
   app.use(
     helmet({
-      contentSecurityPolicy: false,
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          defaultSrc: ["'none'"],
+          baseUri: ["'none'"],
+          frameAncestors: ["'none'"],
+          formAction: ["'none'"],
+        },
+      },
       crossOriginEmbedderPolicy: false,
     })
   );

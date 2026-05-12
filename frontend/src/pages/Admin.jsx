@@ -30,11 +30,22 @@ export default function Admin() {
     if (tab === 'calibration') loadAttempts();
   }, [authed, statusFilter, tab]);
 
-  function saveToken() {
+  async function saveToken() {
     if (!token.trim()) return;
     adminAuth.set(token.trim());
-    setAuthed(true);
-    toast.push('Admin unlocked.', 'success');
+    setLoading(true);
+    try {
+      const r = await adminApi.list(statusFilter);
+      setExercises(r.exercises || []);
+      setAuthed(true);
+      toast.push('Admin unlocked.', 'success');
+    } catch (e) {
+      adminAuth.clear();
+      setAuthed(false);
+      toast.push(e.message, 'error');
+    } finally {
+      setLoading(false);
+    }
   }
   function logout() {
     adminAuth.clear();
@@ -110,7 +121,7 @@ export default function Admin() {
             placeholder="x-admin-token"
             value={token}
             onChange={(e) => setToken(e.target.value)}
-            onKeyDown={(e) => { if (e.key === 'Enter') saveToken(); }}
+            onKeyDown={(e) => { if (e.key === 'Enter') void saveToken(); }}
             className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none mb-3"
           />
           <button
