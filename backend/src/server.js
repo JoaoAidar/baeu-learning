@@ -57,3 +57,5 @@ const shutdown = async (signal) => {
 };
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
+
+// trigger: validate Railway GitHub autodeploy (2026-05-12T16:18:43Z)
