@@ -29,6 +29,7 @@ function buildPool() {
 }
 
 function buildAuth() {
+  const authDbPool = buildPool();
   const trustedOrigins = (process.env.CORS_ORIGIN || '')
     .split(',')
     .map((s) => s.trim())
@@ -48,7 +49,7 @@ function buildAuth() {
     // When DATABASE_URL is absent (in-memory dev/tests), Better Auth falls back
     // to an internal memory adapter. Production cannot reach this branch because
     // server.js refuses to boot with __mode='memory'.
-    ...(buildPool() ? { database: buildPool() } : {}),
+    ...(authDbPool ? { database: authDbPool } : {}),
     baseURL: process.env.BETTER_AUTH_URL,
     secret: process.env.BETTER_AUTH_SECRET,
     trustedOrigins,
