@@ -34,10 +34,12 @@ const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 if (endpoint && endpoint.trim().length > 0) {
   // Logs → Loki (Grafana Cloud). Set up BEFORE NodeSDK so the global logger
   // provider is in place when any winston/pino instrumentation attaches.
-  const loggerProvider = new LoggerProvider();
-  loggerProvider.addLogRecordProcessor(
-    new BatchLogRecordProcessor(new OTLPLogExporter())
-  );
+  // @opentelemetry/sdk-logs >=0.200 expects processors via constructor (em vez
+  // do addLogRecordProcessor que existia até 0.55). npm install resolveu >=0.215
+  // via peer dep chain do sdk-node/auto-instrumentations.
+  const loggerProvider = new LoggerProvider({
+    processors: [new BatchLogRecordProcessor(new OTLPLogExporter())],
+  });
   logs.setGlobalLoggerProvider(loggerProvider);
 
   const sdk = new NodeSDK({
