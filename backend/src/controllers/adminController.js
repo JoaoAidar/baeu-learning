@@ -1,6 +1,8 @@
 import * as Admin from '../services/AdminService.js';
+import * as Analytics from '../services/AnalyticsService.js';
 import { getStore } from '../config/db.js';
 import { classifyAnswer } from '../services/ErrorClassifier.js';
+import { snapshotMetrics } from '../middleware/perf.js';
 
 // Error propagation handled by global error handler in app.js.
 // All thrown errors here/in services either use httpError(status, code) with
@@ -110,6 +112,25 @@ export const recentAttempts = async (req, res, next) => {
       })
     );
     res.json({ attempts: enriched });
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const metrics = (req, res, next) => {
+  try {
+    const sinceMin = Number(req.query.sinceMin);
+    const sinceMs = Number.isFinite(sinceMin) && sinceMin > 0 ? sinceMin * 60_000 : null;
+    res.json(snapshotMetrics({ sinceMs }));
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const analytics = async (req, res, next) => {
+  try {
+    const days = Math.min(Math.max(Number(req.query.days) || 30, 1), 365);
+    res.json(await Analytics.adminAnalytics({ days }));
   } catch (err) {
     next(err);
   }

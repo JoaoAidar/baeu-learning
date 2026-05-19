@@ -10,7 +10,9 @@ import lessonsRouter from './routes/lessons.js';
 import adminRouter from './routes/admin.js';
 import exercisesRouter from './routes/exercises.js';
 import meRouter from './routes/me.js';
+import analyticsRouter from './routes/analytics.js';
 import { getStore } from './config/db.js';
+import { perfMiddleware } from './middleware/perf.js';
 
 function buildCorsOptions() {
   const raw = (process.env.CORS_ORIGIN || '').trim();
@@ -59,6 +61,10 @@ export function createApp() {
 
   app.use(cors(buildCorsOptions()));
 
+  // Per-request timing: records into in-memory ring + slow-request log.
+  // Mounted before json parser so we time parse cost too.
+  app.use(perfMiddleware);
+
   // CRITICAL: mount Better Auth BEFORE express.json so it can read the raw
   // request body itself. Express's json parser would consume the stream first
   // and break Better Auth's signup/login/oauth handlers.
@@ -77,6 +83,7 @@ export function createApp() {
   app.use('/api/v1/admin', adminRouter);
   app.use('/api/v1/exercises', exercisesRouter);
   app.use('/api/v1/me', meRouter);
+  app.use('/api/v1/analytics', analyticsRouter);
 
   app.use((req, res) => res.status(404).json({ error: 'not_found', path: req.path }));
 

@@ -263,6 +263,58 @@ export const memoryStore = {
     const rows = store.attempts.filter((a) => a.user_id === userId);
     return rows.slice(-limit);
   },
+  async listAttemptsSince({ since, limit = 50_000 } = {}) {
+    const cutoff = since instanceof Date ? since.getTime() : new Date(since).getTime();
+    const rows = store.attempts.filter((a) => new Date(a.created_at).getTime() >= cutoff);
+    return rows.slice(0, limit);
+  },
+  async exerciseStatsSince({ since, limit = 200 } = {}) {
+    const cutoff = since instanceof Date ? since.getTime() : new Date(since).getTime();
+    const rows = store.attempts.filter((a) => new Date(a.created_at).getTime() >= cutoff);
+    const byEx = new Map();
+    for (const a of rows) {
+      if (!a.exercise_id) continue;
+      const ex = store.exercises.get(a.exercise_id);
+      if (!ex) continue;
+      let agg = byEx.get(a.exercise_id);
+      if (!agg) {
+        agg = {
+          exercise_id: a.exercise_id,
+          prompt: ex.prompt,
+          type: ex.type,
+          module_id: ex.module_id,
+          module_slug: null,
+          attempts: 0,
+          correct: 0,
+          response_ms_sum: 0,
+          response_ms_n: 0,
+        };
+        const mod = ex.module_id ? store.modules.get(ex.module_id) : null;
+        agg.module_slug = mod ? mod.slug : null;
+        byEx.set(a.exercise_id, agg);
+      }
+      agg.attempts += 1;
+      if (a.correct) agg.correct += 1;
+      if (typeof a.response_ms === 'number') {
+        agg.response_ms_sum += a.response_ms;
+        agg.response_ms_n += 1;
+      }
+    }
+    return [...byEx.values()]
+      .filter((g) => g.attempts >= 3)
+      .map((g) => ({
+        exercise_id: g.exercise_id,
+        prompt: g.prompt,
+        type: g.type,
+        module_id: g.module_id,
+        module_slug: g.module_slug,
+        attempts: g.attempts,
+        correct: g.correct,
+        avg_response_ms: g.response_ms_n ? g.response_ms_sum / g.response_ms_n : null,
+      }))
+      .sort((a, b) => b.attempts - a.attempts)
+      .slice(0, limit);
+  },
   async listRecentAttemptsAdmin({ wrongOnly = false, limit = 50 } = {}) {
     const rows = [...store.attempts].reverse();
     const filtered = wrongOnly ? rows.filter((a) => !a.correct) : rows;

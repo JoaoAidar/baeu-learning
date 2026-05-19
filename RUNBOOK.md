@@ -92,16 +92,73 @@ Deliverability jumps significantly once on a verified custom domain.
 
 ---
 
-## 4. Content seed for the 3 empty modules
+## 4. Content seed for empty modules (UPDATED 2026-05-19)
 
-Three modules currently have zero grammar lessons: **greetings**, **vocab-daily**, **reading**. Symptom: when the practice engine surfaces an error tag tied to one of those modules, `findLessonForErrorTag` silently returns null → no recommended lesson.
+**Status:** Closed in code for 8/8 modules with ≥3 lessons each. The new lessons for `hangul`, `numbers`, and `verbs-present` (added 2026-05-19) are drafted from public TOPIK-I material and carry an explicit `> _Draft from public TOPIK-I material — needs native review._` banner at the top of each body so learners can see the maturity level.
 
-Two paths:
+**Open follow-up:** Native Korean teacher review of the six 2026-05-19 lessons (`hangul-batchim`, `hangul-double-and-tense`, `numbers-counters-everyday`, `numbers-money-and-prices`, `verbs-past-and-future`, `verbs-irregular-easy-five`). Until reviewed, do not promote any of them in marketing/buyer collateral.
 
-- **Author by hand** (recommended for quality): write 3-5 lessons per module in Markdown matching the existing `grammar_lessons` schema (`slug`, `module_id`, `title`, `summary`, `body_md`, `related_error_tags`, `related_skill_tags`, `order_index`). Insert via `backend/src/db/grammarLessons.js` or a SQL script.
-- **LLM-generate via admin endpoint**: the existing `POST /api/v1/admin/exercises/generate` covers exercise generation, NOT lessons. There's no lesson-generation endpoint yet. If you want one, that's a ~2h feature (LLMGenerator extension + new route + admin UI). Worth it once you have the email flow live and a few hundred users.
+Generation paths if you ever want to expand again:
 
-For now, the practice flow degrades gracefully (no toast, just no recommended-lesson card) so this is genuinely deferrable.
+- **Author by hand**: append to `backend/src/db/grammarLessons.js`. Schema: `slug`, `module_slug`, `title`, `summary`, `body_md`, `related_error_tags`, `related_skill_tags`, `order_index`. Run `npm run seed` to upsert.
+- **LLM-generate via admin endpoint**: `POST /api/v1/admin/exercises/generate` covers exercise generation (not lessons). Lesson generation remains a manual step on purpose — lessons drive trust more than throughput.
+
+---
+
+## 5. Performance instrumentation (added 2026-05-19)
+
+Every request is timed by `backend/src/middleware/perf.js` and recorded in an in-memory ring (default 1000 samples). Slow requests (≥500ms) log `[baeu][perf] slow ...`. Slow Postgres queries (≥200ms) log `[baeu][pg] slow ...`.
+
+Tunables (env vars, all optional):
+
+| Var | Default | Purpose |
+|---|---:|---|
+| `PERF_RING_SIZE` | 1000 | Samples kept in memory for `/api/v1/admin/metrics`. |
+| `PERF_SLOW_REQ_MS` | 500 | Threshold for slow-request log. |
+| `PERF_SLOW_QUERY_MS` | 200 | Threshold for slow-query log. |
+| `PERF_LOG_ALL` | unset | Set to `1` to log every request (noisy; debug only). |
+
+Inspect metrics:
+
+```sh
+curl -s -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://baeu-backend-production.up.railway.app/api/v1/admin/metrics?sinceMin=60" | jq
+```
+
+The admin UI surfaces the same data under **Admin → Analytics → Backend performance**.
+
+### OpenTelemetry export (opt-in)
+
+`backend/src/otel.js` bootstraps OTEL traces when `OTEL_EXPORTER_OTLP_ENDPOINT` is set AND the OTEL deps are installed. Default deploy has no OTEL deps and no behavior change.
+
+To enable Grafana Cloud Tempo export:
+
+```sh
+cd backend && npm i \
+  @opentelemetry/api \
+  @opentelemetry/sdk-node \
+  @opentelemetry/exporter-trace-otlp-http \
+  @opentelemetry/auto-instrumentations-node
+
+railway variables \
+  --set "OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-<region>.grafana.net/otlp/v1/traces" \
+  --set "OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(user:token)>" \
+  --set "OTEL_SERVICE_NAME=baeu-backend"
+
+cd backend && railway up --service baeu-backend --ci
+```
+
+Verify in Grafana Cloud Tempo by filtering `service.name=baeu-backend`.
+
+---
+
+## 6. Analytics surfaces (added 2026-05-19)
+
+| Endpoint | Auth | Purpose |
+|---|---|---|
+| `GET /api/v1/analytics/results?days=N` | session | Learner-facing deep analytics: daily activity, response-time trend, toughest items, mastery distribution. UI: `#/results`. |
+| `GET /api/v1/admin/analytics?days=N` | admin | Cohort rollup: per-module accuracy, calibration follow-ups (too-hard / too-easy), active learners. UI: Admin → Analytics. |
+| `GET /api/v1/admin/metrics?sinceMin=N` | admin | Backend performance snapshot (p50/p95/p99 by route). UI: same Analytics tab. |
 
 ---
 

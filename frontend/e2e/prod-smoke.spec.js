@@ -3,8 +3,7 @@
 // logout/login -> persisted progress.
 //
 // Run with:
-//   E2E_NO_WEBSERVER=1 E2E_BASE_URL=https://baeu-learning.vercel.app \
-//     npx playwright test e2e/prod-smoke.spec.js
+//   npm run test:e2e:audit
 //
 // Gated by E2E_PROD_SMOKE=1 so it doesn't run in the default local e2e pass.
 // It writes against the real backend, so it creates a synthetic learner each run.
@@ -55,6 +54,9 @@ test('prod: fresh learner gets feedback and progress survives relogin', async ({
   const password = 'audit-smoke-1234';
 
   await page.goto('/');
+  await expect(page).toHaveTitle(/Baeu/i);
+  await expect(page.getByRole('heading', { name: /welcome back|create your account/i })).toBeVisible();
+
   await page.getByRole('button', { name: /^sign up$/i }).click();
   await page.locator('input[autocomplete="name"]').fill('Prod Smoke');
   await page.locator('input[type="email"]').fill(email);

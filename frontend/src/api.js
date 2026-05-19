@@ -60,6 +60,9 @@ export const api = {
   // Optional role lookup. Backend exposes (or will expose) /api/v1/me/role.
   // Treated as best-effort by callers; failure means "not admin".
   meRole: () => call('/api/v1/me/role'),
+  // Deep learner results (per-exercise difficulty, response-time trend, error
+  // breakdown). Auth via session cookie.
+  results: (days = 30) => call(`/api/v1/analytics/results?days=${days}`),
 };
 
 export const adminApi = {
@@ -78,4 +81,8 @@ export const adminApi = {
     adminCall(
       `/api/v1/admin/attempts/recent?wrongOnly=${wrongOnly}&limit=${limit}`
     ),
+  metrics: (sinceMin = null) =>
+    adminCall(`/api/v1/admin/metrics${sinceMin ? `?sinceMin=${sinceMin}` : ''}`),
+  analytics: (days = 30) =>
+    adminCall(`/api/v1/admin/analytics?days=${days}`),
 };

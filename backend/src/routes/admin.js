@@ -17,4 +17,6 @@ router.post('/exercises/generate', llmLimit, ctrl.generateExercises);
 router.get('/exercises', ctrl.listExercisesAdmin);
 router.patch('/exercises/:id/status', ctrl.setExerciseStatus);
 router.get('/attempts/recent', ctrl.recentAttempts);
+router.get('/metrics', ctrl.metrics);
+router.get('/analytics', ctrl.analytics);
 export default router;

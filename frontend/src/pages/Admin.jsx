@@ -11,6 +11,9 @@ export default function Admin() {
   const [statusFilter, setStatusFilter] = useState('draft');
   const [exercises, setExercises] = useState([]);
   const [recentAttempts, setRecentAttempts] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
+  const [metrics, setMetrics] = useState(null);
+  const [analyticsWindow, setAnalyticsWindow] = useState(30);
   const [loading, setLoading] = useState(false);
 
   // Generate form
@@ -28,7 +31,8 @@ export default function Admin() {
     if (!authed) return;
     if (tab === 'content') loadList();
     if (tab === 'calibration') loadAttempts();
-  }, [authed, statusFilter, tab]);
+    if (tab === 'analytics') loadAnalytics();
+  }, [authed, statusFilter, tab, analyticsWindow]);
 
   async function saveToken() {
     if (!token.trim()) return;
@@ -67,6 +71,18 @@ export default function Admin() {
     try {
       const r = await adminApi.recentAttempts({ wrongOnly: true, limit: 50 });
       setRecentAttempts(r.attempts || []);
+    } catch (e) { toast.push(e.message, 'error'); }
+    finally { setLoading(false); }
+  }
+  async function loadAnalytics() {
+    setLoading(true);
+    try {
+      const [a, m] = await Promise.all([
+        adminApi.analytics(analyticsWindow),
+        adminApi.metrics(60),
+      ]);
+      setAnalytics(a);
+      setMetrics(m);
     } catch (e) { toast.push(e.message, 'error'); }
     finally { setLoading(false); }
   }
@@ -139,15 +155,16 @@ export default function Admin() {
     <div className="max-w-3xl mx-auto space-y-4">
       <div className="flex items-center justify-between">
         <div className="inline-flex bg-white rounded-lg border border-gray-200 p-1">
-          {['content', 'calibration'].map((t) => (
+          {['content', 'calibration', 'analytics'].map((t) => (
             <button
               key={t}
+              data-testid={`admin-tab-${t}`}
               onClick={() => setTab(t)}
               className={`px-4 py-1.5 rounded-md text-sm font-medium transition ${
                 tab === t ? 'bg-primary-500 text-white' : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              {t === 'content' ? 'Content' : 'Calibration'}
+              {t === 'content' ? 'Content' : t === 'calibration' ? 'Calibration' : 'Analytics'}
             </button>
           ))}
         </div>
@@ -156,7 +173,16 @@ export default function Admin() {
         </button>
       </div>
 
-      {tab === 'calibration' ? (
+      {tab === 'analytics' ? (
+        <AnalyticsPanel
+          data={analytics}
+          metrics={metrics}
+          loading={loading}
+          windowDays={analyticsWindow}
+          onWindowChange={setAnalyticsWindow}
+          onRefresh={loadAnalytics}
+        />
+      ) : tab === 'calibration' ? (
         <CalibrationPanel attempts={recentAttempts} loading={loading} onRefresh={loadAttempts} />
       ) : (
         <>
@@ -400,6 +426,149 @@ function AttemptRow({ attempt: a }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function AnalyticsPanel({ data, metrics, loading, windowDays, onWindowChange, onRefresh }) {
+  if (loading && !data) {
+    return <div className="text-gray-500 text-center py-8">Loading analytics…</div>;
+  }
+  if (!data) {
+    return (
+      <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6 text-center">
+        <p className="text-gray-500 text-sm">Analytics unavailable.</p>
+        <button onClick={onRefresh} className="mt-3 text-primary-600 text-sm bg-transparent">Retry</button>
+      </div>
+    );
+  }
+  return (
+    <div className="space-y-4" data-testid="admin-analytics-panel">
+      <div className="flex items-center justify-between flex-wrap gap-2">
+        <select
+          value={windowDays}
+          onChange={(e) => onWindowChange(Number(e.target.value))}
+          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+        >
+          <option value={7}>Last 7 days</option>
+          <option value={30}>Last 30 days</option>
+          <option value={90}>Last 90 days</option>
+        </select>
+        <button onClick={onRefresh} className="text-primary-600 text-sm bg-transparent">Refresh</button>
+      </div>
+
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <MiniStat label="Attempts" value={data.totals.attempts} />
+        <MiniStat label="Active learners" value={data.totals.activeLearners} />
+        <MiniStat label="Items observed" value={data.totals.itemsObserved} />
+        <MiniStat
+          label="Need review"
+          value={data.calibrationFollowups.length}
+          accent={data.calibrationFollowups.length > 0}
+        />
+      </div>
+
+      <Card title="Module rollup">
+        {data.moduleRollup.length === 0 ? (
+          <p className="text-gray-500 text-sm">No module activity in this window yet.</p>
+        ) : (
+          <table className="w-full text-sm">
+            <thead className="text-left text-xs text-gray-500 uppercase">
+              <tr>
+                <th className="py-1">Module</th>
+                <th className="py-1">Items</th>
+                <th className="py-1">Attempts</th>
+                <th className="py-1">Accuracy</th>
+                <th className="py-1">Too hard</th>
+                <th className="py-1">Too easy</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.moduleRollup.map((m) => (
+                <tr key={m.moduleSlug} className="border-t border-gray-100">
+                  <td className="py-1.5 font-medium text-gray-900">{m.moduleSlug}</td>
+                  <td className="py-1.5 text-gray-700">{m.items}</td>
+                  <td className="py-1.5 text-gray-700">{m.attempts}</td>
+                  <td className="py-1.5 text-gray-700">{Math.round(m.accuracy * 100)}%</td>
+                  <td className={`py-1.5 ${m.tooHard > 0 ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>{m.tooHard}</td>
+                  <td className={`py-1.5 ${m.tooEasy > 0 ? 'text-yellow-600 font-semibold' : 'text-gray-400'}`}>{m.tooEasy}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </Card>
+
+      <Card title="Items flagged for review">
+        {data.calibrationFollowups.length === 0 ? (
+          <p className="text-gray-500 text-sm">No outliers in this window. Calibration looks healthy.</p>
+        ) : (
+          <ul className="space-y-2 text-sm" data-testid="admin-followups">
+            {data.calibrationFollowups.map((e) => (
+              <li key={e.exerciseId} className="flex items-start justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-gray-900 truncate">{e.prompt}</div>
+                  <div className="text-xs text-gray-500">
+                    {e.moduleSlug || '—'} · {e.type} · {e.attempts} att
+                  </div>
+                </div>
+                <div className="flex flex-col items-end">
+                  <span className={`text-xs font-semibold ${e.calibrationSignal === 'too_hard' ? 'text-red-600' : 'text-yellow-600'}`}>
+                    {e.calibrationSignal}
+                  </span>
+                  <span className="text-xs text-gray-600">{Math.round(e.accuracy * 100)}%</span>
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      {metrics && metrics.overall && (
+        <Card title="Backend performance" right={<span className="text-xs text-gray-500">Last 60 min, in-memory ring</span>}>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            <MiniStat label="Requests" value={metrics.overall.count} />
+            <MiniStat label="p50 ms" value={metrics.overall.p50} />
+            <MiniStat label="p95 ms" value={metrics.overall.p95} />
+            <MiniStat label="5xx" value={metrics.overall.errorCount} accent={metrics.overall.errorCount > 0} />
+          </div>
+          {metrics.byRoute?.length > 0 && (
+            <table className="w-full text-sm mt-4">
+              <thead className="text-left text-xs text-gray-500 uppercase">
+                <tr>
+                  <th className="py-1">Route</th>
+                  <th className="py-1">Count</th>
+                  <th className="py-1">p50</th>
+                  <th className="py-1">p95</th>
+                  <th className="py-1">p99</th>
+                  <th className="py-1">5xx</th>
+                </tr>
+              </thead>
+              <tbody>
+                {metrics.byRoute.slice(0, 15).map((r) => (
+                  <tr key={r.route} className="border-t border-gray-100">
+                    <td className="py-1.5 font-mono text-xs text-gray-700 truncate max-w-[260px]">{r.route}</td>
+                    <td className="py-1.5">{r.count}</td>
+                    <td className="py-1.5">{r.p50}</td>
+                    <td className="py-1.5">{r.p95}</td>
+                    <td className="py-1.5">{r.p99}</td>
+                    <td className={`py-1.5 ${r.errorCount > 0 ? 'text-red-600 font-semibold' : 'text-gray-400'}`}>{r.errorCount}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function MiniStat({ label, value, accent }) {
+  return (
+    <div className={`rounded-lg border p-3 ${accent ? 'border-primary-300 bg-primary-50' : 'border-gray-200 bg-white'}`}>
+      <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</div>
+      <div className="font-heading text-2xl font-bold text-gray-900 mt-0.5">{value}</div>
     </div>
   );
 }

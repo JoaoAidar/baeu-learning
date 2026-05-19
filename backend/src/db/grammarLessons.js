@@ -665,6 +665,331 @@ Do not judge Korean vowels through English spelling. For example, **어** is not
 `,
   },
 
+  // ------------------------------------------------------------------------
+  // The following lessons are drafted from public TOPIK-I reference material
+  // and pedagogical conventions used in Korean-as-a-foreign-language courses.
+  // They have NOT been reviewed by a native Korean teacher yet — marker line
+  // in each body keeps that visible to learners until review lands.
+  // Tracked in gaps-live.md under "Content seed expansion 2026-05-19".
+  // ------------------------------------------------------------------------
+
+  {
+    slug: 'hangul-batchim',
+    module_slug: 'hangul',
+    title: 'Reading 받침 (final consonants)',
+    summary: 'The final consonant in a Hangul block changes its sound and the next block too. Seven base pronunciations cover them all.',
+    related_error_tags: ['hangul_reading'],
+    related_skill_tags: ['hangul', 'hangul_reading', 'batchim'],
+    order_index: 81,
+    body_md: `> _Draft from public TOPIK-I material — needs native review._
+
+## What 받침 is
+
+받침 ("support") is the final consonant of a syllable block, sitting under the vowel. Even though Korean has many possible 받침 letters, in pronunciation they collapse into only **seven** ending sounds.
+
+| 받침 letter(s) | Ending sound |
+|---|---|
+| ㄱ, ㅋ, ㄲ | k (unreleased) |
+| ㄴ | n |
+| ㄷ, ㅌ, ㅅ, ㅆ, ㅈ, ㅊ, ㅎ | t (unreleased) |
+| ㄹ | l |
+| ㅁ | m |
+| ㅂ, ㅍ | p (unreleased) |
+| ㅇ | ng |
+
+## Examples
+
+| Korean | Reading |
+|---|---|
+| 책 | chaek (ㄱ ending) |
+| 밥 | bap (ㅂ ending) |
+| 한국 | han-guk |
+| 옷 | ot (ㅅ → t) |
+| 강 | gang (ㅇ → ng) |
+
+## The link: next block starts with ㅇ
+
+When a syllable ends in a 받침 and the next syllable starts with **ㅇ**, the 받침 sound slides forward into the next block:
+
+> 한국**어** → "han-gu-geo", not "han-guk-eo".
+
+This is the single most common reason learners think Hangul is irregular — it isn't, it's just predictable linking.
+
+## Common mistake
+
+Pronouncing 받침 as if they were released, English-style. Korean final stops (ㄱ ㄷ ㅂ) are **unreleased** — you stop the air without a puff. Try saying "cap" without the final "p" sound completing.
+`,
+  },
+
+  {
+    slug: 'hangul-double-and-tense',
+    module_slug: 'hangul',
+    title: 'Hangul: double consonants and tense sounds',
+    summary: 'ㄲ ㄸ ㅃ ㅆ ㅉ are tense, not aspirated. Learn the contrast with ㄱ ㄷ ㅂ ㅅ ㅈ and ㅋ ㅌ ㅍ ㅊ.',
+    related_error_tags: ['hangul_reading'],
+    related_skill_tags: ['hangul', 'hangul_reading', 'tense_consonants'],
+    order_index: 82,
+    body_md: `> _Draft from public TOPIK-I material — needs native review._
+
+## Three flavors of each stop
+
+Korean separates plain, aspirated, and tense versions of similar consonants:
+
+| Plain | Aspirated (puff of air) | Tense (tight, no puff) |
+|---|---|---|
+| ㄱ g/k | ㅋ k | ㄲ kk |
+| ㄷ d/t | ㅌ t | ㄸ tt |
+| ㅂ b/p | ㅍ p | ㅃ pp |
+| ㅅ s | — | ㅆ ss |
+| ㅈ j | ㅊ ch | ㅉ jj |
+
+## Minimal pairs
+
+| Plain | Tense | Meaning shift |
+|---|---|---|
+| 자다 (to sleep) | 짜다 (to be salty) | meaning |
+| 달 (moon) | 딸 (daughter) | meaning |
+| 바다 (sea) | 빠다 (informal for butter) | meaning |
+| 사다 (to buy) | 싸다 (cheap) | meaning |
+
+If you confuse plain vs tense, native listeners will hear a different word, not just an accent.
+
+## How to produce tense sounds
+
+Tighten the throat as if about to grunt, then release. The vocal cords tense up, and the puff of air disappears.
+
+Try: 가 → 까. The first is breathy, the second is tight.
+
+## Common mistake
+
+Replacing tense with the English doubled consonant feel ("kk" as "kuh-kuh"). It's a single tight sound, not a repetition.
+`,
+  },
+
+  {
+    slug: 'numbers-counters-everyday',
+    module_slug: 'numbers',
+    title: 'Everyday counters: 명, 개, 시, 분, 살, 원',
+    summary: 'You can\'t just say "two coffees" — you need a counter. Here are the six you\'ll use daily.',
+    related_error_tags: ['unknown'],
+    related_skill_tags: ['numbers', 'counters', 'daily_life'],
+    order_index: 61,
+    body_md: `> _Draft from public TOPIK-I material — needs native review._
+
+## Why counters exist
+
+Korean does not say "two people" — it says "two-CL-of-people" where CL is a counter that matches the kind of thing. The pattern is:
+
+> [number] + [counter]
+
+## Daily-six counters
+
+| Counter | Use | System | Example |
+|---|---|---|---|
+| 명 | people | native | 두 명 = two people |
+| 개 | general objects | native | 세 개 = three (things) |
+| 시 | o'clock (hours) | native | 한 시 = one o'clock |
+| 분 | minutes | sino | 십 분 = ten minutes |
+| 살 | age | native | 스무 살 = twenty years old |
+| 원 | Korean won (money) | sino | 천 원 = 1,000 won |
+
+## Native vs Sino, again
+
+Counters lock you into a number system. **명, 개, 시, 살** want native numbers (하나, 둘, 셋…). **분, 원** want sino numbers (일, 이, 삼…).
+
+## The "native irregulars" you'll hit
+
+When followed by a counter, the first four native numbers shrink:
+
+| Standalone | Before counter |
+|---|---|
+| 하나 | 한 (한 명, 한 시, 한 개) |
+| 둘 | 두 (두 명) |
+| 셋 | 세 (세 개) |
+| 넷 | 네 (네 시) |
+
+And 20 changes too: 스물 → **스무** (스무 살).
+
+## Common mistake
+
+Saying "두 시간" for "two hours" works, but "두 시" means "two o'clock". 시간 is for elapsed hours; 시 is for the clock. Different counters, different jobs.
+`,
+  },
+
+  {
+    slug: 'numbers-money-and-prices',
+    module_slug: 'numbers',
+    title: 'Money and prices in Korean (sino numbers)',
+    summary: 'Won, thousand-won, ten-thousand-won. 만 is the big one — Korean groups by ten-thousands, not thousands.',
+    related_error_tags: ['unknown'],
+    related_skill_tags: ['numbers', 'sino_numbers', 'shopping'],
+    order_index: 62,
+    body_md: `> _Draft from public TOPIK-I material — needs native review._
+
+## The Korean ten-thousand-grouping
+
+English groups numbers in thousands: 1,000 / 1,000,000. Korean groups in ten-thousands. The pivot word is **만 (10,000)**.
+
+| Numeral | Korean | English |
+|---|---|---|
+| 1,000 | 천 | one thousand |
+| 10,000 | 만 | ten thousand |
+| 100,000 | 십만 | one hundred thousand |
+| 1,000,000 | 백만 | one million |
+| 10,000,000 | 천만 | ten million |
+| 100,000,000 | 억 | one hundred million |
+
+## Price patterns
+
+Use sino numbers + 원:
+
+| Price | Korean |
+|---|---|
+| 500원 | 오백 원 |
+| 1,500원 | 천오백 원 |
+| 3,000원 | 삼천 원 |
+| 12,000원 | 만 이천 원 |
+| 25,500원 | 이만 오천오백 원 |
+
+## Reading "12,000"
+
+Korean reads it as 만 이천 (10,000 + 2,000), not 십이 천. Once you cross 10,000, the natural pause is the 만, not the comma.
+
+## Common phrases
+
+| Korean | English |
+|---|---|
+| 얼마예요? | How much is it? |
+| 너무 비싸요. | It's too expensive. |
+| 깎아 주세요. | Please give me a discount. |
+| 카드 돼요? | Do you take cards? |
+
+## Common mistake
+
+Using native numbers for prices (둘천 원). Money is always sino. The simplest mental rule: **anything written as a Western numeral on a receipt → sino**.
+`,
+  },
+
+  {
+    slug: 'verbs-past-and-future',
+    module_slug: 'verbs-present',
+    title: 'Past (-았/었어요) and future (-(으)ㄹ 거예요) tenses',
+    summary: 'Once you have present polite, past is a vowel switch and future is a noun-like ending. Both are TOPIK-I core.',
+    related_error_tags: ['verb_conjugation'],
+    related_skill_tags: ['verbs', 'verb_conjugation', 'past', 'future'],
+    order_index: 41,
+    body_md: `> _Draft from public TOPIK-I material — needs native review._
+
+## Past tense: -았어요 / -었어요
+
+Take the verb stem, look at the last vowel, and pick the matching ending.
+
+| Last stem vowel | Ending | Example |
+|---|---|---|
+| ㅏ or ㅗ | -**았어요** | 가다 → 갔어요 (went) |
+| anything else | -**었어요** | 먹다 → 먹었어요 (ate) |
+| 하다 verbs | -**했어요** | 공부하다 → 공부했어요 (studied) |
+
+## Future: -(으)ㄹ 거예요
+
+This is the most common spoken future. Form:
+
+- Stem ending in vowel: add **-ㄹ 거예요**
+- Stem ending in consonant: add **-을 거예요**
+
+| Verb | Future |
+|---|---|
+| 가다 | 갈 거예요 |
+| 보다 | 볼 거예요 |
+| 먹다 | 먹을 거예요 |
+| 읽다 | 읽을 거예요 |
+| 공부하다 | 공부할 거예요 |
+
+## Side-by-side: same verb, three tenses
+
+| Tense | 먹다 (to eat) | 가다 (to go) |
+|---|---|---|
+| Present polite | 먹어요 | 가요 |
+| Past polite | 먹었어요 | 갔어요 |
+| Future | 먹을 거예요 | 갈 거예요 |
+
+## Common mistake
+
+Trying to use **-겠어요** as your everyday future. -겠- exists but signals intention, conjecture, or a polite "I will" in scripted contexts (server speech, formal commitments). For "I will probably / I'm going to", **-(으)ㄹ 거예요** is far more natural in TOPIK-I conversations.
+`,
+  },
+
+  {
+    slug: 'verbs-irregular-easy-five',
+    module_slug: 'verbs-present',
+    title: 'Five irregular verb patterns you\'ll hit on day one',
+    summary: 'ㅂ, 으, ㄹ, 르, ㅎ irregulars cover most of the surprises in TOPIK-I conjugation.',
+    related_error_tags: ['verb_conjugation'],
+    related_skill_tags: ['verbs', 'verb_conjugation', 'irregular'],
+    order_index: 42,
+    body_md: `> _Draft from public TOPIK-I material — needs native review._
+
+## Why irregulars
+
+Korean conjugation is mostly regular, but five small classes change shape when an ending starts with a vowel. Recognizing them stops the "why does my dictionary form not match what I hear?" frustration.
+
+## 1. ㅂ irregular
+
+Stem ends in ㅂ → ㅂ becomes 우 before a vowel-initial ending.
+
+| Verb | Polite |
+|---|---|
+| 덥다 (hot) | 더워요 |
+| 춥다 (cold) | 추워요 |
+| 어렵다 (difficult) | 어려워요 |
+| 쉽다 (easy) | 쉬워요 |
+
+## 2. 으 irregular
+
+Stem ends in 으 → drop the 으 and use the previous vowel to pick -아요 / -어요.
+
+| Verb | Polite |
+|---|---|
+| 쓰다 (write / use) | 써요 |
+| 크다 (big) | 커요 |
+| 바쁘다 (busy) | 바빠요 |
+
+## 3. ㄹ irregular
+
+Stem ends in ㄹ → drop the ㄹ before ㄴ, ㅂ, ㅅ endings.
+
+| Verb | Formal |
+|---|---|
+| 살다 (live) | 삽니다 (not 살습니다) |
+| 알다 (know) | 압니다 |
+| 만들다 (make) | 만듭니다 |
+
+## 4. 르 irregular
+
+Stem ends in 르 → 르 becomes ㄹ + ㄹ before a vowel ending.
+
+| Verb | Polite |
+|---|---|
+| 모르다 (don't know) | 몰라요 |
+| 부르다 (call) | 불러요 |
+| 다르다 (different) | 달라요 |
+
+## 5. ㅎ irregular
+
+Color and a few descriptive verbs ending in ㅎ → ㅎ disappears and the vowel softens.
+
+| Verb | Polite |
+|---|---|
+| 그렇다 (be so) | 그래요 |
+| 빨갛다 (be red) | 빨개요 |
+| 파랗다 (be blue) | 파래요 |
+
+## Common mistake
+
+Treating one irregular pattern as universal. They're per-verb properties — 좋다 (good) is regular even though it ends in ㅎ. When in doubt, **check the polite -아/어요 form** of the verb in a dictionary; that single form reveals the irregularity.
+`,
+  },
+
   {
     slug: 'reading-for-main-idea',
     module_slug: 'reading',

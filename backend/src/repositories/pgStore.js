@@ -3,6 +3,14 @@ import { buildPgSslConfig } from '../db/ssl.js';
 
 const { Pool } = pg;
 
+const SLOW_QUERY_MS = Number(process.env.PERF_SLOW_QUERY_MS) || 200;
+
+function logSlow(text, ms) {
+  if (ms < SLOW_QUERY_MS) return;
+  const snippet = String(text).replace(/\s+/g, ' ').slice(0, 160);
+  console.warn(`[baeu][pg] slow ${ms.toFixed(1)}ms: ${snippet}`);
+}
+
 export function createPgStore({ connectionString }) {
   const pool = new Pool({
     connectionString,
@@ -10,6 +18,18 @@ export function createPgStore({ connectionString }) {
     max: 10,
     idleTimeoutMillis: 30_000,
   });
+
+  // Wrap pool.query so every roundtrip is timed and slow ones are logged.
+  const rawQuery = pool.query.bind(pool);
+  pool.query = (text, params) => {
+    const start = process.hrtime.bigint();
+    const p = rawQuery(text, params);
+    p.then(
+      () => logSlow(typeof text === 'string' ? text : text?.text || '', Number(process.hrtime.bigint() - start) / 1e6),
+      () => {}
+    );
+    return p;
+  };
 
   const q = (text, params) => pool.query(text, params);
   const one = async (text, params) => (await pool.query(text, params)).rows[0] || null;
@@ -194,6 +214,42 @@ export function createPgStore({ connectionString }) {
           limit $2`,
         [userId, limit]
       ),
+    // Analytics helpers (admin-only). Bounded by `since` to avoid scanning
+    // the whole table once attempts grow.
+    async listAttemptsSince({ since, limit = 50_000 } = {}) {
+      const cutoff = since instanceof Date ? since.toISOString() : since;
+      return all(
+        `select id, user_id, exercise_id, correct, response_ms, error_tags, skill_tags, created_at
+           from practice_attempts
+          where created_at >= $1
+          order by created_at asc
+          limit $2`,
+        [cutoff, limit]
+      );
+    },
+    async exerciseStatsSince({ since, limit = 200 } = {}) {
+      const cutoff = since instanceof Date ? since.toISOString() : since;
+      return all(
+        `select
+           e.id as exercise_id,
+           e.prompt,
+           e.type,
+           e.module_id,
+           m.slug as module_slug,
+           count(a.id)::int as attempts,
+           sum(case when a.correct then 1 else 0 end)::int as correct,
+           avg(a.response_ms)::float as avg_response_ms
+         from practice_attempts a
+         join exercises e on e.id = a.exercise_id
+         left join modules m on m.id = e.module_id
+         where a.created_at >= $1
+         group by e.id, e.prompt, e.type, e.module_id, m.slug
+         having count(a.id) >= 3
+         order by count(a.id) desc
+         limit $2`,
+        [cutoff, limit]
+      );
+    },
     listRecentAttemptsAdmin: ({ wrongOnly = false, limit = 50 } = {}) =>
       wrongOnly
         ? all(

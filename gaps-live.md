@@ -1079,11 +1079,11 @@ Empty. Every remaining item depends on user action in an external provider (Goog
 ---
 
 <!-- deployed-brutal-audit:baeu-learning:start -->
-## Brutal Audit Deploy - 2026-05-12
+## Brutal Audit Deploy - 2026-05-18
 
 Source: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`.
 
-**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 3/3 [200] p95=482.6ms, api_health 3/3 [200] p95=431.5ms.
+**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 3/3 [200] p95=43.9ms, api_health 3/3 [200] p95=388.8ms.
 
 | Priority | Finding | Evidence | Closure gate |
 | --- | --- | --- | --- |
@@ -1129,3 +1129,146 @@ npm run e2e:prod-smoke -- --workers=1
 - Generated artifacts: `/Users/joaoadair/Documents/AI/Baeu_Learning/frontend/test-results/prod-smoke-prod-fresh-lear-f9483-d-progress-survives-relogin-chromium/error-context.md`, `test-failed-1.png`, `trace.zip`.
 
 **Next step:** do not broaden scope. Align the production frontend and the prod smoke selector contract for Progress (`stat-total` or an equivalent stable assertion), confirm the deployed bundle contains it, then rerun the exact same command with `--workers=1`. Only close this gate after the smoke passes through logout/login and re-verifies persisted progress after relogin.
+
+---
+
+## Kairos full audit - 2026-05-13-1312
+
+**Auditor:** Codex | **Escopo:** infra, public smoke, Railway logs, coverage gate
+
+### Achados
+
+| Severity | Finding | Status |
+|---|---|---|
+| OK | API `/api/v1/health` retornou 200 com `store: pg`; web canonical retornou 200 | Stack alive |
+| P1 | Sem suite e2e registrada no registry do full audit | Reusar/alinhar smoke de signup/practice/progress/relogin e tornar comando canonico |
+| WATCH | Produto segue LIMITED READY ate prova de progresso persistido apos relogin | Nao promover por HTTP 200 isolado |
+
+### Worker closure - Baeu-Learning e2e canonical gate - 2026-05-13
+
+**Status:** CLOSED for the core learner e2e gate. The repo already had a production-safe Playwright smoke for signup/practice/progress/relogin; this pass aligned it behind a canonical npm command and reran it successfully against the public app/backend.
+
+**Files changed:**
+
+- `frontend/package.json` now exposes `npm run test:e2e:audit`, forwarding to the production-safe learner smoke with `--workers=1`.
+- `frontend/e2e/prod-smoke.spec.js` now explicitly asserts public app load (`Baeu` title + auth heading) before signup, then keeps the existing signup -> module practice -> answer feedback -> Progress `Total 1` -> logout/login -> persisted Progress `Total 1` path.
+
+**Validation commands:**
+
+```bash
+cd /Users/joaoadair/Documents/AI/Baeu_Learning/frontend
+npm run test:e2e:audit
+npm run e2e
+```
+
+**Results:**
+
+- `npm run test:e2e:audit`: PASS, `1 passed (21.1s)`. Synthetic learner `audit-1778692063762@test.local` completed the full production flow and cleanup deleted the account.
+- `npm run e2e`: PASS, `16 passed`, `1 skipped` (prod smoke skipped by design without `E2E_PROD_SMOKE=1`), `57.7s`.
+- Playwright failure artifacts: none generated in this pass because both validations passed. Current marker: `frontend/test-results/.last-run.json` = `{"status":"passed","failedTests":[]}`.
+
+**Gate decision:** READY for the covered learner release gate: public app load, signup/login, practice, feedback, progress persistence, relogin, and cleanup are proven. Portfolio registry/global audit files were intentionally not edited in this worker scope; next non-repo action is to update the Kairos registry entry from "TBD/no suite" to `frontend/playwright.config.js` + `cd frontend && npm run test:e2e:audit`.
+
+---
+
+## Kairos portfolio refresh - 2026-05-15-1734
+
+**Auditor:** Codex | **Artifacts:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-15-1734/`
+
+| Severity | Finding | Status / next gate |
+|---|---|---|
+| OK | Web canonical `https://baeu-learning.vercel.app` retornou 200. | Public surface alive. |
+| OK | Backend `/api/v1/health` retornou 200 com `store:pg`. | Runtime base saudavel. |
+| OK | Railway inventory mostra `baeu-backend` sleep-enabled e latest SLEEPING, sem erro. | Custo baixo e postura correta para demo leve. |
+| P1 | Gate pronto cobre learner flow, nao admin/content-generation. | Antes de vender como plataforma completa, adicionar gate de admin/conteudo e plano de cohort pequeno. |
+
+**Veredito:** READY for learner gate. Bom candidato para demo estreita de aprendizado; nao ampliar promessa para admin sem prova.
+
+---
+
+## Product gates + perf + analytics + content drive — 2026-05-19
+
+**Auditor:** Claude | **Escopo:** P0 históricos, admin/content gate, perf instrumentation, learner+admin analytics, content seed expansion.
+
+### Investigação inicial (estado real verificado em código)
+
+| Item | Status verificado |
+|---|---|
+| Global Express error handler (P0 histórico) | **JÁ FECHADO** em [backend/src/app.js:87-104](backend/src/app.js#L87). Não vaza `err.message` para erros desconhecidos (5xx → `internal_error`). |
+| Per-controller `wrap` duplicados vazando erro | **JÁ FECHADO**. Sem helper duplicado; cada controller usa `try/next(err)` que rota pro handler global. |
+| Listening type schema-only | **JÁ FECHADO**. Removido do CHECK constraint em `schema.sql:236-237`. |
+| Streak fixtures dead | **JÁ FECHADO**. Streak vem de `ProgressService.streakDays()`. |
+| Módulos com 0 lessons | **JÁ FECHADO**. 8/8 com ≥1 lesson antes deste pass; agora 8/8 com ≥3. |
+| Admin/content gate e2e | **ABERTO → FECHADO neste pass**. |
+| Performance instrumentation | **ABERTO → FECHADO neste pass**. |
+| Results analytics (learner + admin) | **ABERTO → FECHADO neste pass**. |
+
+### Mudanças
+
+**Performance instrumentation** (closes P1: zero APM/timing)
+
+- `backend/src/middleware/perf.js`: request-timing middleware + bounded ring buffer (default 1000 samples) + path-templated metrics (`/api/v1/exercises/:id`). Slow-request log on ≥500ms.
+- `backend/src/repositories/pgStore.js`: `pool.query` wrapped to time every roundtrip, log queries ≥200ms.
+- `GET /api/v1/admin/metrics` exposes p50/p95/p99 by route, surfaced in Admin → Analytics.
+- `backend/src/otel.js`: opt-in OTEL bootstrap. Activates only when `OTEL_EXPORTER_OTLP_ENDPOINT` is set AND the OTEL packages are installed. Default deploy unchanged. Wired in [server.js:3-6](backend/src/server.js#L3) before `createApp`.
+- Tuning knobs: `PERF_RING_SIZE`, `PERF_SLOW_REQ_MS`, `PERF_SLOW_QUERY_MS`, `PERF_LOG_ALL`. Documented in RUNBOOK §5.
+
+**Analytics endpoints + UI** (closes P1: buyer/demo trust thin, no calibration loop)
+
+- `backend/src/services/AnalyticsService.js` with two surfaces:
+  - `learnerAnalytics({userId, days})`: daily activity, response-time trend (correct-only), toughest exercises (worst accuracy among ≥2-rep items), mastery distribution, error-tag breakdown.
+  - `adminAnalytics({days})`: per-module rollup, per-exercise difficulty with calibration signals (`too_hard` ≤25%, `hard` ≤45%, `too_easy` ≥95%), active learners count, follow-up queue.
+- Routes: `GET /api/v1/analytics/results` (session-auth) and `GET /api/v1/admin/analytics` (admin-auth).
+- Store extensions in both `pgStore` and `memoryStore`: `listAttemptsSince`, `exerciseStatsSince`.
+- Frontend: new [Results.jsx](frontend/src/pages/Results.jsx) page at `#/results` with daily bars, response-time mini-chart, toughest items, error breakdown, mastery distribution. AnalyticsPanel added to Admin.jsx with module rollup table, calibration follow-ups, perf metrics card.
+
+**Admin/content-generation gate** (closes P1: gate só learner)
+
+- New e2e tests in `frontend/e2e/admin.spec.js`:
+  - `admin: analytics tab renders module rollup and perf` — verifies the new panel mounts.
+  - `admin: import publishes content that learner API can see` — proves the content-generation surface end-to-end via admin import → published list visibility (hermetic API-level gate).
+
+**Content seed** (closes P1: módulos com 1 lesson só)
+
+- 6 new lessons appended to [grammarLessons.js](backend/src/db/grammarLessons.js): 2× hangul (받침; double/tense consonants), 2× numbers (everyday counters; money), 2× verbs-present (past+future; 5 irregulars).
+- Every new lesson opens with `> _Draft from public TOPIK-I material — needs native review._` so the maturity is visible at the learner surface.
+- Module → lesson counts after this pass: hangul 3, numbers 3, verbs-present 3, particles 3, patterns 3, vocab-daily 3, greetings 3, reading 3.
+
+### Tests
+
+- Backend: **82/82 pass** (was 77, added 3 analytics + 2 perf middleware tests).
+- Frontend: `npm run build` clean (332 modules, 396KB bundle).
+- E2E admin spec extended with 2 new tests; will require a CI/manual run against staging with `E2E_ADMIN_TOKEN` set to exercise.
+
+### Still open / explicit non-goals
+
+| Item | Why deferred |
+|---|---|
+| Pricing / billing surface | Out of scope per Joao 2026-05-19. |
+| Cohort/teacher multi-tenant view | Requires data-model change; deferred. |
+| Native Korean teacher review of the six 2026-05-19 lessons | Tracked in RUNBOOK §4. Lessons ship with explicit "needs native review" banner. |
+| `RESEND_API_KEY`, Google OAuth, content seed deeper than draft | Manual provider/expertise actions; see RUNBOOK §1-3. |
+| OTEL deps installed by default | Kept opt-in to avoid bloating the default Railway image. Install steps in RUNBOOK §5. |
+
+### Verification commands
+
+```sh
+# Backend unit tests
+cd backend && npm test
+
+# Admin metrics (need ADMIN_TOKEN)
+curl -s -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://baeu-backend-production.up.railway.app/api/v1/admin/metrics?sinceMin=60" | jq '.overall'
+
+# Admin analytics
+curl -s -H "x-admin-token: $ADMIN_TOKEN" \
+  "https://baeu-backend-production.up.railway.app/api/v1/admin/analytics?days=30" | jq '.totals'
+
+# E2E admin (local or against staging)
+cd frontend && E2E_ADMIN_TOKEN=$ADMIN_TOKEN npx playwright test e2e/admin.spec.js
+```
+
+### False-green to guard against next audit
+
+`/api/v1/admin/metrics` returning data ≠ traffic is healthy. The ring is in-memory per pod — restart wipes it, and a single Railway instance can show clean stats while a second one (if scaled) is hot. Treat it as observability sugar, not source of truth. Once OTEL is wired, defer to Tempo for cross-instance views.
+

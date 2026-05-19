@@ -3,6 +3,7 @@ import EndlessPractice from './pages/EndlessPractice.jsx';
 import Auth from './pages/Auth.jsx';
 import Admin from './pages/Admin.jsx';
 import Progress from './pages/Progress.jsx';
+import Results from './pages/Results.jsx';
 import Home from './pages/Home.jsx';
 import Module from './pages/Module.jsx';
 import Lesson from './pages/Lesson.jsx';
@@ -79,6 +80,7 @@ function Shell() {
   const { path, query } = route;
   const isAdmin = path.startsWith('/admin');
   const isProgress = path.startsWith('/progress');
+  const isResults = path.startsWith('/results');
   const isPractice = path.startsWith('/practice');
   const isModule = path.startsWith('/module/');
   const isLesson = path.startsWith('/lesson/');
@@ -91,6 +93,7 @@ function Shell() {
     path === '/' ||
     isAdmin ||
     isProgress ||
+    isResults ||
     isPractice ||
     isModule ||
     isLesson ||
@@ -100,7 +103,9 @@ function Shell() {
 
   const active = isAdmin
     ? 'admin'
-    : isProgress
+    : isResults
+      ? 'results'
+      : isProgress
       ? 'progress'
       : isAbout
         ? 'about'
@@ -132,6 +137,7 @@ function Shell() {
           lessonSlug,
           isAdmin,
           isProgress,
+          isResults,
           isPractice,
           isModule,
           isLesson,
@@ -144,12 +150,13 @@ function Shell() {
   );
 }
 
-function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isPractice, isModule, isLesson, isAbout, isAccount, isKnownRoute }) {
+function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isResults, isPractice, isModule, isLesson, isAbout, isAccount, isKnownRoute }) {
   if (isAbout) return <About />;
   if (isAdmin) return <Admin />;
   if (!isKnownRoute) return <NotFound />;
   if (!user) return <Auth />;
   if (isAccount) return <AccountSettings user={user} />;
+  if (isResults) return <Results />;
   if (isProgress) return <Progress />;
   if (isLesson && lessonSlug) {
     return <Lesson slug={lessonSlug} returnTo={query.from || '#/'} />;
@@ -259,6 +266,7 @@ function Header({ user, role, active, onLogout }) {
             <>
               <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
               <NavLink href="#/progress" active={active === 'progress'}>Progress</NavLink>
+              <NavLink href="#/results" active={active === 'results'}>Results</NavLink>
             </>
           )}
           <NavLink href="#/about" active={active === 'about'}>About</NavLink>
