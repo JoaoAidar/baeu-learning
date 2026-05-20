@@ -47,8 +47,7 @@
    `healthcheckPath=/api/v1/health` and graceful shutdown is wired (SIGTERM).
 5. Canonical production backend URL:
    `https://baeu-backend-production.up.railway.app`.
-   The old `https://baeu-learning-api-production.up.railway.app` URL is stale
-   and currently returns Railway `Application not found`.
+   Deprecated Railway aliases should not be used as production proof.
 
 ## 3. Vercel (frontend)
 

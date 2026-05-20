@@ -139,7 +139,7 @@ npm run dev
 - Frontend: `https://baeu-learning.vercel.app`
 - Backend canônico: `https://baeu-backend-production.up.railway.app`
 - Health: `GET https://baeu-backend-production.up.railway.app/api/v1/health`
-- Backend antigo/deprecado: `https://baeu-learning-api-production.up.railway.app`
+- Backend antigo/deprecado: removido; use o backend canônico acima.
 
 O frontend atual usa `VITE_API_BASE_URL` no build. Para produção, esse valor
 deve apontar para `https://baeu-backend-production.up.railway.app`.

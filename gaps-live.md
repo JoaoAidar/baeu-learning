@@ -16,7 +16,7 @@ append entries here rather than recreate.
 | OK | Backend API `/api/v1/health` 200 (`{"ok":true,"store":"pg"}`) em 2.3s a partir de SLEEPING — cold start funciona. | Liveness OK. |
 | OK | Railway `baeu-backend` sleep=true coerente com app pre-buyer/baixo tráfego; Neon `ancient-butterfly-19493910` last_active 2026-05-12T00:12Z, compute=0.7h. | Sem alerta. |
 | OK | Frontend `https://baeu-learning.vercel.app` 200 (title `Baeu — Korean Practice`). | Servindo. |
-| P0 | `joao-stack/SKILL.md` lista a URL backend como `baeu-learning-api-production.up.railway.app` — essa URL retorna 404 "Application not found". A URL real é `baeu-backend-production.up.railway.app`. Service name renomeado: `baeu-learning-api` → `baeu-backend`. | Corrigir joao-stack e qualquer doc/script que use o nome antigo antes de próximo audit. |
+| OK | `joao-stack/SKILL.md` e docs devem apontar para `baeu-backend-production.up.railway.app`. Service name renomeado: `baeu-learning-api` → `baeu-backend`. | URL canônica alinhada; manter aliases antigos fora de docs/scripts. |
 | P1 | Visual rendering / console / network não foi auditado (Chrome MCP off neste run). | Rerodar Module 3 com browser conectado. |
 | P1 | Não há `gaps-live.md` anterior — este é o baseline. Não há histórico para comparar drift. | Próximas auditorias devem appendar abaixo. |
 | P2 | Vercel framework=vite; sem prova de smoke E2E público nesta sessão. | Adicionar smoke nativo (web `/` 200 + backend `/api/v1/health` 200) ao fleet. |
@@ -48,7 +48,7 @@ Source report: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-11-2208/consol
 
 **Verdict:** WATCH / LIMITED READY pre-buyer. The latest reports agree that Baeu is live enough for controlled validation, but not buyer-demo-clean until learner first-value and backend registry truth are closed.
 
-**Landing/canonical URL:** frontend `https://baeu-learning.vercel.app`; canonical backend `https://baeu-backend-production.up.railway.app/api/v1/health`. Do not use stale `baeu-learning-api-production.up.railway.app`.
+**Landing/canonical URL:** frontend `https://baeu-learning.vercel.app`; canonical backend `https://baeu-backend-production.up.railway.app/api/v1/health`. Do not use deprecated Railway aliases.
 
 **Top 3 gaps:**
 
@@ -312,7 +312,7 @@ Reconstructed from commit `c277118` after a later audit run rewrote the file. Th
 | Area | Evidence | Status |
 |---|---|---|
 | Frontend API base | Active app code uses `frontend/src/api.js` with `VITE_API_BASE_URL`. Public bundle includes `https://baeu-backend-production.up.railway.app`; no old Railway URL found in the bundle. | OK |
-| Old backend URL | `https://baeu-learning-api-production.up.railway.app/api/v1/health` returns Railway 404 `Application not found`. | Stale/deprecated |
+| Deprecated backend aliases | Old Railway aliases returned Railway 404 `Application not found`. | Stale/deprecated |
 | Current backend URL | `https://baeu-backend-production.up.railway.app/api/v1/health` returns 200 `{"ok":true,"store":"pg"}`. | OK |
 | Backend health route | Repo defines `GET /api/v1/health`; `backend/railway.toml` also declares `healthcheckPath="/api/v1/health"`. | OK in repo |
 | Railway service settings | Live Railway inventory shows service `baeu-backend`, latest deploy `SUCCESS`, `healthcheckPath=null`, `sleepApplication=false`. | Provider action needed |
