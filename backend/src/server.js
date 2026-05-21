@@ -1,9 +1,4 @@
 import 'dotenv/config';
-// OTEL must start before any instrumented module is imported, but our auto-
-// instrumentations use require-hooks that patch on first use, so importing
-// after dotenv is fine for SDK init. We still await start before createApp.
-import { startOtel } from './otel.js';
-await startOtel();
 import { createApp } from './app.js';
 import { getStore } from './config/db.js';
 import { runSeedIfEmpty } from './db/seed.js';

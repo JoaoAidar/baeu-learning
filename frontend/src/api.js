@@ -1,5 +1,18 @@
 const BASE = import.meta.env.VITE_API_BASE_URL || '';
 const ADMIN_TOKEN_KEY = 'baeu_admin_token';
+const DEFAULT_TIMEOUT_MS = 12_000;
+const DEFAULT_GET_RETRIES = 2;
+
+export class ApiError extends Error {
+  constructor(message, { kind = 'unknown', status = null, code = null, retried = false } = {}) {
+    super(message);
+    this.name = 'ApiError';
+    this.kind = kind;
+    this.status = status;
+    this.code = code || message;
+    this.retried = retried;
+  }
+}
 
 export const adminAuth = {
   getToken: () => localStorage.getItem(ADMIN_TOKEN_KEY),
@@ -8,22 +21,54 @@ export const adminAuth = {
 };
 
 async function call(path, opts = {}) {
+  const method = (opts.method || 'GET').toUpperCase();
+  const retries = opts.retries ?? (method === 'GET' ? DEFAULT_GET_RETRIES : 0);
+  const timeoutMs = opts.timeoutMs ?? DEFAULT_TIMEOUT_MS;
   const headers = {
     'Content-Type': 'application/json',
     ...(opts.headers || {}),
   };
-  // Always send the Better Auth session cookie cross-origin.
-  const res = await fetch(`${BASE}${path}`, {
-    ...opts,
-    headers,
-    credentials: 'include',
-  });
-  const text = await res.text();
-  const body = text ? safeJson(text) : {};
-  if (!res.ok) {
-    throw new Error(body.error || `HTTP ${res.status}`);
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= retries; attempt += 1) {
+    try {
+      const res = await fetchWithTimeout(`${BASE}${path}`, {
+        ...opts,
+        method,
+        headers,
+        credentials: 'include',
+        timeoutMs,
+      });
+      const text = await res.text();
+      const body = text ? safeJson(text) : {};
+      if (!res.ok) {
+        const code = body.error || `HTTP ${res.status}`;
+        const err = new ApiError(humanizeApiError(code, res.status), {
+          kind: 'http',
+          status: res.status,
+          code,
+          retried: attempt > 0,
+        });
+        if (shouldRetryHttp(res.status, method) && attempt < retries) {
+          lastError = err;
+          await wait(backoffMs(attempt));
+          continue;
+        }
+        throw err;
+      }
+      return body;
+    } catch (err) {
+      const apiErr = normalizeFetchError(err, attempt > 0);
+      if (apiErr.kind === 'network' && attempt < retries) {
+        lastError = apiErr;
+        await wait(backoffMs(attempt));
+        continue;
+      }
+      throw apiErr;
+    }
   }
-  return body;
+
+  throw lastError || new ApiError('The server is temporarily unavailable.', { kind: 'network' });
 }
 
 async function adminCall(path, opts = {}) {
@@ -33,6 +78,55 @@ async function adminCall(path, opts = {}) {
     ...opts,
     headers: { ...(opts.headers || {}), 'x-admin-token': tok },
   });
+}
+
+async function fetchWithTimeout(url, opts) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), opts.timeoutMs);
+  try {
+    return await fetch(url, { ...opts, signal: controller.signal });
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+function shouldRetryHttp(status, method) {
+  if (method !== 'GET') return false;
+  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+}
+
+function normalizeFetchError(err, retried) {
+  if (err instanceof ApiError) return err;
+  if (err?.name === 'AbortError') {
+    return new ApiError('The server took too long to respond. Please try again.', {
+      kind: 'network',
+      code: 'timeout',
+      retried,
+    });
+  }
+  return new ApiError('The server is temporarily unavailable. Please try again.', {
+    kind: 'network',
+    code: 'network_unavailable',
+    retried,
+  });
+}
+
+function humanizeApiError(code, status) {
+  if (code === 'unauthorized') return 'Please log in again.';
+  if (code === 'forbidden') return 'You do not have access to this action.';
+  if (code === 'cors_not_allowed') return 'This app origin is not allowed by the API.';
+  if (code === 'no_exercises_in_module') return 'This module has no published exercises yet.';
+  if (code === 'no_published_exercises') return 'No published exercises are available yet.';
+  if (status >= 500) return 'The server had a problem. Please try again.';
+  return code || `HTTP ${status}`;
+}
+
+function backoffMs(attempt) {
+  return 350 * (attempt + 1);
+}
+
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function safeJson(s) { try { return JSON.parse(s); } catch { return {}; } }

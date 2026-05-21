@@ -31,7 +31,7 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
   const toast = useToast();
 
   function isNoExercisesError(err) {
-    const msg = (err && err.message) || '';
+    const msg = (err && (err.code || err.message)) || '';
     return msg === 'no_exercises_in_module' || msg === 'no_published_exercises';
   }
 
@@ -95,7 +95,7 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
       // The backend translates double-submit unique-violations to 409
       // `duplicate_submit`. That's a user-visible no-op — the first submit
       // already landed; suppress the scary toast.
-      if (e.message !== 'duplicate_submit') {
+      if ((e.code || e.message) !== 'duplicate_submit') {
         toast.push(e.message, 'error');
       }
     } finally {

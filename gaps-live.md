@@ -303,8 +303,8 @@ Reconstructed from commit `c277118` after a later audit run rewrote the file. Th
 
 ## Baeu correction package — 2026-05-11-0905
 
-**Source:** `/Users/joaoadair/Documents/AI/Audits/kairos-audit-2026-05-11-0847.md`  
-**Artifacts:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-11-0847/`  
+**Source:** `/Users/joaoadair/Documents/AI/Audits/kairos-audit-2026-05-11-0847.md`
+**Artifacts:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-11-0847/`
 **Scope:** repo URL truth, Vercel deploy failure, Railway health/sleep posture, local build/test, public read-only smoke.
 
 ### Current evidence
@@ -353,9 +353,9 @@ Remaining gate for full READY:
 
 ## Product/persona/brutal audit — 2026-05-11-1212
 
-**Source report:** `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/runs/2026-05-11-1212/sidecars/baeu-learning.md`  
-**Evidence folder:** `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/runs/2026-05-11-1212/evidence/baeu-learning/`  
-**Audited URL:** `https://baeu-learning.vercel.app/`  
+**Source report:** `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/runs/2026-05-11-1212/sidecars/baeu-learning.md`
+**Evidence folder:** `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/runs/2026-05-11-1212/evidence/baeu-learning/`
+**Audited URL:** `https://baeu-learning.vercel.app/`
 **Verdict:** `WATCH` overall. `LIMITED READY` for corrected URL/auth/module catalog. `WATCH/NO-GO` for production first-practice browser readiness until the deployed UI reaches question -> answer -> feedback -> progress.
 
 | Severity | Evidence ID | Persona/stakeholder affected | Failed journey or blocked evidence | Visible trust break | Closure gate | Agent attack rule |
@@ -1272,3 +1272,188 @@ cd frontend && E2E_ADMIN_TOKEN=$ADMIN_TOKEN npx playwright test e2e/admin.spec.j
 
 `/api/v1/admin/metrics` returning data ≠ traffic is healthy. The ring is in-memory per pod — restart wipes it, and a single Railway instance can show clean stats while a second one (if scaled) is hot. Treat it as observability sugar, not source of truth. Once OTEL is wired, defer to Tempo for cross-instance views.
 
+---
+
+## Persona browser audit — 2026-05-19-2005
+
+**Auditor:** Codex | **Escopo:** browser/persona read-only nos 11 projetos da stack Kairos.
+
+Evidence: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/persona-browser-audits/2026-05-19/2026-05-19-2005`
+
+| Severity | Persona / stakeholder | Finding | Closure gate |
+|---|---|---|---|
+| P1 | Learner | Routes return 200 but browser screenshot stalls on Loading; first-value practice not observed. | Fix loading/runtime and run signup/login -> module -> practice -> feedback -> progress smoke. |
+| P1 | Buyer/operator | Privacy/billing/plan trust surfaces remain not validated in browser. | Expose privacy/terms/plan status in public shell. |
+
+## Portfolio persona/brutal/product audit — 2026-05-20
+
+**Source report:** `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/runs/2026-05-20-portfolio-11/baeu-learning.md`
+
+**Verdict/gate:** `LIMITED READY` for controlled learner validation; `WATCH` for buyer/cohort sponsor readiness. Production learner first-value is green again, but provider logs/status were blocked by timeouts and admin/import/generation was not verified.
+
+### P0/P1/P2
+
+| Severity | Persona / stakeholder | Finding | Evidence | Closure gate |
+|---|---|---|---|---|
+| P1 | Learner / operator | Canonical backend showed transient Railway `404 Application not found` on first health/modules/lessons probes, then recovered to 200 and passed the production learner smoke. This is a false-negative/false-green trap, not a clean all-green. | EVID-002, EVID-003, EVID-008 in source report. | Add retry-aware readiness smoke that records first-attempt status, retry status, and user-visible fallback. |
+| P1 | Buyer / cohort sponsor | Public About page is honest but too thin for sponsor trust: no cohort/reporting sample, privacy/terms depth, pedagogy authority, or implementation path. | EVID-005. | Add sponsor trust surface with TOPIK scope, privacy/terms, reporting sample, support/contact, and caveats. |
+| P1 | Operator / content owner | Admin/import/generation is token-gated and was not validated; protected admin route is not proof that content operations work. | EVID-006. | Run a sanctioned admin smoke with explicit test token path and no secret values in artifacts. |
+| P2 | Study-flow adversary | Unknown hash routes now show Page Not Found / Back to practice, but still ride on SPA HTTP 200. | EVID-007. | Document SPA fallback behavior or add edge/server handling if external link semantics matter. |
+| P2 | Auth/session trust | Google OAuth and Resend/password-reset delivery were not verified in this run. | Not verified. | Provider-config smoke proves social login and reset email, or UI labels them unavailable. |
+
+### Evidencias
+
+- `curl https://baeu-learning.vercel.app/` returned 200 with title `Baeu — Korean Practice`.
+- First backend GET batch to `https://baeu-backend-production.up.railway.app/api/v1/{health,modules,lessons}` returned Railway `404 Application not found` around 11s; immediate retry returned 200 for health/modules/lessons.
+- Browser DOM pass on desktop and Pixel 5 saw public entry, login/signup, modules copy, About page, Admin token gate, and explicit unknown-route recovery with no console errors or failed requests.
+- `npm run test:e2e:audit -- --reporter=list` passed in production: synthetic learner `audit-1779241043603@test.local` completed signup -> module -> practice -> feedback -> progress -> logout/login -> persisted progress; cleanup deleted the learner.
+- Vercel wrapper `auth-check` timed out; Railway wrapper had tokens present but API/CLI timed out against Railway GraphQL; browser wrapper OK.
+
+### False greens
+
+- Frontend 200 is only liveness, not learner readiness.
+- Backend 200 is not stable proof by itself because this run also saw transient Railway 404 on the same canonical host.
+- About/pricing honesty is not buyer/cohort readiness.
+- Admin token gate means protected, not verified.
+
+### Closure gates
+
+1. Keep production learner e2e green before any learner-beta/demo claim.
+2. Add retry-aware backend readiness evidence and user-visible recovery for cold/provider drift.
+3. Add sponsor trust surface: privacy/terms, pedagogy/TOPIK scope, sample reporting/progress, contact/support.
+4. Validate admin/import/generation through sanctioned test-admin path without exposing secrets.
+5. Rerun Vercel/Railway wrapper evidence when provider/network timeout clears.
+
+### Nao verificado
+
+- Vercel deploy/log/inspect.
+- Railway logs/metrics/status.
+- Google OAuth.
+- Password reset email / Resend delivery.
+- Admin import/generation/content editing.
+- Native Korean content quality.
+- Cohort sponsor reporting workflow.
+
+### Agent attack rule
+
+Never raise Baeu above `LIMITED READY` from homepage 200, backend health 200, or module counts. Require production learner e2e plus separate proof for provider, admin/content, and sponsor claims.
+
+---
+
+## Persona/Product Audit — 2026-05-20-0009
+
+**Auditor:** Codex | **Escopo:** Kairos full/product/persona browser audit portfolio
+**Source report:** /Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/2026-05-20-0009-kairos-product-audit.md
+
+### Achados
+
+| Severity | Finding | Status |
+|---|---|---|
+| P2 | First practice loop passed, but mobile study flow, module progression, TOPIK credibility and admin content controls were not deep-audited. Evidence: E2E-007. Persona: learner / admin / Korean expert. Attack rule: prove first practice value, feedback quality, progress intelligence, TOPIK/module credibility, admin controls and frontend/API coupling. | Closure gate: mobile + module progression + admin import/generation + content credibility suite passes. |
+| OK | Production fresh learner got feedback, progress survived relogin, and synthetic learner cleanup succeeded. Evidence: HTTP-001, E2E-007. | OK for first practice value. |
+
+---
+
+## Kairos Full Audit — 2026-05-20-0017
+
+**Auditor:** Claude (Cowork) | **Escopo:** Infra+Functional+Visual leve+Product gate
+
+### Achados
+
+| Severity | Finding | Status |
+|---|---|---|
+| ✅ | `baeu-backend` health 200 `{ok:true, store:"pg"}` em 0.67s | OK |
+| ✅ | Vercel `baeu-learning.vercel.app` 200 OK title "Baeu — Korean Practice" (Vite SPA) | OK |
+| ✅ | Railway service `baeu-backend` sleep=true SUCCESS 2026-05-19 | OK |
+| ✅ | Neon `ancient-butterfly-19493910` endpoint `ep-dark-bar-aj9xe5bl` idle, CU 0.25-0.25 | OK |
+| ⚠️ DRIFT | Railway project ID real: `b8a71097-a023-496f-9764-94b91ef49786`. joao-stack lista `9515782d-1f31-4f28-84ca-b4574425576e` (ID antigo/stale) | Atualizar joao-stack |
+
+### Gate de aceite
+**READY** — Sistema operacional.
+
+**Evidência:** `~/Documents/AI/Audits/runs/2026-05-20-0017/`
+
+---
+## Kairos portfolio validation — 2026-05-20-0047
+
+**Auditor:** Codex + 6 subagentes paralelos
+**Escopo:** persona/browser audit + product audit + full-stack/runtime audit
+**Gate atual:** LIMITED READY learner loop; buyer/admin/pedagogy nao prontos.
+**Relatorio fonte:** `/Users/joaoadair/Documents/AI/Audits/kairos-audit-2026-05-20-0047.md`
+**Evidencias:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-20-0047`
+
+### Achados anexados para a proxima iteracao
+
+| Severidade | Achado | Evidencia | Fechamento |
+|---|---|---|---|
+| OK | Learner prod smoke | BAEU-E2E-001: signup -> Hangul module practice -> feedback -> Progress Total 1 -> logout/login -> persisted progress; synthetic learner cleanup deleted. | Manter smoke verde antes de claims field/demo. |
+| P1 | Buyer/pedagogy trust ainda sem prova fresca | Rodada provou learner path e liveness, nao pricing/pilot terms, curriculum authority, pedagogy caveats ou sponsor reporting. | Browser audit prova copy/rota buyer explicando escopo, evidence/progress reporting, pilot/pricing e limites. |
+| P1 | Admin/content governance nao foi revalidado em prod | `frontend/e2e/admin.spec.js` existe, mas smoke executou apenas `e2e/prod-smoke.spec.js`; sem token admin. | Smoke sancionado prova publish/import/list governance e lesson/module depth sem expor token. |
+| P2 | Source/deploy traceability | Repo dirty durante auditoria: gaps e untracked `frontend/baeu-browser-audit.js`. | Registrar commit/source truth do deploy antes de claims code-level live. |
+
+---
+## Code/product closure pass — 2026-05-21
+
+**Scope:** items that can be improved in repo code/product without provider secrets.
+
+### Closed / moved forward
+
+| Area | Change | Remaining gate |
+|---|---|---|
+| API resilience | `frontend/src/api.js` now centralizes API calls with timeout, GET retry/backoff, `AbortController`, and `ApiError` classification. | Browser-test the unavailable-backend UX by pointing `VITE_API_BASE_URL` at an invalid/cold endpoint. |
+| Sponsor trust | `/about` now states cohort/sponsor fit, TOPIK scope, progress-report expectation, privacy/support handling, pricing status, and explicit non-claims. | Fresh browser/persona audit should confirm sponsor can understand scope and caveats without Joao narrating. |
+| Admin governance | Added opt-in production admin smoke `npm run e2e:prod-admin-smoke` gated by `E2E_ADMIN_TOKEN`; it imports, lists, archives, and re-lists a marked exercise without printing the token. | Run against production with a sanctioned token. |
+| OTel deploy bootstrap | Railway config now runs `npm start`, and `instrumentation.js` loads dotenv before SDK init. `server.js` no longer starts a second, late OTel SDK. | Push/deploy, generate traffic, then prove `baeu-backend` in Grafana Tempo. |
+| Ops docs | `DEPLOY.md` and `RUNBOOK.md` no longer describe Railway GitHub source link as open/manual-only. | Confirm live Railway start command after next deploy. |
+
+### Still open after this pass
+
+| Priority | Item | Why still open |
+|---|---|---|
+| P1 | Provider flows: Google OAuth + Resend delivery | Requires creating/setting provider secrets. |
+| P1 | Grafana Tempo proof | Requires deploy after OTel bootstrap alignment plus wrapper/dashboard validation. |
+| P1 | Admin production smoke execution | Requires sanctioned `E2E_ADMIN_TOKEN` in environment; spec now exists. |
+| P1 | Backend-down UX validation | Code exists, but needs browser run with an intentionally invalid/cold API target. |
+| P2 | Native Korean teacher review | Product/expertise task, not code. |
+
+---
+## Kairos smoke/load/logs — 2026-05-20-0119-smoke-load-logs
+
+**Gate operacional:** GO learner liveness GET-only; WATCH por logs de restart e buyer/admin sem prova.
+**Relatorio fonte:** `/Users/joaoadair/Documents/AI/Audits/kairos-smoke-load-logs-2026-05-20-0119-smoke-load-logs.md`
+**Evidencias:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-20-0119-smoke-load-logs`
+
+### Achados smoke/load/logs
+
+| Severidade | Achado | Evidencia | Fechamento |
+|---|---|---|---|
+| OK | Frontend/backend health estaveis sob stress GET-only | Stress: web 200:24 p95 238.0ms max 261.5ms OK; api-health 200:24 p95 619.5ms max 643.5ms OK; browser deploy-smoke sem bad routes. | Manter como baseline para learner path. |
+| P2 | Logs mostram restart/SIGTERM na janela | `railway-baeu-backend-cwd.json`: 23 eventos, 13 error classificados; amostras sao `Stopping Container`/`SIGTERM received`. | Diferenciar deploy/restart esperado de crash; se recorrente fora de deploy, abrir gap de estabilidade. |
+
+---
+## Kairos all repo smokes — 2026-05-20-0139-all-repo-smokes
+
+**Gate smoke:** GO learner prod smoke; WATCH buyer/admin fora desta rodada.
+**Relatorio fonte:** `/Users/joaoadair/Documents/AI/Audits/kairos-all-repo-smokes-2026-05-20-0139-all-repo-smokes.md`
+**Evidencias:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-20-0139-all-repo-smokes`
+
+### Achados dos smokes automatizados
+
+| Severidade | Achado | Evidencia | Fechamento |
+|---|---|---|---|
+| OK | Prod learner smoke passou com cleanup | `baeu_e2e_audit.log`: synthetic account criado, progresso sobrevive relogin, cleanup deleted; `1 passed`. | Manter antes de demos; proxima camada ainda precisa buyer/admin/pedagogy. |
+
+---
+## Kairos cost/scale audit — 2026-05-20-0150
+
+**Gate custo/escala:** `WATCH` / risco `WATCH`
+**Relatorio fonte:** `/Users/joaoadair/Documents/AI/ops-cost-audit/2026-05-20/2026-05-20-0150/STACK_REFRESH_REPORT.md`
+**Evidencia:** `/Users/joaoadair/Documents/AI/ops-cost-audit/2026-05-20/2026-05-20-0150`
+
+### Achados de custo e escala
+
+| Severidade | Achado | Evidencia | Fechamento |
+|---|---|---|---|
+| P1 | Bottleneck de escala atual | business-flow readiness/caps not fully proven | Fechar o gate operacional antes de aumentar trafego/usuarios/fluxos pesados. |
+| P1 | Custo AI/OpenRouter observado | OpenRouter mensal dedicado `$0.00`; chave compartilhada Kairos prod nao alocada por produto esta no relatorio; creditos restantes baixos no nivel conta. | Definir caps por chave/produto e custo por acao pesada antes de rodar geracao ampla. |
+| P1 | Load GET-only nao prova fluxo pesado | Stress: OK max_p95=620ms; drivers de codigo: scraping:25, db_scan:25, retry_loop:25, logging_heavy:25, scheduled:18 | Rodar load/soak especifico so depois de budget cap e fluxo de negocio verde. |

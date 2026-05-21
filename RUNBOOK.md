@@ -43,20 +43,22 @@ If your OAuth client is in "Testing" mode (Google's default), only test-list use
 
 ---
 
-## 2. Railway GitHub source link (kill the manual `railway up`)
+## 2. Railway GitHub source link (closed)
 
-Today every backend release is `cd backend && railway up --service baeu-backend --ci`. Fix: link the GitHub repo to the Railway service so pushes to `main` auto-deploy (like Vercel already does for the frontend).
+`baeu-backend` is already linked to `JoaoAidar/baeu-learning`, branch `main`,
+root directory `backend`. Pushes to `main` autodeploy the backend; use manual
+`railway up --service baeu-backend --ci` only as a fallback.
 
-1. Railway dashboard → `baeu-learning` project → `baeu-backend` service → **Settings**.
-2. **Source** section → "Connect Repo" → pick `JoaoAidar/baeu-learning`.
-3. **Branch**: `main`.
-4. **Root Directory**: `backend`.
-5. **Watch Paths** (optional, recommended): `backend/**` — so frontend-only commits don't trigger backend redeploys.
-6. Save. Next push to `main` should auto-deploy.
+**Verify**:
 
-**Verify**: run `python3 ~/.agents/tools/service-wrappers/railway_service.py inventory --format json | grep -A2 baeu-backend` — `source.repo` should no longer be `null`.
+```sh
+python3 ~/.agents/tools/service-wrappers/railway_service.py status \
+  --cwd /Users/joaoadair/Documents/AI/Baeu_Learning --format json
+```
 
-Then push a no-op commit to confirm autodeploy fires. Once that works, **drop the manual `railway up` step from DEPLOY.md** (it'll still work as a fallback for emergencies).
+Expected after this repo change is deployed: project `baeu-learning`, service
+`baeu-backend`, latest deployment `SUCCESS`, domain
+`baeu-backend-production.up.railway.app`, and start command `npm start`.
 
 ---
 
@@ -129,23 +131,21 @@ The admin UI surfaces the same data under **Admin → Analytics → Backend perf
 
 ### OpenTelemetry export (opt-in)
 
-`backend/src/otel.js` bootstraps OTEL traces when `OTEL_EXPORTER_OTLP_ENDPOINT` is set AND the OTEL deps are installed. Default deploy has no OTEL deps and no behavior change.
+`backend/src/instrumentation.js` bootstraps OTEL traces, metrics, and logs when
+`OTEL_EXPORTER_OTLP_ENDPOINT` is set. Railway runs `npm start`, which preloads
+that file before `src/server.js`, so auto-instrumentations can patch HTTP,
+Express, and Postgres early enough.
 
 To enable Grafana Cloud Tempo export:
 
 ```sh
-cd backend && npm i \
-  @opentelemetry/api \
-  @opentelemetry/sdk-node \
-  @opentelemetry/exporter-trace-otlp-http \
-  @opentelemetry/auto-instrumentations-node
-
 railway variables \
-  --set "OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-<region>.grafana.net/otlp/v1/traces" \
+  --set "OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-<region>.grafana.net/otlp" \
   --set "OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic <base64(user:token)>" \
+  --set "OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf" \
   --set "OTEL_SERVICE_NAME=baeu-backend"
 
-cd backend && railway up --service baeu-backend --ci
+git push origin main
 ```
 
 Verify in Grafana Cloud Tempo by filtering `service.name=baeu-backend`.
