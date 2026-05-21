@@ -70,15 +70,16 @@ Vite SPA roda 100% no browser. OTel browser tem custo de bundle (~80kb) e mostra
 - `OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf`
 - `OTEL_EXPORTER_OTLP_HEADERS` ← `~/.agents/service-env/grafana.env`
 
-**Status 2026-05-21:** code/deploy bootstrap aligned; provider proof still open.
+**Status 2026-05-21:** closed for backend Tempo proof.
 
 **Checklist:**
 - [x] baeu-backend: adicionar `src/instrumentation.js` + deps @opentelemetry.
 - [x] Setar 4 envs OTEL_* no Railway baeu-backend (provider UI confirmed names present on 2026-05-20).
-- [ ] Redeploy baeu-backend with `backend/railway.toml` `startCommand="npm start"` so `--import=./src/instrumentation.js` is definitely active in production.
+- [x] Redeploy baeu-backend; Railway logs show `npm start`, `node --import=./src/instrumentation.js src/server.js`, and `[otel] started — service=baeu-backend`.
 - [ ] (opcional) Vercel: ligar log drain para Grafana Loki (sem code change)
-- [ ] Validar com `grafana_service.py tempo-services` que `baeu-backend` aparece
-- [ ] Confirmar dashboard Robust Ops populado
+- [x] Validar com `grafana_service.py tempo-services` que `baeu-backend` aparece.
+- [x] Validar com `grafana_service.py tempo-search --service-name baeu-backend` que traces existem.
+- [ ] Confirmar dashboard Robust Ops populado visualmente.
 
 ---
 

@@ -1416,6 +1416,26 @@ Never raise Baeu above `LIMITED READY` from homepage 200, backend health 200, or
 | P1 | Backend-down UX validation | Code exists, but needs browser run with an intentionally invalid/cold API target. |
 | P2 | Native Korean teacher review | Product/expertise task, not code. |
 
+### Post-deploy proof — 2026-05-21
+
+| Check | Result |
+|---|---|
+| Commit/deploy | `658f8d6 feat: harden Baeu readiness gates` pushed to `main`; Vercel production deploy `baeu-learning-c1o163ne7-joaoaidars-projects.vercel.app` READY. |
+| Railway backend | New deploy `2026-05-21T13:48:13Z` reached SUCCESS; logs show `npm start`, `node --import=./src/instrumentation.js src/server.js`, `[otel] started — service=baeu-backend`, and `store=pg`. |
+| Runtime health | `GET https://baeu-backend-production.up.railway.app/api/v1/health` returned 200 `{"ok":true,"store":"pg"}` after deploy. |
+| Learner prod smoke | `npm run e2e:prod-smoke -- --workers=1` passed after deploy; synthetic account cleanup succeeded. |
+| Grafana/Tempo | `grafana_service.py tempo-services` listed `baeu-backend`; `tempo-search --service-name baeu-backend --limit 5` returned 2 traces. |
+
+### Still open after deploy
+
+| Priority | Item | Why still open |
+|---|---|---|
+| P1 | Provider flows: Google OAuth + Resend delivery | Requires creating/setting provider secrets and running targeted smokes. |
+| P1 | Admin production smoke execution | Requires sanctioned `E2E_ADMIN_TOKEN`; spec exists and syntax/skip path passed. |
+| P1 | Backend-down UX validation | API wrapper exists, but needs browser run against intentionally invalid/cold API target. |
+| P2 | Dashboard visual proof | Tempo trace proof exists; Robust Ops dashboard was not visually checked in browser after deploy. |
+| P2 | Native Korean teacher review | Product/expertise task, not code. |
+
 ---
 ## Kairos smoke/load/logs — 2026-05-20-0119-smoke-load-logs
 
