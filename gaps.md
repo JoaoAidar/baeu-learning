@@ -271,3 +271,12 @@ Gate: `WATCH / public-backend boundaries green`.
 | Closed-provider-proof | Tempo proof fresh. | Grafana wrapper `tempo-services` includes `baeu-backend`; `tempo-search --service-name baeu-backend` returned 2 traces. | Optional dashboard visual proof only. |
 | Still blocked | Google OAuth and Resend delivery. | Safe Railway env-name check says Google client id/secret and `RESEND_API_KEY` absent. | Configure provider envs and run targeted smokes. |
 | Still blocked | Admin LLM cost cap. | OpenRouter wrapper auth OK, key `limit: null`. | Set/verify cap before scaled generation. |
+
+## Provider/env follow-up — 2026-05-29
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| Closed-prod | Admin production smoke now passes. | Railway `ADMIN_TOKEN` was injected via `railway run` without printing value; `npm run e2e:prod-admin-smoke -- --workers=1` passed after harness fix. | Keep smoke targeting canonical backend API. |
+| Fixed-local | Prod admin smoke targeted wrong origin. | `frontend/e2e/prod-admin-smoke.spec.js` now builds API URLs from `E2E_API_BASE_URL`, `VITE_API_BASE_URL`, or `https://baeu-backend-production.up.railway.app`. | Commit/deploy harness fix. |
+| Still blocked | Google OAuth and Resend. | Railway env-name inventory lacks `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `RESEND_API_KEY`; `EMAIL_FROM` exists. | Add provider values and run targeted smokes. |
+| Watch | Legacy Vercel env. | Vercel env list still includes `VITE_API_URL` plus canonical `VITE_API_BASE_URL`; code uses `VITE_API_BASE_URL`. | Remove legacy key only with explicit approval. |

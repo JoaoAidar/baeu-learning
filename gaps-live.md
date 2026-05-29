@@ -1679,3 +1679,18 @@ Baeu deploy proof"), 7 modified + 5 untracked paths (dirty tree).
 - `DATABASE_URL= VITE_API_BASE_URL= CI=1 npm run e2e -- e2e/admin.spec.js --workers=1` -> 8/8 pass.
 - `DATABASE_URL= VITE_API_BASE_URL= CI=1 npm run e2e -- e2e/auth.spec.js e2e/practice.spec.js e2e/lessons.spec.js --workers=1` -> 11/11 pass.
 - `cd frontend && npm run e2e:prod-smoke -- --workers=1` -> 1/1 pass, cleanup deleted synthetic learner.
+
+## Provider/env follow-up — 2026-05-29
+
+**Scope:** Railway logged-in provider pass after deploy. Values were not printed.
+
+| Priority | Item | Evidence | Status |
+|---|---|---|---|
+| OK | Railway auth | `railway_service.py auth-check` returned API + CLI OK for Joao account. | Provider access healthy. |
+| OK | Baeu backend env inventory | Safe Railway env-name check found 36 keys present, including `ADMIN_TOKEN`, `DATABASE_URL`, Better Auth, OpenRouter/LLM, OTel, rate-limit, and perf knobs. | Values intentionally hidden. |
+| OK | OTel startup | Railway logs show `npm start`, `node --import=./src/instrumentation.js src/server.js`, and `[otel] started — service=baeu-backend`. | Status wrapper `startCommand` field is not the runtime truth. |
+| OK | Admin production smoke | Used `railway run` to inject `ADMIN_TOKEN` into local Playwright without printing it. After fixing the smoke to target the canonical backend API, `npm run e2e:prod-admin-smoke -- --workers=1` passed: import -> list -> archive. | Admin import/archive production gate is proven. |
+| P1 | Prod admin smoke harness | It previously posted to the frontend origin (`https://baeu-learning.vercel.app/api/...`) because Playwright request inherited `E2E_BASE_URL`. | Fixed in `frontend/e2e/prod-admin-smoke.spec.js` to use `E2E_API_BASE_URL` / `VITE_API_BASE_URL` / canonical backend. |
+| Still blocked | Google OAuth | `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` absent from Railway env keys. | Add provider values, redeploy, browser OAuth smoke. |
+| Still blocked | Resend delivery | `RESEND_API_KEY` absent from Railway env keys; `EMAIL_FROM` is present. | Add Resend API key, redeploy, password-reset email smoke. |
+| Watch | Vercel env cleanup | Vercel env list still shows both `VITE_API_BASE_URL` and legacy `VITE_API_URL`; app uses `VITE_API_BASE_URL`. | Delete legacy `VITE_API_URL` only after explicit approval. |

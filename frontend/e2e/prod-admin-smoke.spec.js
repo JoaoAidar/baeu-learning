@@ -10,6 +10,10 @@ import { test, expect } from '@playwright/test';
 
 const SHOULD_RUN = process.env.E2E_PROD_ADMIN_SMOKE === '1';
 const ADMIN_TOKEN = process.env.E2E_ADMIN_TOKEN || '';
+const API_BASE =
+  process.env.E2E_API_BASE_URL ||
+  process.env.VITE_API_BASE_URL ||
+  'https://baeu-backend-production.up.railway.app';
 
 test.skip(!SHOULD_RUN, 'set E2E_PROD_ADMIN_SMOKE=1 to run');
 test.skip(!ADMIN_TOKEN, 'set E2E_ADMIN_TOKEN to run production admin smoke');
@@ -17,7 +21,7 @@ test.skip(!ADMIN_TOKEN, 'set E2E_ADMIN_TOKEN to run production admin smoke');
 test('prod admin: import, list, publish visibility, archive', async ({ request }) => {
   const marker = `prod-admin-${Date.now()}`;
 
-  const importRes = await request.post('/api/v1/admin/exercises/import', {
+  const importRes = await request.post(apiUrl('/api/v1/admin/exercises/import'), {
     headers: { 'x-admin-token': ADMIN_TOKEN, 'Content-Type': 'application/json' },
     data: [
       {
@@ -35,7 +39,7 @@ test('prod admin: import, list, publish visibility, archive', async ({ request }
   const imported = await importRes.json();
   const exerciseId = imported?.ids?.[0];
 
-  const publishedRes = await request.get('/api/v1/admin/exercises?status=published', {
+  const publishedRes = await request.get(apiUrl('/api/v1/admin/exercises?status=published'), {
     headers: { 'x-admin-token': ADMIN_TOKEN },
   });
   expect(publishedRes.ok()).toBeTruthy();
@@ -44,16 +48,20 @@ test('prod admin: import, list, publish visibility, archive', async ({ request }
   expect(hit, 'imported exercise should appear in published admin list').toBeTruthy();
 
   const id = exerciseId || hit.id;
-  const archiveRes = await request.patch(`/api/v1/admin/exercises/${id}/status`, {
+  const archiveRes = await request.patch(apiUrl(`/api/v1/admin/exercises/${id}/status`), {
     headers: { 'x-admin-token': ADMIN_TOKEN, 'Content-Type': 'application/json' },
     data: { status: 'archived' },
   });
   expect(archiveRes.ok()).toBeTruthy();
 
-  const archivedRes = await request.get('/api/v1/admin/exercises?status=archived', {
+  const archivedRes = await request.get(apiUrl('/api/v1/admin/exercises?status=archived'), {
     headers: { 'x-admin-token': ADMIN_TOKEN },
   });
   expect(archivedRes.ok()).toBeTruthy();
   const archived = await archivedRes.json();
   expect((archived.exercises || []).some((e) => (e.prompt || '').includes(marker))).toBeTruthy();
 });
+
+function apiUrl(path) {
+  return new URL(path, API_BASE).toString();
+}
