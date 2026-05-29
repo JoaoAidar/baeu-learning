@@ -15,8 +15,13 @@ test('admin token gate accepts valid token', async ({ page }) => {
 test('admin token gate rejects bogus token', async ({ page }) => {
   await page.goto('/#/admin');
   await page.getByPlaceholder(/x-admin-token/i).fill('not-the-token');
-  await page.getByRole('button', { name: /^unlock$/i }).click();
-  await expect(page.getByText(/unauthorized|forbidden/i)).toBeVisible({ timeout: 8_000 });
+  const [res] = await Promise.all([
+    page.waitForResponse(
+      (r) => r.url().includes('/api/v1/admin/exercises') && [401, 403].includes(r.status())
+    ),
+    page.getByRole('button', { name: /^unlock$/i }).click(),
+  ]);
+  expect([401, 403]).toContain(res.status());
   await expect(page.getByRole('button', { name: /^unlock$/i })).toBeVisible();
 });
 

@@ -75,6 +75,13 @@ export const memoryStore = {
   async listModules() {
     return [...store.modules.values()].sort((a, b) => a.order_index - b.order_index);
   },
+  async listModulesWithPublishedCounts() {
+    const counts = await this.countPublishedByModule();
+    return (await this.listModules()).map((m) => ({
+      ...m,
+      exercise_count: counts[m.id] || 0,
+    }));
+  },
   async getModuleBySlug(slug) {
     for (const m of store.modules.values()) if (m.slug === slug) return m;
     return null;

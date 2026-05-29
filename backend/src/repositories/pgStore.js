@@ -83,6 +83,17 @@ export function createPgStore({ connectionString }) {
 
     // modules
     listModules: () => all('select * from modules order by order_index asc, title asc'),
+    listModulesWithPublishedCounts: () =>
+      all(
+        `select m.*,
+                count(e.id)::int as exercise_count
+           from modules m
+           left join exercises e
+             on e.module_id = m.id
+            and e.status = 'published'
+          group by m.id
+          order by m.order_index asc, m.title asc`
+      ),
     getModuleBySlug: (slug) => one('select * from modules where slug = $1', [slug]),
     getModuleById: (id) => one('select * from modules where id = $1', [id]),
     upsertModule: (row) =>

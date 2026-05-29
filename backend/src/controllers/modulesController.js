@@ -6,10 +6,14 @@ import { getMasteryMap } from '../services/MasteryService.js'; // fallback path 
 export const list = async (req, res, next) => {
  try {
   const store = getStore();
-  const [modules, counts] = await Promise.all([
-    store.listModules(),
-    store.countPublishedByModule(),
-  ]);
+  const modules =
+    typeof store.listModulesWithPublishedCounts === 'function'
+      ? await store.listModulesWithPublishedCounts()
+      : await store.listModules();
+  const counts =
+    typeof store.listModulesWithPublishedCounts === 'function'
+      ? Object.fromEntries(modules.map((m) => [m.id, m.exercise_count || 0]))
+      : await store.countPublishedByModule();
 
   // If authenticated, also include per-module mastery summary.
   // Count distinct mastered skills that overlap each module's exercise skill_tags.

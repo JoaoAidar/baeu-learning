@@ -28,10 +28,11 @@ export async function startSession({ userId, moduleSlug = null }) {
   return { ...session, module_id: moduleId, module_slug: moduleSlug };
 }
 
-export async function nextQuestion({ sessionId, focus = null }) {
+export async function nextQuestion({ sessionId, userId = null, focus = null }) {
   const store = getStore();
   const session = await store.getSession(sessionId);
   if (!session) throw httpError(404, 'session_not_found');
+  assertSessionOwner(session, userId);
 
   // Parse module slug from session.mode (e.g. "endless:greetings")
   let moduleId = null;
@@ -54,10 +55,11 @@ export async function nextQuestion({ sessionId, focus = null }) {
   return publicExerciseShape(ex);
 }
 
-export async function submitAnswer({ sessionId, exerciseId, answer, responseMs }) {
+export async function submitAnswer({ sessionId, userId = null, exerciseId, answer, responseMs }) {
   const store = getStore();
   const session = await store.getSession(sessionId);
   if (!session) throw httpError(404, 'session_not_found');
+  assertSessionOwner(session, userId);
   const exercise = await store.getExercise(exerciseId);
   if (!exercise) throw httpError(404, 'exercise_not_found');
 
@@ -152,10 +154,11 @@ export async function submitAnswer({ sessionId, exerciseId, answer, responseMs }
   };
 }
 
-export async function sessionSummary({ sessionId }) {
+export async function sessionSummary({ sessionId, userId = null }) {
   const store = getStore();
   const session = await store.getSession(sessionId);
   if (!session) throw httpError(404, 'session_not_found');
+  assertSessionOwner(session, userId);
   const attempts = await store.listAttemptsForSession(sessionId);
 
   const errorTagCounts = countTags(attempts, 'error_tags', { onlyWrong: true });
@@ -248,6 +251,13 @@ function publicExerciseShape(ex) {
     skill_tags: ex.skill_tags || [],
     metadata: ex.metadata || {},
   };
+}
+
+function assertSessionOwner(session, userId) {
+  if (userId == null) return;
+  if (String(session.user_id) !== String(userId)) {
+    throw httpError(403, 'session_forbidden');
+  }
 }
 
 function httpError(status, code) {

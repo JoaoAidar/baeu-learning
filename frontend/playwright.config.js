@@ -37,6 +37,7 @@ export default defineConfig({
           env: {
             PORT: new URL(BACKEND_URL).port,
             NODE_ENV: 'test',
+            DATABASE_URL: '',
             JWT_SECRET: E2E_JWT_SECRET,
             ADMIN_TOKEN: E2E_ADMIN_TOKEN,
             // Disable rate limit in e2e (very permissive numbers)
@@ -50,6 +51,9 @@ export default defineConfig({
           url: BASE_URL,
           timeout: 30_000,
           reuseExistingServer: !process.env.CI,
+          env: {
+            VITE_API_BASE_URL: '',
+          },
         },
       ],
 });

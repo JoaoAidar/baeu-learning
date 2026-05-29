@@ -82,6 +82,10 @@ export default function Auth() {
   }
 
   const isForgot = mode === 'forgot';
+  const switchMode = (nextMode) => {
+    setMode(nextMode);
+    if (nextMode !== 'signup') setDisplayName('');
+  };
 
   return (
     <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
@@ -106,6 +110,8 @@ export default function Auth() {
           <Bullet>Per-module practice when you want to drill.</Bullet>
           <Bullet>Progress tracking with skill-tag breakdowns.</Bullet>
         </ul>
+
+        <SamplePractice />
 
         {modules.length > 0 && (
           <div>
@@ -178,7 +184,8 @@ export default function Auth() {
               <div className="text-center text-sm text-gray-500">
                 <button
                   type="button"
-                  onClick={() => setMode('login')}
+                  onClick={() => switchMode('login')}
+                  data-testid="auth-back-to-login"
                   className="text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
                 >
                   Back to log in
@@ -219,7 +226,8 @@ export default function Auth() {
                   <div className="text-right -mt-1">
                     <button
                       type="button"
-                      onClick={() => setMode('forgot')}
+                      onClick={() => switchMode('forgot')}
+                      data-testid="auth-forgot-password"
                       className="text-xs text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
                     >
                       Forgot password?
@@ -228,7 +236,9 @@ export default function Auth() {
                 )}
 
                 <button
+                  id="auth-submit"
                   disabled={loading}
+                  data-testid="auth-submit"
                   className="w-full mt-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-3 rounded-lg transition-all"
                 >
                   {loading ? 'Please wait…' : mode === 'login' ? 'Log in' : 'Sign up'}
@@ -255,7 +265,10 @@ export default function Auth() {
               <div className="mt-4 text-center text-sm text-gray-500">
                 {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
                 <button
-                  onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+                  type="button"
+                  onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
+                  data-testid={mode === 'login' ? 'auth-switch-signup' : 'auth-switch-login'}
+                  aria-controls="auth-submit"
                   className="text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
                 >
                   {mode === 'login' ? 'Sign up' : 'Log in'}
@@ -266,6 +279,103 @@ export default function Auth() {
         </div>
       </div>
     </div>
+  );
+}
+
+function SamplePractice() {
+  const [answer, setAnswer] = useState('');
+  const [checked, setChecked] = useState(false);
+  const isCorrect = answer === 'annyeonghaseyo';
+
+  function choose(nextAnswer) {
+    setAnswer(nextAnswer);
+    setChecked(false);
+  }
+
+  return (
+    <div
+      className="bg-white border border-gray-100 rounded-xl shadow-card p-4 sm:p-5"
+      data-testid="public-sample-practice"
+    >
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-wide text-secondary-700 mb-1">
+            Try a sample
+          </p>
+          <h3 className="font-heading text-lg font-bold text-gray-900">
+            Match the greeting
+          </h3>
+        </div>
+        <span className="text-xs font-medium text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
+          No account
+        </span>
+      </div>
+
+      <p className="mt-4 text-sm text-gray-600">What does 안녕하세요 mean?</p>
+      <div className="mt-3 grid gap-2" data-testid="public-sample-options">
+        <SampleOption
+          value="annyeonghaseyo"
+          answer={answer}
+          onChoose={choose}
+        >
+          Hello
+        </SampleOption>
+        <SampleOption
+          value="gamsahamnida"
+          answer={answer}
+          onChoose={choose}
+        >
+          Thank you
+        </SampleOption>
+        <SampleOption
+          value="jaljayo"
+          answer={answer}
+          onChoose={choose}
+        >
+          Good night
+        </SampleOption>
+      </div>
+
+      <div className="mt-4 flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => setChecked(true)}
+          disabled={!answer}
+          data-testid="public-sample-check"
+          className="bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all"
+        >
+          Check answer
+        </button>
+        {checked && (
+          <p
+            className={`text-sm font-medium ${isCorrect ? 'text-green-700' : 'text-red-600'}`}
+            data-testid="public-sample-feedback"
+            role="status"
+          >
+            {isCorrect ? 'Correct. 안녕하세요 is a polite hello.' : 'Not quite. The answer is Hello.'}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SampleOption({ value, answer, onChoose, children }) {
+  const selected = answer === value;
+  return (
+    <button
+      type="button"
+      onClick={() => onChoose(value)}
+      data-testid={`public-sample-option-${value}`}
+      aria-pressed={selected}
+      className={`text-left border rounded-lg px-3 py-2.5 text-sm transition-all ${
+        selected
+          ? 'border-primary-400 bg-primary-50 text-primary-900'
+          : 'border-gray-200 bg-white text-gray-700 hover:border-primary-200 hover:bg-primary-50'
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 

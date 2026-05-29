@@ -18,7 +18,7 @@ export const nextQuestion = async (req, res, next) => {
       const e = new Error('missing_sessionId'); e.status = 400; throw e;
     }
     const focus = req.query.focus === 'weak' ? 'weak' : null;
-    res.json(await Practice.nextQuestion({ sessionId, focus }));
+    res.json(await Practice.nextQuestion({ sessionId, userId: req.userId, focus }));
   } catch (err) {
     next(err);
   }
@@ -30,7 +30,7 @@ export const submitAnswer = async (req, res, next) => {
     if (!sessionId || !exerciseId) {
       const e = new Error('missing_fields'); e.status = 400; throw e;
     }
-    res.json(await Practice.submitAnswer({ sessionId, exerciseId, answer, responseMs }));
+    res.json(await Practice.submitAnswer({ sessionId, userId: req.userId, exerciseId, answer, responseMs }));
   } catch (err) {
     next(err);
   }
@@ -38,7 +38,7 @@ export const submitAnswer = async (req, res, next) => {
 
 export const sessionSummary = async (req, res, next) => {
   try {
-    res.json(await Practice.sessionSummary({ sessionId: req.params.id }));
+    res.json(await Practice.sessionSummary({ sessionId: req.params.id, userId: req.userId }));
   } catch (err) {
     next(err);
   }

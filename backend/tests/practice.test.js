@@ -19,7 +19,7 @@ beforeEach(async () => {
 test('startSession + nextQuestion returns a published exercise', async () => {
   const session = await Practice.startSession({ userId: 'u1' });
   assert.ok(session.id);
-  const q = await Practice.nextQuestion({ sessionId: session.id });
+  const q = await Practice.nextQuestion({ sessionId: session.id, userId: 'u1' });
   assert.ok(q.id);
   assert.ok(q.prompt);
   // public shape should not leak correct_answer
@@ -28,11 +28,11 @@ test('startSession + nextQuestion returns a published exercise', async () => {
 
 test('submitAnswer correct path increments score', async () => {
   const session = await Practice.startSession({ userId: 'u2' });
-  const q = await Practice.nextQuestion({ sessionId: session.id });
+  const q = await Practice.nextQuestion({ sessionId: session.id, userId: 'u2' });
   // Find ground-truth exercise for the q
   const ex = await memoryStore.getExercise(q.id);
   const answer = ex.type === 'multiple_choice' ? ex.correct_answer : ex.accepted_answers[0];
-  const r = await Practice.submitAnswer({ sessionId: session.id, exerciseId: q.id, answer });
+  const r = await Practice.submitAnswer({ sessionId: session.id, userId: 'u2', exerciseId: q.id, answer });
   assert.equal(r.correct, true);
   assert.equal(r.sessionScore.total, 1);
   assert.equal(r.sessionScore.correct, 1);
@@ -45,6 +45,7 @@ test('submitAnswer wrong path returns errorTags', async () => {
   const tr = exes.find((e) => e.type === 'translation');
   const r = await Practice.submitAnswer({
     sessionId: session.id,
+    userId: 'u3',
     exerciseId: tr.id,
     answer: 'xxx',
   });
@@ -60,6 +61,7 @@ test('checkpoint fires on every 10th attempt', async () => {
   for (let i = 0; i < 10; i++) {
     last = await Practice.submitAnswer({
       sessionId: session.id,
+      userId: 'u4',
       exerciseId: ex.id,
       answer: ex.correct_answer,
     });
@@ -73,13 +75,46 @@ test('summary aggregates errorTagCounts', async () => {
   const session = await Practice.startSession({ userId: 'u5' });
   const exes = await memoryStore.listPublishedExercises();
   const tr = exes.find((e) => e.type === 'translation');
-  await Practice.submitAnswer({ sessionId: session.id, exerciseId: tr.id, answer: '' });
-  await Practice.submitAnswer({ sessionId: session.id, exerciseId: tr.id, answer: 'asdf' });
-  const sum = await Practice.sessionSummary({ sessionId: session.id });
+  await Practice.submitAnswer({ sessionId: session.id, userId: 'u5', exerciseId: tr.id, answer: '' });
+  await Practice.submitAnswer({ sessionId: session.id, userId: 'u5', exerciseId: tr.id, answer: 'asdf' });
+  const sum = await Practice.sessionSummary({ sessionId: session.id, userId: 'u5' });
   assert.equal(sum.total, 2);
   assert.equal(sum.correct, 0);
   assert.ok(Object.keys(sum.errorTagCounts).length > 0);
   assert.ok(sum.recommendations.length > 0);
+});
+
+test('nextQuestion rejects another user session with 403 session_forbidden', async () => {
+  const session = await Practice.startSession({ userId: 'session-owner' });
+
+  await assert.rejects(
+    Practice.nextQuestion({ sessionId: session.id, userId: 'other-user' }),
+    (err) => err.status === 403 && err.message === 'session_forbidden'
+  );
+});
+
+test('submitAnswer rejects another user session with 403 session_forbidden', async () => {
+  const session = await Practice.startSession({ userId: 'answer-owner' });
+  const exes = await memoryStore.listPublishedExercises();
+
+  await assert.rejects(
+    Practice.submitAnswer({
+      sessionId: session.id,
+      userId: 'other-user',
+      exerciseId: exes[0].id,
+      answer: exes[0].correct_answer,
+    }),
+    (err) => err.status === 403 && err.message === 'session_forbidden'
+  );
+});
+
+test('sessionSummary rejects another user session with 403 session_forbidden', async () => {
+  const session = await Practice.startSession({ userId: 'summary-owner' });
+
+  await assert.rejects(
+    Practice.sessionSummary({ sessionId: session.id, userId: 'other-user' }),
+    (err) => err.status === 403 && err.message === 'session_forbidden'
+  );
 });
 
 test('double-submit of same (session, exercise, responseMs) yields 409 duplicate_submit', async () => {
@@ -88,6 +123,7 @@ test('double-submit of same (session, exercise, responseMs) yields 409 duplicate
   const ex = exes[0];
   const args = {
     sessionId: session.id,
+    userId: 'u-dup',
     exerciseId: ex.id,
     answer: ex.correct_answer,
     responseMs: 1234,

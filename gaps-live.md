@@ -1079,11 +1079,11 @@ Empty. Every remaining item depends on user action in an external provider (Goog
 ---
 
 <!-- deployed-brutal-audit:baeu-learning:start -->
-## Brutal Audit Deploy - 2026-05-18
+## Brutal Audit Deploy - 2026-05-29
 
 Source: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`.
 
-**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 3/3 [200] p95=43.9ms, api_health 3/3 [200] p95=388.8ms.
+**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=45.4ms, api_health 5/5 [200] p95=432.1ms.
 
 | Priority | Finding | Evidence | Closure gate |
 | --- | --- | --- | --- |
@@ -1477,3 +1477,205 @@ Never raise Baeu above `LIMITED READY` from homepage 200, backend health 200, or
 | P1 | Bottleneck de escala atual | business-flow readiness/caps not fully proven | Fechar o gate operacional antes de aumentar trafego/usuarios/fluxos pesados. |
 | P1 | Custo AI/OpenRouter observado | OpenRouter mensal dedicado `$0.00`; chave compartilhada Kairos prod nao alocada por produto esta no relatorio; creditos restantes baixos no nivel conta. | Definir caps por chave/produto e custo por acao pesada antes de rodar geracao ampla. |
 | P1 | Load GET-only nao prova fluxo pesado | Stress: OK max_p95=620ms; drivers de codigo: scraping:25, db_scan:25, retry_loop:25, logging_heavy:25, scheduled:18 | Rodar load/soak especifico so depois de budget cap e fluxo de negocio verde. |
+
+---
+
+## Kairos Codex Audit — 2026-05-21-1737
+
+| Severity | Finding | Status |
+|---|---|---|
+| ✅ | Backend health 200. | API base viva. |
+| P1 UX | Frontend público observado como shell quase vazio (`Baeu — Korean Practice`), sem first-value learner. | Expor entrada clara de learner/demo antes de pitch. |
+
+**Evidência:** `~/Documents/AI/Audits/runs/2026-05-21-1737/`
+
+## Codex Audit 2026-05-21-1736
+
+Ver consolidado: /Users/joaoadair/Documents/AI/Audits/kairos-codex-audit-2026-05-21-1736.md
+Delta compacto: /Users/joaoadair/Documents/AI/Audits/runs/2026-05-21-1736/gaps-delta.md
+
+---
+## Deep-dive — 2026-05-24-1646
+**Auditor:** Claude (Cowork, sub-agente repo-grounded)
+| Sev | Achado | Status |
+|---|---|---|
+| ✅ | SRS adaptativo real (Leitner 10min→7d), 354 exercícios, 82/82 testes | OK |
+| P2 | Dead code de frontend (Exercise.jsx/lib/api.js apontam localhost:3000, rotas inexistentes, não importados) | remover |
+---
+
+## Heavy Audit — 2026-05-24-1947
+
+**Escopo:** stack-wide heavy audit, 5 agentes paralelos. Evidência: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-24-1947/projects/baeu-learning.md`.
+
+| Severity | Finding | Gate |
+|---|---|---|
+| P1 | Learner path parece sólido (82/82 testes), mas buyer/admin/provider proof segue aberto. | Rodar prod learner smoke + admin smoke sancionado com cleanup; provar Google OAuth/Resend. |
+| P1 | Admin LLM generation precisa cap por produto/admin. | Definir cap/key-limit antes de cohorts grandes. |
+| P1 | Audit `2026-05-24-1955`: API health e prod E2E passaram, mas screenshot pública ficou presa em `Loading...`. | Corrigir render/fallback anônimo em `https://baeu-learning.vercel.app/` e anexar screenshot não-loading ao próximo smoke. |
+
+---
+
+## Controlled Production Learner Smoke — 2026-05-25
+
+**Scope:** canonical production learner write-flow only. Frontend `https://baeu-learning.vercel.app/`; backend `https://baeu-backend-production.up.railway.app`.
+
+**Evidence:** `/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-05-25-prod-learner-smoke/`.
+
+### Validated
+
+| Severity | Finding | Evidence | Status |
+|---|---|---|---|
+| OK | Frontend liveness returned HTTP 200 with title `Baeu — Korean Practice`. | `frontend.headers`, `frontend.html` | Canonical web deploy is reachable. |
+| OK | Backend health returned HTTP 200 `{"ok":true,"store":"pg"}`. | `backend-health.headers`, `backend-health.json` | Canonical API is reachable and using pg store. |
+| OK | Existing Playwright prod learner smoke passed: fresh signup -> module practice -> one submitted answer -> feedback -> Progress Total `1` -> logout/login -> persisted Progress Total `1`. | `frontend-e2e-prod-smoke.log` | Learner first-value and progress persistence are production-proven for one synthetic account. |
+| OK | Synthetic account cleanup succeeded. | `SYNTHETIC_ACCOUNT_CLEANUP.md`; log line `[prod-smoke] cleanup: deleted synthetic learner` for `audit-1779712447588@test.local`. | No retained test learner from the canonical saved run. |
+
+### Still Blocked / Not Validated
+
+| Severity | Finding | Next closure gate |
+|---|---|---|
+| P1 | Admin/content production smoke was not run in this learner-only validation. | Run sanctioned `e2e:prod-admin-smoke` or a narrower admin proof with cleanup and budget guard. |
+| P1 | Google OAuth and Resend delivery remain provider/env gated. | Configure/verify provider envs, redeploy if needed, then run targeted auth/email smoke. |
+| P1 | Admin LLM generation still needs product-level cap/key-limit proof before broad cohorts. | Define and verify the cap before exercising generation at scale. |
+| P2 | Buyer/demo trust surface was not validated by this learner smoke. | Run persona/browser audit for buyer-facing About/pricing/pedagogy proof. |
+
+---
+
+## Visual audit — 2026-05-25-0928
+
+**Auditor:** Claude (Cowork) | **Escopo:** health + visual render
+
+### Achados
+
+| Severity | Finding | Status |
+|---|---|---|
+| RESOLVIDO | web nao fica mais em 'Loading...' — landing + login + modulos renderizam | OK (screenshot runs/2026-05-25-0928) |
+| ✅ | baeu-backend /api/v1/health 200 (store pg); sleep=true | OK |
+
+---
+
+## Fleet brutal/persona audit — 2026-05-25-1012
+
+Source: `/Users/joaoadair/Documents/Codex/2026-05-25/precisamos-rodar-uma-brutal-audit-users-2/audit-run-2026-05-25-1012/FLEET-BRUTAL-PERSONA-SYNTHESIS.md`
+Sidecar: `/Users/joaoadair/Documents/Codex/2026-05-25/precisamos-rodar-uma-brutal-audit-users-2/audit-run-2026-05-25-1012/agents/prato-baeu.md`
+
+**Readiness/verdict:** LIMITED READY para validacao controlada de learner; WATCH para buyer/demo e confiabilidade do smoke.
+**False-green:** learner first-value funcionou manualmente, mas o smoke oficial ainda pode falhar por assercao fragil; nao tratar CI vermelho como produto quebrado nem manual verde como release gate completo.
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| P1 | `e2e:prod-smoke` falhou em uma assercao fragil antes do signup, apesar da jornada manual funcionar. | Sidecar: prod smoke falhou no heading; manual Playwright fez signup -> practice -> feedback -> progress `TOTAL 1` -> cleanup 200. | Ajustar seletor/wait do smoke, rerodar e salvar artifact verde com cleanup. |
+| P1 | Slow DB/API events estao classificados como `error` em logs Railway. | Sidecar: logs com eventos lentos de query/signup em nivel error. | Separar severidade de slow-query para warn/info ou corrigir indices; alertas devem distinguir falha real de 200 lento. |
+| P1 | Rotas inexistentes retornam 200 por SPA fallback. | Sidecar: `/not-a-real-route-1012` retornou 200. | Criar not-found explicito e smoke de 404/estado nao encontrado. |
+| P2 | Buyer/pilot/proof surface ainda e fino. | Primeira jornada learner foi forte; avaliacao de sponsor/preco/prova ficou superficial. | Pagina/superficie compacta com publico alvo, curriculo, piloto, caveats e prova de progresso. |
+
+**Agent attack rule:** preserve o que funcionou: fresh learner first-value. Proximo fechamento deve transformar esse manual proof em smoke oficial repetivel.
+
+---
+
+## Heavy flow audit - 2026-05-25-1057
+
+Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-25-1057-heavy-flow-audit/projects/baeu-learning.md`
+
+**Readiness/verdict:** LIMITED READY for learner validation; buyer/admin/cohort still WATCH.
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| P1 | Learner first-value is proven, but admin/import/generation is not. | `backend npm test` 82/82; `npm run e2e:prod-smoke -- --workers=1` passed and cleanup deleted synthetic learner. | Run admin prod smoke with `E2E_ADMIN_TOKEN`: import/content/generation/cohort, with cleanup and audit artifact. |
+| P1 | Provider flows are unproven. | Google OAuth real, Resend email delivery, paid LLM generation and OpenRouter key cap were not executed. | Provider-owner smoke for Google/Resend and LLM generation budget/cap proof. |
+| P1 | Buyer/cohort trust surface remains thin. | Learner loop works; buyer/cohort/proof surface not validated. | Compact buyer/cohort page or flow with target audience, curriculum proof, pilot caveats and progress evidence. |
+
+**False-green path:** learner e2e passing is real, but does not prove admin/buyer/provider readiness.
+
+**Agent attack rule:** preserve learner smoke; next close admin/cohort/provider gates, not the already-proven learner loop.
+
+## kairos-full-audit run 2026-05-28-0710 (2026-05-28T10:22Z)
+
+- **P1 NEW**: baeu-backend logs show repeated [baeu][pg] slow alarms (700-1200ms) on `select * from modules` and aggregate queries on exercises. Likely Neon cold-start (sleep=true) or missing index. Evidence: /Users/joaoadair/Documents/AI/Audits/runs/2026-05-28-0710/logs/baeu-backend.log.
+
+---
+
+## Deploy audit — 2026-05-29
+
+**Source:** brutal-audit / deploy-audit run 2026-05-29 (verified external input).
+Repo-grounded scan this date: branch `main`, last commit `ba17b77` ("docs: record
+Baeu deploy proof"), 7 modified + 5 untracked paths (dirty tree).
+
+### Verified Runtime State
+
+| Severity | Finding | Status |
+|---|---|---|
+| OK | Web live: `https://baeu-learning.vercel.app` HTTP 200, p95 ~45ms. | Frontend reachable. |
+| OK | API health live: canonical backend `/api/v1/health` HTTP 200, p95 ~432ms. | Backend reachable. |
+| INFO | Readiness verdict: LIMITED READY (6.0). | Live but not buyer/demo clean. |
+| INFO | Repo dirty (7 modified incl. `PracticeService.js`, `practiceController.js`, `Auth.jsx`, `gaps-live.md`); deploy may lag local. | Verify live build before claiming fixes shipped. |
+
+### Current Blockers
+
+| Priority | Blocker | Closure gate |
+|---|---|---|
+| P1 | Learner first-value path must be **proven in production**, not inferred from web/api liveness. The 2026-05-25 prod learner smoke passed once, but the tree has since changed and may not be deployed. | Sanctioned prod smoke: signup/login -> practice question -> answer feedback -> progress update passes on production, with synthetic-account cleanup notes. |
+| P1 | **Stale alias trap:** canonical backend is `baeu-backend` (`https://baeu-backend-production.up.railway.app`). The old `baeu-learning-api` alias is deprecated. | Confirm docs, smokes, `VITE_API_BASE_URL`, and joao-stack all use `baeu-backend`; never reintroduce the stale alias. |
+| P1 | baeu-backend logs show repeated `[baeu][pg]` slow alarms (700-1200ms) on `select * from modules` + exercise aggregates (carried from 2026-05-28). Likely Neon cold-start (sleep=true) or missing index. | Split slow-query severity to warn/info or add index; alerts must distinguish real failure from slow 200. |
+| P2 | Buyer/cohort trust surface still thin; admin LLM generation cap unproven. | Compact buyer/cohort proof surface; verify OpenRouter cap before scaled generation. |
+
+### Canonical Commands
+
+- Backend: `cd backend && npm install && npm test` (node --test).
+- Backend deploy: push `main` (Railway autodeploys `baeu-backend`) or
+  `railway up --service baeu-backend --ci`.
+- Frontend: `cd frontend && npm install && npm run build`.
+- Prod learner smoke: `cd frontend && npm run e2e:prod-smoke`.
+- Health: `curl https://baeu-backend-production.up.railway.app/api/v1/health`.
+
+### Do Not Do
+
+- Do not read/print `.env*`, `JWT_SECRET`, `ADMIN_TOKEN`, `DATABASE_URL`,
+  `LLM_API_KEY`, Resend keys, or provider config.
+- Do not use the stale `baeu-learning-api` alias anywhere.
+- Do not treat web/api 200 as proof of learner first-value.
+- Do not run admin LLM generation at scale without a verified cap.
+- Do not leave synthetic test accounts in prod after a smoke.
+
+### Next Actions (attackable)
+
+1. Run `e2e:prod-smoke` against canonical web; save green artifact + cleanup
+   note proving signup -> practice -> feedback -> progress on the deployed build.
+2. Commit/deploy the dirty working tree (or revert) so live build == intended;
+   confirm with health/header proof on `baeu-backend`.
+3. Fix the pg slow-query log severity / add index on modules+exercise
+   aggregates so alerts stop firing on slow-but-200 Neon cold starts.
+
+---
+
+## Infra/code closure pass — 2026-05-29
+
+**Runner:** Codex with 3 delegated sidecars (blocker docs, git/rebase, provider wrappers). No secrets were read or printed.
+
+### Closed / improved
+
+| Priority | Item | Evidence | Status |
+|---|---|---|---|
+| P1 | Rebase concern | `git fetch --prune`; `main...origin/main` 0 ahead / 0 behind; no rebase in progress. | No rebase needed. Dirty tree only. |
+| P1 | Learner first-value prod proof | `cd frontend && npm run e2e:prod-smoke -- --workers=1` passed; synthetic `audit-1780090991478@test.local` was deleted by smoke cleanup. | Current prod learner lifecycle is proven: signup -> practice -> feedback -> progress -> relogin persistence. |
+| P1 | Practice-session IDOR | Local code now passes `req.userId` into `nextQuestion`, `submitAnswer`, and `sessionSummary`; service asserts session owner; new HTTP route test proves attacker receives `403 session_forbidden` for next/answer/summary. | Fixed locally; deploy required before calling live closed. |
+| P1 | Local e2e false-red from provider env leakage | `frontend/playwright.config.js` now forces `DATABASE_URL=''` for backend webserver and `VITE_API_BASE_URL=''` for Vite webserver, preventing local e2e from accidentally hitting `.env`/prod. | Fixed locally; local admin suite 8/8 and learner/auth/lessons suite 11/11 passed. |
+| P1 | `/api/v1/modules` slow-query path | Backend now uses `listModulesWithPublishedCounts()` to fetch modules plus published counts in one aggregate query when the store supports it, instead of separate module list + count queries. | Code mitigation local; verify Railway logs after deploy. |
+| P1 | Tempo/OTEL freshness | `grafana_service.py tempo-services` lists `baeu-backend`; `tempo-search --service-name baeu-backend --limit 10` returned 2 traces. | Observability proof is fresh. |
+
+### Still blocked / external
+
+| Priority | Blocker | Current evidence | Closure gate |
+|---|---|---|---|
+| P1 | Google OAuth | Provider env keys `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` absent per safe Railway env-name check. | Configure Google OAuth client/envs, redeploy, browser smoke. |
+| P1 | Resend delivery | `RESEND_API_KEY` absent per safe Railway env-name check. | Configure Resend key/sender, redeploy, password-reset email smoke. |
+| P1 | Admin LLM cost cap | OpenRouter auth OK, but key `limit` is `null`. | Set/verify product/admin cap before scaled generation. |
+| P2 | Buyer/cohort trust | Not changed in this pass. | Add compact buyer/cohort proof surface or keep Baeu learner-only. |
+
+### Verification commands run
+
+- `cd backend && npm test` -> 86/86 pass.
+- `cd frontend && npm run build` -> pass.
+- `DATABASE_URL= VITE_API_BASE_URL= CI=1 npm run e2e -- e2e/admin.spec.js --workers=1` -> 8/8 pass.
+- `DATABASE_URL= VITE_API_BASE_URL= CI=1 npm run e2e -- e2e/auth.spec.js e2e/practice.spec.js e2e/lessons.spec.js --workers=1` -> 11/11 pass.
+- `cd frontend && npm run e2e:prod-smoke -- --workers=1` -> 1/1 pass, cleanup deleted synthetic learner.
