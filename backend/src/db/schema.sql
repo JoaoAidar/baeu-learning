@@ -1,36 +1,26 @@
--- Baeu Learning schema (Neon Postgres). Idempotent.
+-- Baeu Learning schema (Neon Postgres).
 --
--- Order of operations (matters for FKs):
+-- This file is PURELY IDEMPOTENT and SAFE to re-run on a database with real
+-- data: every statement is `create ... if not exists` or an idempotent ALTER.
+-- It NEVER drops tables. `npm run migrate` runs this and only this.
+--
+-- The one-time legacy wipe (pre-Better-Auth `users` + the uuid-keyed practice
+-- tables it cascaded to) now lives in `reset-legacy.sql` and runs ONLY via the
+-- explicit, guarded `npm run migrate:reset`. Do NOT reintroduce DROPs here —
+-- doing so would wipe practice history on every deploy/migrate.
+--
+-- Order of creation (matters for FKs):
 --   1. Extensions.
---   2. Drop legacy `users` table cascade — wipes practice tables that FK to it.
---   3. Module-related tables (modules, lessons, exercises, grammar_lessons).
---   4. Better Auth tables (user, session, account, verification).
---   5. user_role (FK -> "user").
---   6. Practice tables (practice_sessions, practice_attempts, user_skill_mastery)
---      re-created with user_id text -> "user"(id).
---
--- Joao confirmed no real users exist in prod — wiping legacy `users` is safe.
+--   2. Module-related tables (modules, lessons, exercises, grammar_lessons).
+--   3. Better Auth tables (user, session, account, verification).
+--   4. user_role (FK -> "user").
+--   5. Practice tables (practice_sessions, practice_attempts, user_skill_mastery,
+--      user_exercise_srs) keyed by user_id text -> "user"(id).
 
 create extension if not exists pgcrypto;
 
 -- ============================================================================
--- 1. Legacy users wipe (safe per Joao). Cascade drops dependent FKs that pointed
--- at users.id, including practice_sessions, practice_attempts, user_skill_mastery.
--- ============================================================================
-
-drop table if exists users cascade;
-
--- ALSO drop the practice tables explicitly. `drop ... cascade` on `users`
--- removes FK constraints that pointed at users.id, but does NOT drop the
--- practice tables themselves — so they would survive with stale `user_id uuid`
--- columns and break inserts of Better Auth's text ids. Force the recreate.
--- Safe per Joao: no real users / no real practice data.
-drop table if exists practice_attempts cascade;
-drop table if exists user_skill_mastery cascade;
-drop table if exists practice_sessions cascade;
-
--- ============================================================================
--- 2. Module / lesson / exercise content tables. Unchanged.
+-- 2. Module / lesson / exercise content tables.
 -- ============================================================================
 
 create table if not exists modules (
@@ -166,8 +156,7 @@ create table if not exists user_role (
 );
 
 -- ============================================================================
--- 5. Practice tables, re-created with user_id text -> "user"(id).
--- These were dropped by the `drop table users cascade` above.
+-- 5. Practice tables, keyed by user_id text -> "user"(id). Idempotent.
 -- ============================================================================
 
 create table if not exists practice_sessions (

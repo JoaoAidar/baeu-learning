@@ -1,5 +1,15 @@
 # Gaps — Baeu Learning
 
+## Migration safety split — 2026-06-01
+
+Closed the destructive-`schema.sql` footgun flagged in the SRS pass.
+
+- `schema.sql` is now **purely idempotent** (only `create … if not exists` + idempotent ALTERs); the legacy DROP block was removed. `npm run migrate` is now **safe to run on prod with real data** and also creates `user_exercise_srs` — so it's the one command needed for the item-3 SRS table going forward.
+- The one-time destructive reset moved to `reset-legacy.sql`, run only via `npm run migrate:reset`, **double-guarded** (requires `CONFIRM_DESTRUCTIVE_RESET=1`, never wired into deploy).
+- `migrate:srs` kept as a minimal targeted option.
+
+**Net:** `npm run migrate` = safe/idempotent (use this); `npm run migrate:reset` = intentional full wipe only. Backend 95/95 still green.
+
 ## SRS + progress depth pass — 2026-06-01 (items 3, 5, 6)
 
 | Item | Finding | Fix |
