@@ -1,0 +1,23 @@
+HTTP/2 200 
+access-control-allow-credentials: true
+content-security-policy: default-src 'none';base-uri 'none';frame-ancestors 'none';form-action 'none';font-src 'self' https: data:;img-src 'self' data:;object-src 'none';script-src 'self';script-src-attr 'none';style-src 'self' https: 'unsafe-inline';upgrade-insecure-requests
+content-type: application/json; charset=utf-8
+cross-origin-opener-policy: same-origin
+cross-origin-resource-policy: same-origin
+date: Mon, 25 May 2026 12:32:46 GMT
+etag: W/"18-G5J4rBPOZmlhV/YkUXoeVPdRmfs"
+origin-agent-cluster: ?1
+referrer-policy: no-referrer
+server: railway-edge
+strict-transport-security: max-age=31536000; includeSubDomains
+vary: Origin
+x-content-type-options: nosniff
+x-dns-prefetch-control: off
+x-download-options: noopen
+x-frame-options: SAMEORIGIN
+x-permitted-cross-domain-policies: none
+x-railway-edge: railway/us-east4-eqdc4a
+x-railway-request-id: ANLTqcKJQzWbkYtxCx5-qw
+x-xss-protection: 0
+content-length: 24
+
