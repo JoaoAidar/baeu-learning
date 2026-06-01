@@ -9,6 +9,7 @@ const store = {
   sessions: new Map(),
   attempts: [],
   mastery: new Map(), // key = `${user_id}::${skill}`
+  srs: new Map(), // key = `${user_id}::${exercise_id}`
   lessons: new Map(),
 };
 
@@ -23,6 +24,7 @@ export const memoryStore = {
     store.sessions.clear();
     store.attempts.length = 0;
     store.mastery.clear();
+    store.srs.clear();
     store.lessons.clear();
   },
 
@@ -372,5 +374,22 @@ export const memoryStore = {
   },
   async getMastery(userId, skill) {
     return store.mastery.get(`${userId}::${skill}`) || null;
+  },
+
+  // per-item SRS
+  async getSrsForUser(userId) {
+    const out = [];
+    for (const r of store.srs.values()) {
+      if (r.user_id === userId) out.push({ ...r });
+    }
+    return out;
+  },
+  async getSrs(userId, exerciseId) {
+    return store.srs.get(`${userId}::${exerciseId}`) || null;
+  },
+  async upsertSrs(row) {
+    const key = `${row.user_id}::${row.exercise_id}`;
+    store.srs.set(key, { ...row });
+    return store.srs.get(key);
   },
 };

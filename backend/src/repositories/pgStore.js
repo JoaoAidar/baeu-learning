@@ -351,6 +351,42 @@ export function createPgStore({ connectionString }) {
         ]
       ),
 
+    // per-item SRS (SM-2-lite)
+    getSrsForUser: (userId) =>
+      all('select * from user_exercise_srs where user_id = $1', [userId]),
+    getSrs: (userId, exerciseId) =>
+      one(
+        'select * from user_exercise_srs where user_id = $1 and exercise_id = $2',
+        [userId, exerciseId]
+      ),
+    upsertSrs: (row) =>
+      one(
+        `insert into user_exercise_srs
+           (user_id, exercise_id, ease, interval_days, repetitions, lapses,
+            due_at, last_grade, last_reviewed_at)
+         values ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+         on conflict (user_id, exercise_id) do update set
+           ease = excluded.ease,
+           interval_days = excluded.interval_days,
+           repetitions = excluded.repetitions,
+           lapses = excluded.lapses,
+           due_at = excluded.due_at,
+           last_grade = excluded.last_grade,
+           last_reviewed_at = excluded.last_reviewed_at
+         returning *`,
+        [
+          row.user_id,
+          row.exercise_id,
+          row.ease,
+          row.interval_days,
+          row.repetitions,
+          row.lapses,
+          row.due_at,
+          row.last_grade ?? null,
+          row.last_reviewed_at,
+        ]
+      ),
+
     // grammar lessons
     listLessons: ({ moduleId = null } = {}) =>
       moduleId

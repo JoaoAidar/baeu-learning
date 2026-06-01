@@ -10,6 +10,7 @@ export function selectNext({
   recentAttempts = [],
   sessionAttempts = [],
   masteryMap = new Map(),
+  srsMap = new Map(),
   focus = null,
 }) {
   if (!exercises.length) return null;
@@ -84,6 +85,21 @@ export function selectNext({
         const dueAt = m.next_review_at ? new Date(m.next_review_at).getTime() : 0;
         if (dueAt <= now) score += 2 + (5 - m.level) * 0.4; // due, lower level → more
         else score -= 0.5; // not due
+      }
+    }
+
+    // Per-item spaced repetition (SM-2): a new item gets introduced, a due item
+    // resurfaces (more if overdue), and an item not yet due is held back.
+    const srs = srsMap.get(ex.id);
+    if (!srs) {
+      score += 1.5;
+    } else {
+      const dueAt = srs.due_at ? new Date(srs.due_at).getTime() : 0;
+      if (dueAt <= now) {
+        const overdueDays = (now - dueAt) / (24 * 60 * 60 * 1000);
+        score += 2 + Math.min(overdueDays, 10) * 0.1;
+      } else {
+        score -= 2;
       }
     }
 

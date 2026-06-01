@@ -224,6 +224,24 @@ create table if not exists user_skill_mastery (
 create index if not exists user_skill_mastery_due_idx
   on user_skill_mastery(user_id, next_review_at);
 
+-- Per-item spaced repetition (SM-2-lite). Complements user_skill_mastery:
+-- mastery is the per-skill diagnostic, this schedules WHEN each exercise is due.
+create table if not exists user_exercise_srs (
+  user_id text not null references "user"(id) on delete cascade,
+  exercise_id uuid not null references exercises(id) on delete cascade,
+  ease real not null default 2.5,
+  interval_days real not null default 0,
+  repetitions integer not null default 0,
+  lapses integer not null default 0,
+  due_at timestamptz not null default now(),
+  last_grade integer,
+  last_reviewed_at timestamptz default now(),
+  primary key (user_id, exercise_id)
+);
+
+create index if not exists user_exercise_srs_due_idx
+  on user_exercise_srs(user_id, due_at);
+
 -- ============================================================================
 -- 6. Idempotent migrations for existing databases. The CREATE TABLE statements
 -- above carry the current shape; these ALTERs bring previously-deployed DBs

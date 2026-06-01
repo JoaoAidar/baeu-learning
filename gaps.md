@@ -1,5 +1,21 @@
 # Gaps — Baeu Learning
 
+## SRS + progress depth pass — 2026-06-01 (items 3, 5, 6)
+
+| Item | Finding | Fix |
+|---|---|---|
+| 5 | Per-skill accuracy was lifetime-only, so old struggles dragged the signal and hid recent improvement. | `ProgressService.skills()` adds `recentAccuracy`/`recentAttempts` (last 500); FocusPanel ranks/labels by recent accuracy when available. |
+| 6 | Totals/streak read up to 1000 attempts and bucketed days in UTC. | `overview()` now uses SQL aggregates (`getProgressAggregates` on pg+memory) — no cap; streak buckets in local tz (`APP_TZ_OFFSET_MINUTES`, default −180 / São Paulo). New `util/time.js`. |
+| 3 | Mastery was per-skill-tag with a jumpy ±1 level — confidence, not true per-item spaced repetition. | New per-item SM-2-lite SRS (`user_exercise_srs` + `SrsService`): ease factor, geometric intervals, lapse resets to relearn. Selector uses item-level due as a primary signal (new → introduce, due → resurface, not-due → hold). Skill mastery kept as the diagnostic layer. |
+
+**⚠️ Manual prod step for item 3:** the new table needs a one-time migration on Neon. Do **NOT** run `npm run migrate` (it re-runs schema.sql which drops practice tables). Run the additive, non-destructive script instead:
+`DATABASE_URL=<neon> npm run migrate:srs`
+Until the table exists in prod, `getSrs*` is a graceful no-op (SRS just doesn't schedule; selection falls back to skill signals) — nothing breaks.
+
+**Latent footgun noted:** `schema.sql` drops/recreates practice tables on every full `migrate` run (legacy users→Better Auth cutover). Safe today because deploy runs `npm start` (no migrate), but anyone running `npm run migrate` against prod wipes practice history. Worth splitting destructive reset from idempotent schema later.
+
+**Verification:** backend 95/95 (+4 SRS tests, +2 progress tests). Frontend build OK.
+
 ## Learning-rules accuracy pass — 2026-06-01
 
 Pedagogy/business-logic review of grading + SRS. Fixed the three items that most distorted diagnostics/learning; items 3 (ease-factor SRS redesign), 5 (windowed accuracy), 6 (1000-attempt cap + tz streak) are deferred and tracked.

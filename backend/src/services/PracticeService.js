@@ -2,6 +2,7 @@ import { getStore } from '../config/db.js';
 import { classifyAnswer } from './ErrorClassifier.js';
 import { selectNext } from './ExerciseSelector.js';
 import { recordAttempt as recordMasteryAttempt, getMasteryMap } from './MasteryService.js';
+import { recordReview as recordSrsReview, getSrsMap } from './SrsService.js';
 import { findLessonForErrorTag } from './LessonsService.js';
 
 // Auto-recommend a lesson when the same error_tag fires this many times in
@@ -42,16 +43,17 @@ export async function nextQuestion({ sessionId, userId = null, focus = null }) {
     if (mod) moduleId = mod.id;
   }
 
-  const [exercises, sessionAttempts, recentAttempts, masteryMap] = await Promise.all([
+  const [exercises, sessionAttempts, recentAttempts, masteryMap, srsMap] = await Promise.all([
     store.listPublishedExercises({ moduleId }),
     store.listAttemptsForSession(sessionId),
     store.listAttemptsForUser(session.user_id, { limit: 100 }),
     getMasteryMap(session.user_id),
+    getSrsMap(session.user_id),
   ]);
   if (!exercises.length) {
     throw httpError(409, moduleId ? 'no_exercises_in_module' : 'no_published_exercises');
   }
-  const ex = selectNext({ exercises, recentAttempts, sessionAttempts, masteryMap, focus });
+  const ex = selectNext({ exercises, recentAttempts, sessionAttempts, masteryMap, srsMap, focus });
   return publicExerciseShape(ex);
 }
 
@@ -95,6 +97,9 @@ export async function submitAnswer({ sessionId, userId = null, exerciseId, answe
     skillTags,
     correct,
   });
+
+  // Schedule this exercise's next appearance (per-item spaced repetition).
+  await recordSrsReview({ userId: session.user_id, exerciseId, correct });
 
   const reachedCheckpoint =
     updated.total_attempts > 0 && updated.total_attempts % CHECKPOINT_EVERY === 0;
