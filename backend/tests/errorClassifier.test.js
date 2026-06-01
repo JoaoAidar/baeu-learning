@@ -15,10 +15,21 @@ test('multiple_choice: correct selection', () => {
   assert.deepEqual(r.errorTags, []);
 });
 
-test('multiple_choice: wrong selection → vocabulary', () => {
+test('multiple_choice: wrong selection → vocabulary when topic has no grammar tag', () => {
   const r = classifyAnswer(mc, 'b');
   assert.equal(r.correct, false);
   assert.deepEqual(r.errorTags, ['vocabulary']);
+});
+
+test('multiple_choice: wrong selection attributes error to the skill topic', () => {
+  const particleMc = { type: 'multiple_choice', correct_answer: 'a', skill_tags: ['object_marker', 'particles'] };
+  assert.deepEqual(classifyAnswer(particleMc, 'b').errorTags, ['particle']);
+
+  const verbMc = { type: 'multiple_choice', correct_answer: 'a', skill_tags: ['verbs', 'verb_conjugation', 'polite'] };
+  assert.deepEqual(classifyAnswer(verbMc, 'b').errorTags, ['verb_conjugation']);
+
+  const formalityMc = { type: 'multiple_choice', correct_answer: 'a', skill_tags: ['formality', 'honorifics'] };
+  assert.deepEqual(classifyAnswer(formalityMc, 'b').errorTags, ['honorific_formality']);
 });
 
 const tr = {

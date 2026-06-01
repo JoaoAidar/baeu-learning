@@ -32,6 +32,22 @@ test('focus=weak with no weak history falls back to normal selection', () => {
   assert.ok(['a', 'b'].includes(ex.id));
 });
 
+test('focus=weak targets mastery-weak skills even without recent errors', () => {
+  const exercises = [
+    make('strong', ['greetings']),
+    make('due-low', ['particles']),
+  ];
+  // No recent wrong answers, but 'particles' is low-level and due for review.
+  const masteryMap = new Map([
+    ['greetings', { skill: 'greetings', level: 4, next_review_at: new Date(Date.now() + 60_000).toISOString() }],
+    ['particles', { skill: 'particles', level: 1, next_review_at: new Date(Date.now() - 1000).toISOString() }],
+  ]);
+  for (let i = 0; i < 10; i++) {
+    const ex = selectNext({ exercises, recentAttempts: [], sessionAttempts: [], masteryMap, focus: 'weak' });
+    assert.equal(ex.id, 'due-low', 'should drill the due low-level skill, not the strong one');
+  }
+});
+
 test('skips exercises already seen in this session', () => {
   const exercises = [make('a', ['x']), make('b', ['y'])];
   const ex = selectNext({

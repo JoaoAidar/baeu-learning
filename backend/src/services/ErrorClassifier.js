@@ -14,6 +14,39 @@ const PARTICLE_PAIRS = [
 const FORMAL_ENDINGS = ['습니다', 'ㅂ니다', '니다', '십시오', '세요', '으세요'];
 const CASUAL_ENDINGS = ['요', '아요', '어요', '해요', '이야', '야'];
 
+// Multiple-choice can't reveal *which* aspect was missed (it's a single pick),
+// so we attribute the error to the question's topic via its skill_tags. This
+// keeps the diagnostic honest: a missed particle/verb/formality MC no longer
+// inflates "vocabulary". Tags with no specific category fall back to vocabulary.
+const SKILL_TO_ERROR_TAG = {
+  hangul: 'hangul_reading',
+  hangul_reading: 'hangul_reading',
+  vowels: 'hangul_reading',
+  consonants: 'hangul_reading',
+  particles: 'particle',
+  topic_marker: 'particle',
+  subject_marker: 'particle',
+  object_marker: 'particle',
+  location: 'particle',
+  verb_conjugation: 'verb_conjugation',
+  verbs: 'verb_conjugation',
+  negation: 'verb_conjugation',
+  formality: 'honorific_formality',
+  honorifics: 'honorific_formality',
+  register: 'honorific_formality',
+  word_order: 'word_order',
+};
+
+function mcErrorTags(skillTags) {
+  const out = new Set();
+  for (const t of skillTags || []) {
+    const mapped = SKILL_TO_ERROR_TAG[t];
+    if (mapped) out.add(mapped);
+  }
+  // No grammar-specific category matched → it's a vocabulary/meaning miss.
+  return out.size ? [...out] : ['vocabulary'];
+}
+
 const normalize = (s) =>
   String(s ?? '')
     .trim()
@@ -65,7 +98,7 @@ function classifyMultipleChoice(exercise, answer) {
   const expected = exercise.correct_answer;
   const correct = normalize(answer) === normalize(expected);
   if (correct) return { correct: true, errorTags: [], expected };
-  return { correct: false, errorTags: ['vocabulary'], expected };
+  return { correct: false, errorTags: mcErrorTags(exercise.skill_tags), expected };
 }
 
 function classifyText(exercise, answer) {

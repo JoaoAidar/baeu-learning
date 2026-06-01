@@ -88,7 +88,9 @@ export async function getMasteryMap(userId) {
 export function dueSkillsFromMap(masteryMap, now = new Date()) {
   const due = [];
   for (const [skill, m] of masteryMap.entries()) {
-    if (m.level >= 5) continue; // mastered
+    // Mastered (level 5) skills are NOT skipped: spaced repetition means they
+    // resurface once their 7-day interval elapses, so retention is checked
+    // instead of assumed. A wrong answer then lapses the level via recordAttempt.
     const next = m.next_review_at ? new Date(m.next_review_at) : now;
     if (next.getTime() <= now.getTime()) due.push({ skill, level: m.level });
   }

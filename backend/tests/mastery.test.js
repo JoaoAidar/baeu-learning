@@ -55,8 +55,10 @@ test('dueSkillsFromMap returns skills whose next_review_at <= now', () => {
     ['c', { skill: 'c', level: 5, next_review_at: new Date(Date.now() - 1000).toISOString() }],
   ]);
   const due = dueSkillsFromMap(map);
-  assert.equal(due.length, 1);
-  assert.equal(due[0].skill, 'a');
+  // Mastered (level 5) skills now resurface once their interval elapses, so the
+  // due set is 'a' (level 1) and 'c' (level 5), but not the future-dated 'b'.
+  const skills = due.map((d) => d.skill).sort();
+  assert.deepEqual(skills, ['a', 'c']);
 });
 
 test('selectNext deprioritizes mastered skills', () => {
@@ -65,7 +67,8 @@ test('selectNext deprioritizes mastered skills', () => {
     { id: 'fresh', type: 'translation', skill_tags: ['object_marker'] },
   ];
   const masteryMap = new Map([
-    ['topic_marker', { skill: 'topic_marker', level: 5, next_review_at: new Date().toISOString() }],
+    // Freshly mastered (interval not elapsed) → should stay deprioritized.
+    ['topic_marker', { skill: 'topic_marker', level: 5, next_review_at: new Date(Date.now() + 7 * 24 * 3600 * 1000).toISOString() }],
   ]);
   const picks = new Set();
   for (let i = 0; i < 30; i++) {
@@ -75,6 +78,23 @@ test('selectNext deprioritizes mastered skills', () => {
   // 'fresh' should overwhelmingly dominate
   const freshOnly = [...picks].length === 1 && picks.has('fresh');
   assert.ok(freshOnly || picks.has('fresh'), 'fresh skill should be picked at least sometimes');
+});
+
+test('selectNext resurfaces a mastered skill once it is due for review', () => {
+  const exercises = [
+    { id: 'due-mastered', type: 'translation', skill_tags: ['topic_marker'] },
+    { id: 'fresh', type: 'translation', skill_tags: ['object_marker'] },
+  ];
+  const masteryMap = new Map([
+    // Mastered but its 7-day interval already elapsed → due for a retention check.
+    ['topic_marker', { skill: 'topic_marker', level: 5, next_review_at: new Date(Date.now() - 1000).toISOString() }],
+  ]);
+  const picks = new Set();
+  for (let i = 0; i < 40; i++) {
+    picks.add(selectNext({ exercises, masteryMap }).id);
+  }
+  // A due mastered skill must come back into rotation, not stay buried forever.
+  assert.ok(picks.has('due-mastered'), 'due mastered skill should resurface');
 });
 
 test('intervals scale with level', () => {

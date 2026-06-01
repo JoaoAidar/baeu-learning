@@ -1,5 +1,17 @@
 # Gaps — Baeu Learning
 
+## Learning-rules accuracy pass — 2026-06-01
+
+Pedagogy/business-logic review of grading + SRS. Fixed the three items that most distorted diagnostics/learning; items 3 (ease-factor SRS redesign), 5 (windowed accuracy), 6 (1000-attempt cap + tz streak) are deferred and tracked.
+
+| Item | Finding | Fix |
+|---|---|---|
+| 1 | Wrong multiple-choice was blanket-tagged `vocabulary`, inflating that category and hiding the real skill missed. | `ErrorClassifier` maps the question's `skill_tags` to the error category (particle/verb/formality/hangul/word_order), falling back to vocabulary only when no grammar tag applies. |
+| 2 | Level-5 "mastered" skills were skipped forever (never due, selector −1.5) — a retention leak, the opposite of spaced repetition. | `dueSkillsFromMap` no longer skips level 5; selector resurfaces a mastered skill once its 7d interval elapses (lapse handled by the existing −1 on wrong). |
+| 4 | `focus=weak` filtered only by *recent errors*, so the Drill CTA could miss the low-level/due skills the Progress FocusPanel surfaced. | Selector `focus=weak` now unions recent-error skills with mastery-weak skills (level ≤1 or due), matching the panel. |
+
+**Verification:** backend 89/89 (was 86; +3 tests for MC tagging, mastered resurface, mastery-weak focus). Note: live e2e webServer could not bind a loopback port in this session's sandbox; relied on route-level integration tests (`practiceRoutes.test.js`, `practice.test.js`) which exercise the full path in-process.
+
 ## Product decision + learner-path closure pass — 2026-06-01
 
 **Decision:** Baeu is a **personal/free learner tool**, not a commercial product. João is the user. Institutional/buyer/admin-readiness gaps are now **out of scope**; priorities are the learner path to 100% and accurate diagnostics. (Recorded in agent memory: `project_baeu_product_decision.md`.)

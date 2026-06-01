@@ -14,14 +14,23 @@ export function selectNext({
 }) {
   if (!exercises.length) return null;
 
+  const now = Date.now();
   const seen = new Set(sessionAttempts.map((a) => a.exercise_id));
   let candidates = exercises.filter((e) => !seen.has(e.id));
   if (!candidates.length) candidates = exercises;
 
   if (focus === 'weak') {
-    const weakSkills = computeWeakSkills(recentAttempts);
-    if (weakSkills.length) {
-      const set = new Set(weakSkills.map((w) => w.skill));
+    // "Weak" = recently missed OR weak by mastery (low level / due for review).
+    // The second source matches the Progress "what to work on" panel, so the
+    // Drill CTA targets the same skills the diagnostic surfaced — not only the
+    // last few mistakes.
+    const set = new Set(computeWeakSkills(recentAttempts).map((w) => w.skill));
+    for (const [skill, m] of masteryMap.entries()) {
+      if (m.level >= 5) continue;
+      const dueAt = m.next_review_at ? new Date(m.next_review_at).getTime() : 0;
+      if (m.level <= 1 || dueAt <= now) set.add(skill);
+    }
+    if (set.size) {
       const filtered = candidates.filter((ex) =>
         (ex.skill_tags || []).some((t) => set.has(t))
       );
@@ -48,7 +57,6 @@ export function selectNext({
     return ex?.type;
   });
 
-  const now = Date.now();
   const weakBoost = focus === 'weak' ? 4 : 2;
 
   const scored = candidates.map((ex) => {
@@ -67,7 +75,11 @@ export function selectNext({
       if (!m) {
         score += 1.2; // never seen this skill — small boost
       } else if (m.level >= 5) {
-        score -= 1.5; // mastered — deprioritize
+        // Mastered: bury it while fresh, but resurface once due so long-term
+        // retention is actually checked (spaced repetition, not "done forever").
+        const dueAt = m.next_review_at ? new Date(m.next_review_at).getTime() : 0;
+        if (dueAt <= now) score += 1;
+        else score -= 1.5;
       } else {
         const dueAt = m.next_review_at ? new Date(m.next_review_at).getTime() : 0;
         if (dueAt <= now) score += 2 + (5 - m.level) * 0.4; // due, lower level → more
