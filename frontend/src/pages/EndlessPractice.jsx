@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { useToast } from '../components/Toast.jsx';
 
@@ -14,7 +14,7 @@ const TAG_LABELS = {
   unknown: 'unclassified',
 };
 
-export default function EndlessPractice({ moduleSlug = null, moduleTitle = null }) {
+export default function EndlessPractice({ moduleSlug = null, moduleTitle = null, initialFocus = null }) {
   const [session, setSession] = useState(null);
   const [question, setQuestion] = useState(null);
   const [answer, setAnswer] = useState('');
@@ -28,14 +28,24 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
   // the disabled state lands. The ref blocks the second call immediately.
   const submittingRef = useRef(false);
   const [questionStart, setQuestionStart] = useState(0);
+  const autoStartedRef = useRef(false);
   const toast = useToast();
+
+  // Arriving via the "Practice weak areas" entry point (#/practice?focus=weak)
+  // should drop straight into a focused session instead of the start screen.
+  useEffect(() => {
+    if (initialFocus && !autoStartedRef.current) {
+      autoStartedRef.current = true;
+      start(initialFocus);
+    }
+  }, [initialFocus]);
 
   function isNoExercisesError(err) {
     const msg = (err && (err.code || err.message)) || '';
     return msg === 'no_exercises_in_module' || msg === 'no_published_exercises';
   }
 
-  async function start() {
+  async function start(focus = null) {
     setLoading(true);
     setEmptyState(false);
     try {
@@ -44,7 +54,7 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
       setScore({ total: 0, correct: 0, accuracy: 0 });
       setCheckpoint(null);
       setFeedback(null);
-      await loadNext(s.id);
+      await loadNext(s.id, focus);
     } catch (e) {
       if (isNoExercisesError(e)) {
         setEmptyState(true);
@@ -148,14 +158,24 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null 
               ? 'Endless drilling scoped to this module. Mastery and weak-area review still apply.'
               : 'Mixed questions from every module. The selector prioritizes weak skills and items due for review.'}
           </p>
-          <button
-            onClick={start}
-            disabled={loading}
-            className="inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-semibold py-3 px-8 rounded-lg transition-all shadow-card hover:shadow-card-hover"
-          >
-            {loading ? 'Starting…' : 'Start'}
-            <span aria-hidden>→</span>
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2 justify-center">
+            <button
+              onClick={() => start(null)}
+              disabled={loading}
+              className="inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 text-white font-semibold py-3 px-8 rounded-lg transition-all shadow-card hover:shadow-card-hover"
+            >
+              {loading ? 'Starting…' : 'Start'}
+              <span aria-hidden>→</span>
+            </button>
+            <button
+              onClick={() => start('weak')}
+              disabled={loading}
+              data-testid="start-weak-btn"
+              className="inline-flex items-center justify-center gap-2 bg-secondary-500 hover:bg-secondary-600 disabled:opacity-60 text-white font-semibold py-3 px-8 rounded-lg transition-all shadow-card hover:shadow-card-hover"
+            >
+              Practice weak areas
+            </button>
+          </div>
         </div>
       </div>
     );

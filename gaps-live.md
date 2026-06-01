@@ -1079,11 +1079,11 @@ Empty. Every remaining item depends on user action in an external provider (Goog
 ---
 
 <!-- deployed-brutal-audit:baeu-learning:start -->
-## Brutal Audit Deploy - 2026-05-29
+## Brutal Audit Deploy - 2026-06-01
 
 Source: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`.
 
-**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=45.4ms, api_health 5/5 [200] p95=432.1ms.
+**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=40.8ms, api_health 5/5 [200] p95=390.2ms.
 
 | Priority | Finding | Evidence | Closure gate |
 | --- | --- | --- | --- |
@@ -1694,3 +1694,10 @@ Baeu deploy proof"), 7 modified + 5 untracked paths (dirty tree).
 | Still blocked | Google OAuth | `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` absent from Railway env keys. | Add provider values, redeploy, browser OAuth smoke. |
 | Still blocked | Resend delivery | `RESEND_API_KEY` absent from Railway env keys; `EMAIL_FROM` is present. | Add Resend API key, redeploy, password-reset email smoke. |
 | Watch | Vercel env cleanup | Vercel env list still shows both `VITE_API_BASE_URL` and legacy `VITE_API_URL`; app uses `VITE_API_BASE_URL`. | Delete legacy `VITE_API_URL` only after explicit approval. |
+## 2026-05-29 — Prod user-flow deep validation
+
+Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-29-1951/prod-user-flow-smoke/_DEEP-VALIDATION.md`
+
+Verdict: `SYNTHETIC FLOW PASS` for learner first-value. `npm run e2e:prod-smoke` passed against `https://baeu-learning.vercel.app`: synthetic learner signup/login, practice feedback, progress survival after relogin, and cleanup all completed. Synthetic account: `audit-1780097723549@test.local`; log confirms `cleanup: deleted synthetic learner`.
+
+Remaining gap: admin/author/operator flows were not tested. Preserve this learner smoke as a release gate; broaden only if those roles matter for launch.

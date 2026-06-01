@@ -20,6 +20,17 @@ export const adminAuth = {
   clear: () => localStorage.removeItem(ADMIN_TOKEN_KEY),
 };
 
+// A 401 from any authenticated `api.*` endpoint means the Better Auth session
+// cookie expired or was invalidated mid-session (login/signup go through the
+// Better Auth client, never through here). Broadcast it so the app shell can
+// clear session state and route back to login instead of letting pages spin or
+// loop on a toast. Admin-token calls opt out (their 401 is a separate concern).
+function notifyUnauthorized() {
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('baeu:unauthorized'));
+  }
+}
+
 async function call(path, opts = {}) {
   const method = (opts.method || 'GET').toUpperCase();
   const retries = opts.retries ?? (method === 'GET' ? DEFAULT_GET_RETRIES : 0);
@@ -43,6 +54,9 @@ async function call(path, opts = {}) {
       const body = text ? safeJson(text) : {};
       if (!res.ok) {
         const code = body.error || `HTTP ${res.status}`;
+        if (res.status === 401 && !opts.suppressAuthRedirect) {
+          notifyUnauthorized();
+        }
         const err = new ApiError(humanizeApiError(code, res.status), {
           kind: 'http',
           status: res.status,
@@ -76,6 +90,7 @@ async function adminCall(path, opts = {}) {
   if (!tok) throw new Error('admin_token_required');
   return call(path, {
     ...opts,
+    suppressAuthRedirect: true,
     headers: { ...(opts.headers || {}), 'x-admin-token': tok },
   });
 }

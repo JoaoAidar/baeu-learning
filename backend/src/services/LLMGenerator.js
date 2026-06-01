@@ -6,6 +6,42 @@ const DEFAULT_MODEL = 'anthropic/claude-3.5-sonnet';
 
 const VALID_TYPES = ['multiple_choice', 'translation', 'fill_blank'];
 
+// Cost guardrails. The generator is admin-only and rate-limited at the route,
+// but a runaway loop or a fat `count` could still rack up OpenRouter spend.
+// These bound a single request and the total per UTC day.
+const MAX_PER_REQUEST = clampInt(process.env.LLM_MAX_PER_REQUEST, 50, 1, 100);
+const MAX_TOKENS = clampInt(process.env.LLM_MAX_TOKENS, 4000, 256, 32000);
+// Items generated per UTC day across the process. 0 disables the cap.
+const DAILY_CAP = clampInt(process.env.LLM_DAILY_CAP, 200, 0, 100000);
+
+// In-process daily tally. Single-instance backend (Railway, sleep=true), so a
+// memory counter is enough; it resets on restart, which is acceptable for a
+// personal safety brake rather than a billing-grade quota.
+const dailyTally = { day: null, count: 0 };
+
+function utcDay() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function reserveDailyBudget(n) {
+  if (!DAILY_CAP) return;
+  const today = utcDay();
+  if (dailyTally.day !== today) {
+    dailyTally.day = today;
+    dailyTally.count = 0;
+  }
+  if (dailyTally.count + n > DAILY_CAP) {
+    throw httpError(429, 'llm_daily_cap_reached');
+  }
+  dailyTally.count += n;
+}
+
+function clampInt(raw, fallback, min, max) {
+  const n = Number(raw);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(Math.max(Math.trunc(n), min), max);
+}
+
 const SYSTEM_PROMPT = `You are an expert Korean (한국어) tutor. You produce drill exercises for Korean learners (TOPIK 1 / beginner level by default).
 You always answer with a SINGLE valid JSON array. No prose, no markdown fences.
 Each item must follow this schema exactly:
@@ -60,7 +96,11 @@ export async function generateExercises({
 
   const url = process.env.LLM_BASE_URL || DEFAULT_BASE;
   const model = process.env.LLM_MODEL || DEFAULT_MODEL;
-  const max = Math.min(Math.max(Number(count) || 10, 1), 50);
+  const max = Math.min(Math.max(Number(count) || 10, 1), MAX_PER_REQUEST);
+
+  // Reserve budget before spending. Counts against the cap even if the request
+  // later fails, so a retry loop can't bypass the brake.
+  reserveDailyBudget(max);
 
   const body = {
     model,
@@ -79,6 +119,7 @@ export async function generateExercises({
       },
     ],
     temperature: 0.6,
+    max_tokens: MAX_TOKENS,
     response_format: { type: 'json_object' },
   };
 

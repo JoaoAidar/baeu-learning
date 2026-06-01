@@ -69,12 +69,21 @@ function Shell() {
     window.location.hash = '#/';
   }
 
+  // A protected api.* call 401'd → the session expired mid-use. Clear it and
+  // route to login once, rather than letting the page reissue calls that keep
+  // 401'ing (toast loop). Guarded by `user` so a logged-out 401 is a no-op.
+  useEffect(() => {
+    const onUnauthorized = () => {
+      if (!user) return;
+      authClient.signOut().catch(() => {});
+      window.location.hash = '#/';
+    };
+    window.addEventListener('baeu:unauthorized', onUnauthorized);
+    return () => window.removeEventListener('baeu:unauthorized', onUnauthorized);
+  }, [user?.id]);
+
   if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-background-default">
-        <div className="text-gray-500">Loading…</div>
-      </div>
-    );
+    return <BootSplash />;
   }
 
   const { path, query } = route;
@@ -164,13 +173,37 @@ function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, 
   if (isPractice) {
     return (
       <EndlessPractice
-        key={query.module || 'global'}
+        key={`${query.module || 'global'}:${query.focus || 'all'}`}
         moduleSlug={query.module || null}
+        initialFocus={query.focus === 'weak' ? 'weak' : null}
       />
     );
   }
   if (isModule && moduleSlug) return <Module slug={moduleSlug} />;
   return <Home />;
+}
+
+function BootSplash() {
+  // The backend (Railway) sleeps and cold-starts in a few seconds. While the
+  // session check is pending, a bare spinner reads as "frozen". After a short
+  // delay, tell the user the server may be waking up so the wait feels intended.
+  const [waking, setWaking] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setWaking(true), 4000);
+    return () => clearTimeout(t);
+  }, []);
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-background-default px-4">
+      <div className="text-center">
+        <div className="text-gray-500">Loading…</div>
+        {waking && (
+          <p className="mt-2 text-sm text-gray-400 max-w-xs mx-auto">
+            The server may be waking up — this can take a few seconds on the first load.
+          </p>
+        )}
+      </div>
+    </div>
+  );
 }
 
 function NotFound() {

@@ -53,13 +53,21 @@ export default function Home() {
               prioritizes weak skills and items due for review.
             </p>
           </div>
-          <a
-            href="#/practice"
-            className="inline-flex items-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover whitespace-nowrap"
-          >
-            Start practice
-            <span aria-hidden>→</span>
-          </a>
+          <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+            <a
+              href="#/practice"
+              className="inline-flex items-center justify-center gap-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover whitespace-nowrap no-underline"
+            >
+              Start practice
+              <span aria-hidden>→</span>
+            </a>
+            <a
+              href="#/practice?focus=weak"
+              className="inline-flex items-center justify-center gap-2 bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover whitespace-nowrap no-underline"
+            >
+              Practice weak areas
+            </a>
+          </div>
         </div>
         {total > 0 && (
           <p className="text-xs text-gray-400 mt-3">

@@ -1,5 +1,32 @@
 # Gaps — Baeu Learning
 
+## Product decision + learner-path closure pass — 2026-06-01
+
+**Decision:** Baeu is a **personal/free learner tool**, not a commercial product. João is the user. Institutional/buyer/admin-readiness gaps are now **out of scope**; priorities are the learner path to 100% and accurate diagnostics. (Recorded in agent memory: `project_baeu_product_decision.md`.)
+
+**Verified-current (older audit findings stale):** metrics are all real (no hardcoded `streak` fixtures remain); IDOR `assertSessionOwner` returns 403 on next/answer/summary; module-vacancy returns clean `409`; `listModulesWithPublishedCounts` aggregate is wired; no dead page files; exercise count is dynamic (413-vs-354 claim no longer applies).
+
+| Priority | Finding | Closure |
+|---|---|---|
+| Closed-code | 401 mid-session caused a toast loop. | `api.js` broadcasts `baeu:unauthorized` on any authed 401; `App.jsx` clears session + routes to login once. Admin-token calls opt out. |
+| Closed-code | Cold-start read as "frozen"; ErrorBoundary generic + broken `process.env` check in Vite. | `BootSplash` shows "server may be waking up" after 4s; `ErrorBoundary` fixed (`import.meta.env.DEV`), dead import removed, network-aware copy + Try again. |
+| Closed-code | "Practice weak areas" not surfaced (backend `focus=weak` existed, no entry point). | Dedicated CTA on Home + practice start screen → `#/practice?focus=weak`; `EndlessPractice` auto-starts focused. New e2e locks it. |
+| Closed-code | Diagnostics scattered across tables. | `FocusPanel` at top of Progress synthesizes weak/due skills + top error-tags into one "What to work on now" view with a Drill CTA. |
+| Closed-code | Admin LLM generation had no spend ceiling (OpenRouter `limit: null`). | `LLMGenerator` enforces `max_tokens` (`LLM_MAX_TOKENS`, def 4000), per-request cap (`LLM_MAX_PER_REQUEST`, def 50), and in-process daily cap (`LLM_DAILY_CAP`, def 200; `llm_daily_cap_reached` 429). |
+| User-action | Resend + Google OAuth still unconfigured. | Add `RESEND_API_KEY` / `GOOGLE_CLIENT_ID`+`SECRET` to Railway `baeu-backend`, redeploy. Password reset falls back to `console.log` until then. |
+
+**Verification:** frontend build ✅; frontend e2e 20/20 (2 prod-smoke skipped by design) ✅; backend 86/86 ✅.
+
+## Update 2026-05-30 — Rev Audit all-tests Phase 3
+
+Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-30-2028/_ALL-TESTS-PHASE3.md`
+Score: `84/100`; Gate: `PASS`.
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| P1 | Prod synthetic learner first-value passed with cleanup. | Signup, practice, feedback, progress, relogin and cleanup passed. | Keep prod smoke recurring. |
+| P2 | Admin/teacher path not observed. | Phase 2 not observed. | Add admin smoke if needed for ops/sale. |
+
 ## Log audit 2026-05-27 — learner query latency
 
 Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-27-1528-cost-usage-heavy/LOG-AUDIT-DEEP-DIVE.md`

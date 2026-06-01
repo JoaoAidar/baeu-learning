@@ -11,6 +11,15 @@ test('global endless practice: start → answer → continue', async ({ page }) 
   await expect(page.getByText(/this session/i)).toBeVisible();
 });
 
+test('practice weak areas entry point drops straight into a question', async ({ page }) => {
+  await signup(page);
+  // Dedicated "Practice weak areas" link auto-starts a focused session; for a
+  // fresh user with no weak-skill history it falls back to normal selection and
+  // must still reach a graded question (no start screen, no error).
+  await page.getByRole('link', { name: /practice weak areas/i }).click();
+  await expect(page.getByTestId('question-card')).toBeVisible();
+});
+
 test('module-scoped practice only pulls from that module', async ({ page }) => {
   await signup(page);
 

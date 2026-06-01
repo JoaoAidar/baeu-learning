@@ -36,9 +36,18 @@ export default function Progress() {
   const acc7 = Math.round((overview.last7Days.accuracy || 0) * 100);
   const dueCount = skills.filter((s) => s.due && s.level < 5).length;
   const masteredCount = skills.filter((s) => s.level >= 5).length;
+  const focusSkills = rankFocusSkills(skills);
+  const topErrorTags = Object.entries(overview.errorTagCounts || {})
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
+  const hasFocus = overview.totals.attempts > 0 && (focusSkills.length > 0 || topErrorTags.length > 0);
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
+      {hasFocus && (
+        <FocusPanel focusSkills={focusSkills} topErrorTags={topErrorTags} />
+      )}
+
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Streak" value={`${overview.streakDays}d`} accent />
         <Stat label="Total" value={overview.totals.attempts} />
@@ -79,6 +88,78 @@ export default function Progress() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// Rank the skills most worth drilling now. A skill is a focus candidate if it
+// isn't mastered and is either due or below a comfortable accuracy. Weakness
+// score blends inaccuracy, distance from mastery, and review-due pressure.
+function rankFocusSkills(skills) {
+  return (skills || [])
+    .filter((s) => s.level < 5 && s.totalAttempts > 0 && (s.due || s.accuracy < 0.7))
+    .map((s) => ({
+      ...s,
+      _score: (1 - (s.accuracy || 0)) * 2 + (5 - s.level) * 0.3 + (s.due ? 1 : 0),
+    }))
+    .sort((a, b) => b._score - a._score)
+    .slice(0, 3);
+}
+
+function FocusPanel({ focusSkills, topErrorTags }) {
+  return (
+    <div
+      data-testid="focus-panel"
+      className="bg-white rounded-xl shadow-card border border-primary-200 p-6"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="min-w-0">
+          <h3 className="font-heading text-xl font-bold text-gray-900 mb-1">
+            What to work on now
+          </h3>
+          <p className="text-sm text-gray-600 mb-3">
+            {focusSkills.length > 0
+              ? 'These skills are weak or due for review.'
+              : 'Recent mistakes cluster around these areas.'}
+          </p>
+
+          {focusSkills.length > 0 && (
+            <ul className="space-y-1.5 mb-3">
+              {focusSkills.map((s) => (
+                <li key={s.skill} className="flex items-center gap-2 text-sm">
+                  <span className="w-2 h-2 rounded-full bg-primary-500 flex-shrink-0" aria-hidden />
+                  <strong className="text-gray-900">{s.skill}</strong>
+                  <span className="text-gray-500">
+                    {Math.round((s.accuracy || 0) * 100)}% · {LEVEL_LABELS[s.level]}
+                  </span>
+                  {s.due && (
+                    <span className="px-1.5 py-0.5 rounded text-xs bg-primary-100 text-primary-700 font-medium">
+                      due
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+
+          {topErrorTags.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {topErrorTags.map(([t, n]) => (
+                <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                  {t} · {n}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <a
+          href="#/practice?focus=weak"
+          className="inline-flex items-center justify-center gap-2 bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover whitespace-nowrap no-underline flex-shrink-0"
+        >
+          Drill these →
+        </a>
+      </div>
     </div>
   );
 }
