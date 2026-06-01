@@ -48,6 +48,42 @@ test('after a few attempts overview reflects them', async () => {
   assert.equal(o.streakDays >= 1, true);
 });
 
+test('overview counts all attempts (no row cap) and reports recent window', async () => {
+  const user = await memoryStore.getUserByEmail('p@example.com');
+  const session = await Practice.startSession({ userId: user.id });
+  const exes = await memoryStore.listPublishedExercises();
+  // More attempts than any small cap; all must be counted.
+  for (let i = 0; i < 30; i++) {
+    await Practice.submitAnswer({
+      sessionId: session.id,
+      exerciseId: exes[i % exes.length].id,
+      answer: 'definitely-wrong',
+      responseMs: 100 + i, // distinct → avoid double-submit guard
+    });
+  }
+  const o = await Progress.overview({ userId: user.id });
+  assert.equal(o.totals.attempts, 30);
+  assert.equal(o.last7Days.attempts, 30); // all just happened
+  assert.equal(o.streakDays >= 1, true);
+});
+
+test('skills expose recent accuracy distinct from lifetime', async () => {
+  const user = await memoryStore.getUserByEmail('p@example.com');
+  const session = await Practice.startSession({ userId: user.id });
+  const exes = await memoryStore.listPublishedExercises();
+  const trackable = exes.find((e) =>
+    (e.skill_tags || []).some((t) => ['topic_marker', 'object_marker', 'verb_conjugation'].includes(t))
+  );
+  // one correct, one wrong on the same trackable exercise
+  await Practice.submitAnswer({ sessionId: session.id, exerciseId: trackable.id, answer: trackable.correct_answer, responseMs: 50 });
+  await Practice.submitAnswer({ sessionId: session.id, exerciseId: trackable.id, answer: 'wrong', responseMs: 60 });
+  const r = await Progress.skills({ userId: user.id });
+  const row = r.skills.find((s) => (trackable.skill_tags || []).includes(s.skill));
+  assert.ok(row, 'a tracked skill row exists');
+  assert.equal(row.recentAttempts, 2);
+  assert.equal(row.recentAccuracy, 0.5);
+});
+
 test('skills endpoint returns mastery rows', async () => {
   const user = await memoryStore.getUserByEmail('p@example.com');
   const session = await Practice.startSession({ userId: user.id });

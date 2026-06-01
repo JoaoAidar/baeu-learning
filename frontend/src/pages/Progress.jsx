@@ -93,14 +93,21 @@ export default function Progress() {
 }
 
 // Rank the skills most worth drilling now. A skill is a focus candidate if it
-// isn't mastered and is either due or below a comfortable accuracy. Weakness
-// score blends inaccuracy, distance from mastery, and review-due pressure.
+// isn't mastered and is either due or below a comfortable accuracy. We judge by
+// RECENT accuracy when there's recent data, so old struggles you've since fixed
+// don't keep you flagged. Weakness score blends inaccuracy, distance from
+// mastery, and review-due pressure.
+function effectiveAccuracy(s) {
+  return s.recentAttempts > 0 ? s.recentAccuracy : s.accuracy;
+}
+
 function rankFocusSkills(skills) {
   return (skills || [])
-    .filter((s) => s.level < 5 && s.totalAttempts > 0 && (s.due || s.accuracy < 0.7))
+    .map((s) => ({ ...s, _acc: effectiveAccuracy(s) }))
+    .filter((s) => s.level < 5 && s.totalAttempts > 0 && (s.due || s._acc < 0.7))
     .map((s) => ({
       ...s,
-      _score: (1 - (s.accuracy || 0)) * 2 + (5 - s.level) * 0.3 + (s.due ? 1 : 0),
+      _score: (1 - (s._acc || 0)) * 2 + (5 - s.level) * 0.3 + (s.due ? 1 : 0),
     }))
     .sort((a, b) => b._score - a._score)
     .slice(0, 3);
@@ -130,7 +137,7 @@ function FocusPanel({ focusSkills, topErrorTags }) {
                   <span className="w-2 h-2 rounded-full bg-primary-500 flex-shrink-0" aria-hidden />
                   <strong className="text-gray-900">{s.skill}</strong>
                   <span className="text-gray-500">
-                    {Math.round((s.accuracy || 0) * 100)}% · {LEVEL_LABELS[s.level]}
+                    {Math.round((s._acc || 0) * 100)}%{s.recentAttempts > 0 ? ' recent' : ''} · {LEVEL_LABELS[s.level]}
                   </span>
                   {s.due && (
                     <span className="px-1.5 py-0.5 rounded text-xs bg-primary-100 text-primary-700 font-medium">

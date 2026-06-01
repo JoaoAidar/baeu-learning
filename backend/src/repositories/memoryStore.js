@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { localDayString } from '../util/time.js';
 
 const store = {
   users: new Map(), // dev-only convenience; Better Auth owns auth in prod.
@@ -326,6 +327,34 @@ export const memoryStore = {
     const rows = [...store.attempts].reverse();
     const filtered = wrongOnly ? rows.filter((a) => !a.correct) : rows;
     return filtered.slice(0, limit);
+  },
+
+  async getProgressAggregates(userId, { tzOffsetMinutes = -180 } = {}) {
+    const rows = store.attempts.filter((a) => a.user_id === userId);
+    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    let attempts = 0;
+    let correct = 0;
+    let last7Attempts = 0;
+    let last7Correct = 0;
+    const errorTagCounts = {};
+    const daySet = new Set();
+    for (const a of rows) {
+      attempts += 1;
+      if (a.correct) correct += 1;
+      const t = new Date(a.created_at).getTime();
+      if (t >= weekAgo) {
+        last7Attempts += 1;
+        if (a.correct) last7Correct += 1;
+      }
+      if (!a.correct) {
+        for (const tag of a.error_tags || []) {
+          errorTagCounts[tag] = (errorTagCounts[tag] || 0) + 1;
+        }
+      }
+      daySet.add(localDayString(t, tzOffsetMinutes));
+    }
+    const activeDays = [...daySet].sort().reverse();
+    return { attempts, correct, last7Attempts, last7Correct, errorTagCounts, activeDays };
   },
 
   // mastery

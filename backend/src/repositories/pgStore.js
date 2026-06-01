@@ -274,6 +274,47 @@ export function createPgStore({ connectionString }) {
             [limit]
           ),
 
+    // Progress aggregates computed in SQL so totals/streak don't degrade once a
+    // user passes a row cap. activeDays are bucketed in the caller's timezone.
+    async getProgressAggregates(userId, { tzOffsetMinutes = -180 } = {}) {
+      const agg = await one(
+        `select
+            count(*)::int as attempts,
+            coalesce(sum(case when correct then 1 else 0 end), 0)::int as correct,
+            coalesce(count(*) filter (where created_at >= now() - interval '7 days'), 0)::int as last7_attempts,
+            coalesce(count(*) filter (where correct and created_at >= now() - interval '7 days'), 0)::int as last7_correct
+           from practice_attempts
+          where user_id = $1`,
+        [userId]
+      );
+      const tagRows = await all(
+        `select tag, count(*)::int as n
+           from practice_attempts a
+           cross join lateral jsonb_array_elements_text(a.error_tags) as tag
+          where a.user_id = $1 and a.correct = false
+          group by tag`,
+        [userId]
+      );
+      const dayRows = await all(
+        `select distinct to_char((created_at + make_interval(mins => $2))::date, 'YYYY-MM-DD') as d
+           from practice_attempts
+          where user_id = $1
+          order by d desc
+          limit 400`,
+        [userId, tzOffsetMinutes]
+      );
+      const errorTagCounts = {};
+      for (const r of tagRows) errorTagCounts[r.tag] = r.n;
+      return {
+        attempts: agg?.attempts || 0,
+        correct: agg?.correct || 0,
+        last7Attempts: agg?.last7_attempts || 0,
+        last7Correct: agg?.last7_correct || 0,
+        errorTagCounts,
+        activeDays: dayRows.map((r) => r.d),
+      };
+    },
+
     // mastery
     getMasteryForUser: (userId) =>
       all('select * from user_skill_mastery where user_id = $1', [userId]),
