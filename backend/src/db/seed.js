@@ -42,6 +42,22 @@ async function ensureLessons(store, slugToModuleId) {
   }
 }
 
+// Resolve generated content to insertable rows, skipping any prompt already in
+// `seenPrompts` and any prompt repeated within the batch (a few overlap between
+// the patterns/reading generators). Mutates `seenPrompts`.
+function resolveItems(slugToId, seenPrompts) {
+  const items = [];
+  for (const it of buildTopik1Content()) {
+    if (seenPrompts.has(it.prompt)) continue;
+    seenPrompts.add(it.prompt);
+    items.push({
+      ...it,
+      module_id: it.module_slug ? slugToId.get(it.module_slug) || null : null,
+    });
+  }
+  return items;
+}
+
 export async function runSeedIfEmpty() {
   const store = getStore();
   const slugToId = await ensureModules(store);
@@ -50,17 +66,31 @@ export async function runSeedIfEmpty() {
   const existing = await store.listPublishedExercises();
   if (existing.length) return existing;
 
-  const items = buildTopik1Content().map((it) => ({
-    ...it,
-    module_id: it.module_slug ? slugToId.get(it.module_slug) || null : null,
-  }));
+  const items = resolveItems(slugToId, new Set());
+  return store.insertExercises(items);
+}
+
+// Additive, idempotent seed: inserts only generated exercises whose prompt is
+// not already in the store. Lets the code stay the content source of truth and
+// push new exercises to an already-populated prod DB WITHOUT wiping anything.
+export async function seedNewExercises() {
+  const store = getStore();
+  const slugToId = await ensureModules(store);
+  await ensureLessons(store, slugToId);
+
+  const seenPrompts = new Set(await store.listExercisePrompts());
+  const items = resolveItems(slugToId, seenPrompts);
+  if (!items.length) return [];
   return store.insertExercises(items);
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) {
-  runSeedIfEmpty()
+  const additive = process.argv.includes('--new');
+  const run = additive ? seedNewExercises : runSeedIfEmpty;
+  run()
     .then((rows) => {
-      console.log(`seeded ${rows.length} exercises (store=${getStore().__mode})`);
+      const verb = additive ? 'added' : 'seeded';
+      console.log(`${verb} ${rows.length} exercises (store=${getStore().__mode})`);
       process.exit(0);
     })
     .catch((err) => {

@@ -6,6 +6,7 @@
     "dev": "node --watch --import=./src/instrumentation.js src/server.js",
     "start": "node --import=./src/instrumentation.js src/server.js",
     "seed": "node src/db/seed.js",
+    "seed:new": "node src/db/seed.js --new",
     "migrate": "node src/db/migrate.js",
     "migrate:srs": "node src/db/migrate-srs.js",
     "migrate:reset": "node src/db/migrate-reset.js",

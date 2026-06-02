@@ -131,6 +131,17 @@ const PARTICLES = [
   { sentence: '병원___ 가요.', en: 'I go to the hospital.', answer: '에', alts: [], skill: 'location' },
   { sentence: '식당___ 밥을 먹어요.', en: 'I eat at the restaurant.', answer: '에서', alts: [], skill: 'location' },
   { sentence: '저는 차___ 좋아해요.', en: 'I like tea.', answer: '를', alts: [], skill: 'object_marker' },
+  // Extra reinforcement — these grammar skills were thin in the catalog.
+  { sentence: '날씨___ 좋아요.', en: 'The weather is nice.', answer: '가', alts: [], skill: 'subject_marker' },
+  { sentence: '저는 한국어___ 공부해요.', en: 'I study Korean.', answer: '를', alts: [], skill: 'object_marker' },
+  { sentence: '주말___ 집에 있어요.', en: 'On the weekend I am at home.', answer: '에', alts: [], skill: 'location' },
+  { sentence: '형___ 회사원이에요.', en: 'My older brother is an office worker.', answer: '은', alts: [], skill: 'topic_marker' },
+  { sentence: '고양이___ 귀여워요.', en: 'The cat is cute.', answer: '가', alts: [], skill: 'subject_marker' },
+  { sentence: '저는 영화___ 봐요.', en: 'I watch a movie.', answer: '를', alts: [], skill: 'object_marker' },
+  { sentence: '카페___ 커피를 사요.', en: 'I buy coffee at the cafe.', answer: '에서', alts: [], skill: 'location' },
+  { sentence: '제 친구___ 의사예요.', en: 'My friend is a doctor.', answer: '는', alts: [], skill: 'topic_marker' },
+  { sentence: '아기___ 자요.', en: 'The baby is sleeping.', answer: '가', alts: [], skill: 'subject_marker' },
+  { sentence: '학생들___ 도서관에 있어요.', en: 'The students are in the library.', answer: '은', alts: ['이'], skill: 'topic_marker' },
 ];
 
 const PHRASES = [
@@ -158,6 +169,32 @@ const COLORS = [
   ['black', '검은색', 'geomeunsaek'],
   ['orange', '주황색', 'juhwangsaek'],
   ['pink', '분홍색', 'bunhongsaek'],
+];
+
+// Word-order drills. Korean is verb-final and roles are marked by particles, so
+// the reliably-WRONG options are the ones where the verb is not last. (Reordering
+// nouns alone is often still grammatical, so we never use that as a distractor.)
+const WORD_ORDER = [
+  { en: 'I eat rice.', correct: '저는 밥을 먹어요', wrong: ['먹어요 저는 밥을', '저는 먹어요 밥을', '밥을 먹어요 저는'] },
+  { en: 'I read a book at home.', correct: '저는 집에서 책을 읽어요', wrong: ['읽어요 저는 집에서 책을', '저는 읽어요 집에서 책을', '저는 집에서 읽어요 책을'] },
+  { en: 'I meet a friend at the cafe.', correct: '저는 카페에서 친구를 만나요', wrong: ['만나요 저는 카페에서 친구를', '저는 만나요 카페에서 친구를', '저는 카페에서 만나요 친구를'] },
+  { en: 'I study Korean at the library.', correct: '저는 도서관에서 한국어를 공부해요', wrong: ['공부해요 저는 도서관에서 한국어를', '저는 공부해요 도서관에서 한국어를', '저는 도서관에서 공부해요 한국어를'] },
+  { en: 'I buy bread at the store.', correct: '저는 가게에서 빵을 사요', wrong: ['사요 저는 가게에서 빵을', '저는 사요 가게에서 빵을', '저는 가게에서 사요 빵을'] },
+];
+
+// Harder TOPIK-1/2 sentences: connectors, clauses, intentions. Give the catalog
+// a difficulty ceiling above easy/medium. Skills use tracked grammar tags.
+const HARD = [
+  { module: 'patterns', en: 'I like coffee, but I don\'t drink it at night.', ko: '저는 커피를 좋아하지만 밤에는 안 마셔요', alts: [], skills: ['negation', 'object_marker', 'word_order'] },
+  { module: 'patterns', en: 'I eat breakfast and then go to school.', ko: '아침을 먹고 학교에 가요', alts: [], skills: ['verb_conjugation', 'word_order'] },
+  { module: 'patterns', en: 'Because it rained, I stayed home.', ko: '비가 와서 집에 있었어요', alts: [], skills: ['verb_conjugation', 'past'] },
+  { module: 'patterns', en: 'I want to eat Korean food.', ko: '한국 음식을 먹고 싶어요', alts: ['한국 음식이 먹고 싶어요'], skills: ['verbs', 'word_order'] },
+  { module: 'patterns', en: 'Although Korean is hard, it is fun.', ko: '한국어가 어렵지만 재미있어요', alts: [], skills: ['adjectives', 'subject_marker'] },
+  { module: 'patterns', en: 'I drink coffee in the morning and tea in the evening.', ko: '아침에는 커피를 마시고 저녁에는 차를 마셔요', alts: [], skills: ['word_order', 'time'] },
+  { module: 'patterns', en: 'Even though it is expensive, I will buy it.', ko: '비싸지만 살 거예요', alts: [], skills: ['adjectives', 'future'] },
+  { module: 'patterns', en: 'I am studying Korean to work in Korea.', ko: '한국에서 일하려고 한국어를 공부해요', alts: ['한국에서 일하기 위해 한국어를 공부해요'], skills: ['verb_conjugation', 'word_order'] },
+  { module: 'reading', en: 'When I have time, I read books.', ko: '시간이 있을 때 책을 읽어요', alts: [], skills: ['existence', 'word_order'] },
+  { module: 'reading', en: 'I went to the restaurant, but there were no seats.', ko: '식당에 갔지만 자리가 없었어요', alts: ['식당에 갔는데 자리가 없었어요'], skills: ['past', 'existence'] },
 ];
 
 // ---------- HANGUL ----------
@@ -683,6 +720,43 @@ function readingModule() {
   return out;
 }
 
+function wordOrderModule() {
+  return WORD_ORDER.map(({ en, correct, wrong }) => {
+    const options = shuffle([
+      { id: 'a', text: correct },
+      ...wrong.slice(0, 3).map((w, i) => ({ id: 'abcd'[i + 1], text: w })),
+    ]);
+    return {
+      module_slug: 'patterns',
+      type: 'multiple_choice',
+      difficulty: 'medium',
+      prompt: `Pick the correctly ordered Korean sentence: "${en}"`,
+      options,
+      correct_answer: options.find((o) => o.text === correct).id,
+      accepted_answers: [correct],
+      explanation: `Korean is verb-final: ${correct}.`,
+      skill_tags: ['word_order', 'sentence'],
+      metadata: {},
+      status: 'published',
+    };
+  });
+}
+
+function hardModule() {
+  return HARD.map(({ module, en, ko, alts, skills }) => ({
+    module_slug: module,
+    type: 'translation',
+    difficulty: 'hard',
+    prompt: `Translate to Korean: "${en}"`,
+    correct_answer: ko,
+    accepted_answers: [ko, ...alts],
+    explanation: `${ko}.`,
+    skill_tags: skills,
+    metadata: {},
+    status: 'published',
+  }));
+}
+
 // ---------- ENTRY POINT ----------
 
 export function buildTopik1Content() {
@@ -694,6 +768,8 @@ export function buildTopik1Content() {
     ...verbsModule(),
     ...vocabDailyModule(),
     ...patternsModule(),
+    ...wordOrderModule(),
     ...readingModule(),
+    ...hardModule(),
   ];
 }

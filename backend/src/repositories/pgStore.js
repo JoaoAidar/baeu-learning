@@ -109,6 +109,7 @@ export function createPgStore({ connectionString }) {
         [row.slug, row.title, row.description || '', row.order_index ?? 0, row.icon || null]
       ),
     listAllExercises: () => all(`select * from exercises order by created_at desc limit 500`),
+    listExercisePrompts: async () => (await all('select prompt from exercises')).map((r) => r.prompt),
     listExercisesByStatus: (status) =>
       status
         ? all(`select * from exercises where status = $1 order by created_at desc limit 500`, [status])

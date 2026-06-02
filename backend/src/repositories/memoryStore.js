@@ -168,6 +168,9 @@ export const memoryStore = {
   async listAllExercises() {
     return [...store.exercises.values()];
   },
+  async listExercisePrompts() {
+    return [...store.exercises.values()].map((e) => e.prompt);
+  },
   async listExercisesByStatus(status) {
     const all = [...store.exercises.values()];
     return status ? all.filter((e) => e.status === status) : all;
