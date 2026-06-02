@@ -1,5 +1,19 @@
 # Gaps — Baeu Learning
 
+## Content + activation pass — 2026-06-01 (ready to use)
+
+Goal: single-user readiness — enough content + the full learning system live in prod.
+
+- **SRS activated in prod:** ran `migrate:srs` on Neon → `user_exercise_srs` created. (Confirmed prod is the DB: 415→440 published, 53 users.) SM-2 scheduling now live.
+- **Regression caught + fixed:** the SRS code had shipped before the table existed, breaking practice in prod (prod smoke caught it). `SrsService` now degrades to a no-op on store errors; redeployed; smoke green.
+- **Content expanded (item a):** generator 354→379 — +10 particle drills, +5 word-order MC, +10 hard sentences. Pushed to prod via additive `seed:new` (+25). Prod now **440 published**, difficulty easy 218 / medium 212 / **hard 10**, word_order 16.
+- **Reconciliation (item b):** `seedNewExercises` (`npm run seed:new`) is additive + idempotent (dedupes vs DB and within batch); both seed paths dedupe by prompt. Code is the content source of truth; prod grows additively without wipes. The historical 354↔412 count mismatch is now moot.
+- **Housekeeping:** deleted 1 orphaned synthetic audit account.
+
+**Verified:** backend 98/98; prod learner smoke passes end-to-end with SRS writing live.
+
+**Known content notes (not blockers):** still translation-heavy (~75%); 3 prompts overlap between patterns/reading generators (already in prod, deduped on future seeds); grammar markers still relatively thin — expand via the (cost-capped) admin LLM generator as diagnostics reveal gaps.
+
 ## Migration safety split — 2026-06-01
 
 Closed the destructive-`schema.sql` footgun flagged in the SRS pass.
