@@ -1,7 +1,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nextSrsState, _internals } from '../src/services/SrsService.js';
+import { nextSrsState, _internals, getSrsMap, recordReview } from '../src/services/SrsService.js';
 import { selectNext } from '../src/services/ExerciseSelector.js';
+import { resetStoreForTests } from '../src/config/db.js';
+import { memoryStore } from '../src/repositories/memoryStore.js';
 
 const make = (id, skills = ['greetings'], type = 'translation') => ({ id, type, skill_tags: skills });
 
@@ -39,6 +41,24 @@ test('a miss lapses: reps reset, due immediately, ease drops but floors at min',
   let floored = lapsed;
   for (let i = 0; i < 20; i++) floored = nextSrsState(floored, false, now);
   assert.equal(floored.ease, _internals.MIN_EASE);
+});
+
+test('SRS degrades to a no-op when the store throws (table missing in prod)', async () => {
+  // Simulate a deployed backend whose user_exercise_srs table does not exist yet.
+  const throwingStore = {
+    getSrsForUser: async () => { throw new Error('relation "user_exercise_srs" does not exist'); },
+    getSrs: async () => { throw new Error('relation "user_exercise_srs" does not exist'); },
+    upsertSrs: async () => { throw new Error('relation "user_exercise_srs" does not exist'); },
+  };
+  resetStoreForTests(throwingStore);
+  try {
+    const map = await getSrsMap('u1');
+    assert.equal(map.size, 0, 'getSrsMap returns empty map, does not throw');
+    const r = await recordReview({ userId: 'u1', exerciseId: 'e1', correct: true });
+    assert.equal(r, null, 'recordReview returns null, does not throw');
+  } finally {
+    resetStoreForTests(memoryStore);
+  }
 });
 
 test('selector resurfaces a due item and holds back a not-due item', () => {

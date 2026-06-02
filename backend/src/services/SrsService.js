@@ -61,22 +61,44 @@ export function nextSrsState(prev, correct, now = new Date()) {
   };
 }
 
+let srsUnavailableLogged = false;
+
+// SRS is an enhancement, never a hard dependency. If the table is missing
+// (migration not yet run) or any SRS query fails, degrade to a no-op so the
+// practice loop keeps working on skill signals alone.
+function noteUnavailable(err) {
+  if (!srsUnavailableLogged) {
+    srsUnavailableLogged = true;
+    console.warn(`[baeu][srs] disabled (run \`npm run migrate\`): ${err?.message || err}`);
+  }
+}
+
 export async function recordReview({ userId, exerciseId, correct }) {
   if (!exerciseId) return null;
   const store = getStore();
   if (!store.getSrs) return null; // store without SRS support — no-op
-  const prev = await store.getSrs(userId, exerciseId);
-  const next = nextSrsState(prev, correct);
-  return store.upsertSrs({ user_id: userId, exercise_id: exerciseId, ...next });
+  try {
+    const prev = await store.getSrs(userId, exerciseId);
+    const next = nextSrsState(prev, correct);
+    return await store.upsertSrs({ user_id: userId, exercise_id: exerciseId, ...next });
+  } catch (err) {
+    noteUnavailable(err);
+    return null;
+  }
 }
 
 export async function getSrsMap(userId) {
   const store = getStore();
   if (!store.getSrsForUser) return new Map();
-  const rows = await store.getSrsForUser(userId);
-  const map = new Map();
-  for (const r of rows) map.set(r.exercise_id, r);
-  return map;
+  try {
+    const rows = await store.getSrsForUser(userId);
+    const map = new Map();
+    for (const r of rows) map.set(r.exercise_id, r);
+    return map;
+  } catch (err) {
+    noteUnavailable(err);
+    return new Map();
+  }
 }
 
 export const _internals = { MIN_EASE, DEFAULT_EASE };
