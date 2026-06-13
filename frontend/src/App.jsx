@@ -340,7 +340,7 @@ function Header({ user, role, active, onLogout }) {
           <span className="font-heading font-bold text-xl text-gray-900 leading-none">Baeu</span>
           <span className="text-gray-400 text-sm hidden sm:inline">· Korean practice</span>
         </a>
-        <nav className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-1 sm:gap-3 text-sm">
+        <nav className="w-full sm:w-auto sm:ml-auto flex flex-nowrap sm:flex-wrap items-center gap-1 sm:gap-3 text-sm overflow-x-auto sm:overflow-visible [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
           {user && (
             <>
               <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
@@ -353,7 +353,7 @@ function Header({ user, role, active, onLogout }) {
             <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
           )}
           {user && (
-            <div className="flex items-center gap-1 sm:gap-2 ml-auto sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200">
+            <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200 flex-shrink-0">
               <a
                 href="#/account"
                 data-testid="account-link"
