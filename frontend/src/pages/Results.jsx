@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { api } from '../api.js';
 import { useToast } from '../components/Toast.jsx';
+import { speak, hasHangul, speechSupported } from '../utils/speech.js';
 
 // Deep learner analytics — complements /progress (which is the lightweight
 // streak/skill view). Surfaces:
@@ -119,6 +120,25 @@ export default function Results() {
         </Card>
       )}
 
+      {data.forecast && (
+        <Card title="Review forecast" subtitle="When items come due">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="results-forecast">
+            <Mini label="Due now" value={data.forecast.dueNow} />
+            <Mini label="Tomorrow" value={data.forecast.tomorrow} />
+            <Mini label="Next 7 days" value={data.forecast.next7Days} />
+            <Mini label="Overdue" value={data.forecast.overdue} />
+          </div>
+          {data.forecast.dueNow > 0 && (
+            <a
+              href="#/practice?focus=weak"
+              className="inline-flex mt-4 items-center gap-2 bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-2 px-4 rounded-lg transition-all no-underline"
+            >
+              Review {data.forecast.dueNow} due now →
+            </a>
+          )}
+        </Card>
+      )}
+
       {data.forgetting && data.forgetting.trackedItems > 0 && (
         <Card title="Forgetting & leeches" subtitle="From your spaced-repetition schedule">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" data-testid="results-forgetting">
@@ -137,10 +157,8 @@ export default function Results() {
               <ul className="space-y-1.5" data-testid="results-leeches">
                 {data.forgetting.leeches.map((l) => (
                   <li key={l.exerciseId} className="flex items-center justify-between gap-3 text-sm">
-                    <span className="text-gray-600 truncate" title={l.exerciseId}>
-                      #{String(l.exerciseId).slice(0, 8)}
-                    </span>
-                    <span className="flex items-center gap-3 text-gray-700">
+                    <ItemLabel item={l} />
+                    <span className="flex items-center gap-3 text-gray-700 flex-shrink-0">
                       <span className="text-red-600 font-semibold">{l.lapses} lapses</span>
                       <span className="text-gray-400">interval {l.intervalDays}d</span>
                     </span>
@@ -175,10 +193,8 @@ export default function Results() {
           <ul className="space-y-2" data-testid="results-toughest">
             {data.toughestExercises.map((e) => (
               <li key={e.exerciseId} className="flex items-center justify-between gap-3 text-sm">
-                <span className="text-gray-600 truncate" title={e.exerciseId}>
-                  #{String(e.exerciseId).slice(0, 8)}
-                </span>
-                <span className="flex items-center gap-3 text-gray-700">
+                <ItemLabel item={e} />
+                <span className="flex items-center gap-3 text-gray-700 flex-shrink-0">
                   <span>{e.attempts} att</span>
                   <span className={e.accuracy < 0.34 ? 'text-red-600 font-semibold' : ''}>
                     {Math.round(e.accuracy * 100)}%
@@ -288,6 +304,31 @@ function Mini({ label, value }) {
       <div className="font-heading text-2xl font-bold text-gray-900">{value}</div>
       <div className="text-xs text-gray-500">{label}</div>
     </div>
+  );
+}
+
+// Readable label for an exercise item (toughest / leech). Shows the prompt text
+// instead of a bare id, with a speaker for any Korean content it contains.
+function ItemLabel({ item }) {
+  const label = item.prompt || `#${String(item.exerciseId).slice(0, 8)}`;
+  const ko = hasHangul(item.prompt) ? item.prompt : hasHangul(item.answer) ? item.answer : null;
+  return (
+    <span className="flex items-center gap-1.5 min-w-0">
+      <span className="text-gray-700 truncate" title={label} lang={hasHangul(label) ? 'ko' : undefined}>
+        {label}
+      </span>
+      {ko && speechSupported() && (
+        <button
+          type="button"
+          onClick={() => speak(ko)}
+          aria-label="Play Korean pronunciation"
+          title="Play pronunciation"
+          className="inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors flex-shrink-0"
+        >
+          <span aria-hidden>🔊</span>
+        </button>
+      )}
+    </span>
   );
 }
 

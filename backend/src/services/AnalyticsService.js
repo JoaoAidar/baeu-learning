@@ -209,12 +209,40 @@ function sentenceErrorBreakdown(attempts) {
   return { textAttempts, textWrong, byTag };
 }
 
+// Review forecast: how many SRS items come due, bucketed, so the learner has a
+// return hook ("3 items due tomorrow"). Buckets are by UTC calendar day.
+function computeForecast(srsRows, now = Date.now()) {
+  const rows = Array.isArray(srsRows) ? srsRows : [];
+  const startOfToday = (() => {
+    const d = new Date(now);
+    d.setUTCHours(0, 0, 0, 0);
+    return d.getTime();
+  })();
+  const endOfToday = startOfToday + DAY_MS;
+  const endOfTomorrow = startOfToday + 2 * DAY_MS;
+  const endOf7 = startOfToday + 7 * DAY_MS;
+  let overdue = 0;
+  let today = 0;
+  let tomorrow = 0;
+  let next7 = 0;
+  for (const r of rows) {
+    const due = r.due_at ? new Date(r.due_at).getTime() : null;
+    if (due == null) continue;
+    if (due < startOfToday) overdue += 1;
+    else if (due < endOfToday) today += 1;
+    else if (due < endOfTomorrow) tomorrow += 1;
+    else if (due < endOf7) next7 += 1;
+  }
+  return { overdue, today, tomorrow, next7Days: next7, dueNow: overdue + today };
+}
+
 export const _internals = {
   computeRetention,
   responseTimeStats,
   computeForgetting,
   responseTimeBySkill,
   sentenceErrorBreakdown,
+  computeForecast,
 };
 
 function fillDays(seriesMap, days) {
@@ -322,7 +350,25 @@ export async function learnerAnalytics({ userId, days = 30 }) {
   // Forgetting / leeches from per-item SRS state (lifetime, not windowed —
   // forgetting is about the whole deck). No-op-safe if SRS is unavailable.
   const srsMap = await getSrsMap(userId);
-  const forgetting = computeForgetting([...srsMap.values()]);
+  const srsRows = [...srsMap.values()];
+  const forgetting = computeForgetting(srsRows);
+  const forecast = computeForecast(srsRows);
+
+  // Enrich item lists (toughest, leeches) with the exercise prompt + answer so
+  // the UI shows readable, speakable content instead of bare ids. Best-effort:
+  // a missing lookup just leaves the id. One bounded read of published items.
+  let exMap = new Map();
+  try {
+    const published = await store.listPublishedExercises({});
+    for (const e of published) {
+      exMap.set(e.id, { prompt: e.prompt, answer: e.correct_answer ?? null, type: e.type });
+    }
+  } catch {
+    /* enrichment is optional */
+  }
+  const labelOf = (id) => exMap.get(id) || {};
+  const toughestLabeled = toughest.map((t) => ({ ...t, ...labelOf(t.exerciseId) }));
+  forgetting.leeches = forgetting.leeches.map((l) => ({ ...l, ...labelOf(l.exerciseId) }));
 
   const totalsWindow = windowed.length;
   const totalsCorrect = windowed.filter((a) => a.correct).length;
@@ -339,8 +385,9 @@ export async function learnerAnalytics({ userId, days = 30 }) {
     responseBySkill: responseTimeBySkill(windowed),
     sentenceErrors: sentenceErrorBreakdown(windowed),
     forgetting,
+    forecast,
     errorTagCounts: errorCounts,
-    toughestExercises: toughest,
+    toughestExercises: toughestLabeled,
     responseTimeTrend: responseTrend,
     masteryByLevel,
   };
