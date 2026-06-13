@@ -199,6 +199,7 @@ function LearningSignals({ a }) {
   const rt = a.responseTime;
   const f = a.forgetting;
   const se = a.sentenceErrors;
+  const fc = a.forecast;
   const hasAny =
     (rt && rt.count > 0) ||
     (f && f.trackedItems > 0) ||
@@ -217,9 +218,16 @@ function LearningSignals({ a }) {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {rt && rt.count > 0 && <Mini label="Automatic recall" value={pct(rt.automaticityRate)} />}
         {rt && rt.medianMs != null && <Mini label="Median pace" value={`${(rt.medianMs / 1000).toFixed(1)}s`} />}
-        {f && f.trackedItems > 0 && <Mini label="Due to review" value={f.dueNow} />}
+        {fc && <Mini label="Due now" value={fc.dueNow} />}
+        {fc && <Mini label="Due tomorrow" value={fc.tomorrow} />}
         {f && f.trackedItems > 0 && <Mini label="Keep forgetting" value={f.leeches.length} />}
       </div>
+      {fc && fc.dueNow > 0 && (
+        <p className="text-xs text-gray-500 mt-2">
+          {fc.dueNow} item{fc.dueNow === 1 ? '' : 's'} ready to review now
+          {fc.tomorrow > 0 ? `, ${fc.tomorrow} more tomorrow` : ''}.
+        </p>
+      )}
       {sentenceTags.length > 0 && (
         <div className="mt-4">
           <p className="text-xs text-gray-500 mb-2">Where you slip on sentences (free-text answers):</p>

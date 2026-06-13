@@ -107,6 +107,25 @@ test('computeForgetting: leeches, relearn, due, mature from SRS rows', () => {
   assert.deepEqual(f.leeches.map((l) => l.exerciseId), ['leech', 'shaky']); // lapses>=2, sorted desc
 });
 
+test('computeForecast: buckets SRS due dates by calendar day', () => {
+  const now = Date.parse('2026-06-13T12:00:00Z');
+  const rows = [
+    { due_at: '2026-06-10T00:00:00Z' }, // overdue
+    { due_at: '2026-06-13T06:00:00Z' }, // today (earlier today)
+    { due_at: '2026-06-13T20:00:00Z' }, // today (later today)
+    { due_at: '2026-06-14T09:00:00Z' }, // tomorrow
+    { due_at: '2026-06-17T00:00:00Z' }, // within 7 days
+    { due_at: '2026-06-25T00:00:00Z' }, // beyond 7 → uncounted
+    { due_at: null }, // ignored
+  ];
+  const f = Analytics._internals.computeForecast(rows, now);
+  assert.equal(f.overdue, 1);
+  assert.equal(f.today, 2);
+  assert.equal(f.tomorrow, 1);
+  assert.equal(f.next7Days, 1);
+  assert.equal(f.dueNow, 3); // overdue + today
+});
+
 test('responseTimeBySkill: avg per skill from timed attempts', () => {
   const rows = [
     { correct: true, response_ms: 2000, skill_tags: ['particles'] },
