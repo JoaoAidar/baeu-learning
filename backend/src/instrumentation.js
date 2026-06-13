@@ -29,19 +29,66 @@ import {
   BatchLogRecordProcessor,
 } from "@opentelemetry/sdk-logs";
 import { logs } from "@opentelemetry/api-logs";
+import { Resource } from "@opentelemetry/resources";
 
 const endpoint = process.env.OTEL_EXPORTER_OTLP_ENDPOINT;
 
 if (endpoint && endpoint.trim().length > 0) {
-  // Logs → Loki (Grafana Cloud). Set up BEFORE NodeSDK so the global logger
-  // provider is in place when any winston/pino instrumentation attaches.
-  // @opentelemetry/sdk-logs >=0.200 expects processors via constructor (em vez
-  // do addLogRecordProcessor que existia até 0.55). npm install resolveu >=0.215
-  // via peer dep chain do sdk-node/auto-instrumentations.
+  const serviceName = process.env.OTEL_SERVICE_NAME ?? "baeu-backend";
+
+  // Logs → Loki (Grafana Cloud).
+  // NOTE: the installed @opentelemetry/sdk-logs is 0.55.x, whose LoggerProvider
+  // takes the resource in the constructor and attaches processors via
+  // addLogRecordProcessor(). The previous code passed `{ processors: [...] }`
+  // (a >=0.200 API) which 0.55 silently ignored → the exporter was never
+  // attached and NO logs reached Loki, and without a resource they'd land as
+  // `unknown_service`. Fix both here.
   const loggerProvider = new LoggerProvider({
-    processors: [new BatchLogRecordProcessor(new OTLPLogExporter())],
+    resource: new Resource({ "service.name": serviceName }),
   });
+  loggerProvider.addLogRecordProcessor(
+    new BatchLogRecordProcessor(new OTLPLogExporter())
+  );
   logs.setGlobalLoggerProvider(loggerProvider);
+
+  // Bridge console.* → OTEL logs. Nothing emits log records on its own (no
+  // winston/pino here, and auto-instrumentation doesn't capture console), so
+  // the app's `[baeu]` lines would never reach Loki. Keep stdout behavior and
+  // additionally emit a structured log record. Guarded so logging can't crash
+  // the API or recurse.
+  const otelLogger = logs.getLogger(serviceName);
+  const SEVERITY = {
+    debug: [5, "DEBUG"],
+    log: [9, "INFO"],
+    info: [9, "INFO"],
+    warn: [13, "WARN"],
+    error: [17, "ERROR"],
+  };
+  const stringifyArg = (a) => {
+    if (typeof a === "string") return a;
+    if (a instanceof Error) return a.stack || a.message;
+    try {
+      return JSON.stringify(a);
+    } catch {
+      return String(a);
+    }
+  };
+  for (const method of Object.keys(SEVERITY)) {
+    const original = console[method].bind(console);
+    const [severityNumber, severityText] = SEVERITY[method];
+    console[method] = (...args) => {
+      original(...args);
+      try {
+        otelLogger.emit({
+          severityNumber,
+          severityText,
+          body: args.map(stringifyArg).join(" "),
+        });
+      } catch {
+        /* never let logging break the app */
+      }
+    };
+  }
 
   const sdk = new NodeSDK({
     serviceName: process.env.OTEL_SERVICE_NAME ?? "baeu-backend",
@@ -69,9 +116,15 @@ if (endpoint && endpoint.trim().length > 0) {
   }
 
   const shutdown = () => {
-    sdk
-      .shutdown()
-      .catch((err) => console.error("[otel] shutdown error:", err));
+    // Flush both pipelines on SIGTERM (Railway sleep/redeploy) so batched
+    // traces/logs aren't dropped when the container pauses.
+    Promise.allSettled([sdk.shutdown(), loggerProvider.shutdown()]).then(
+      (results) => {
+        for (const r of results) {
+          if (r.status === "rejected") console.error("[otel] shutdown error:", r.reason);
+        }
+      }
+    );
   };
   process.once("SIGTERM", shutdown);
   process.once("SIGINT", shutdown);
