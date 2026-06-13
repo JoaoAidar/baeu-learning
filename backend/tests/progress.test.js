@@ -106,3 +106,36 @@ test('skills endpoint returns mastery rows', async () => {
     assert.ok(r.skills.length > 0);
   }
 });
+
+test('learner first-value path persists progress and keeps user isolation', async () => {
+  const learnerA = await memoryStore.getUserByEmail('p@example.com');
+  const learnerB = await memoryStore.createUser({
+    email: 'other-learner@example.com',
+    password_hash: 'scrypt$00$00',
+    role: 'user',
+  });
+  const session = await Practice.startSession({ userId: learnerA.id });
+  const exes = await memoryStore.listPublishedExercises();
+
+  const answer = await Practice.submitAnswer({
+    sessionId: session.id,
+    exerciseId: exes[0].id,
+    answer: exes[0].correct_answer,
+    responseMs: 321,
+  });
+  assert.equal(answer.sessionScore.total, 1);
+
+  const summaryA = await Practice.sessionSummary({ sessionId: session.id, userId: learnerA.id });
+  assert.equal(summaryA.total, 1);
+  assert.equal(summaryA.userId, learnerA.id);
+
+  const overviewA = await Progress.overview({ userId: learnerA.id });
+  const overviewB = await Progress.overview({ userId: learnerB.id });
+  assert.equal(overviewA.totals.attempts, 1);
+  assert.equal(overviewB.totals.attempts, 0);
+
+  await assert.rejects(
+    Practice.sessionSummary({ sessionId: session.id, userId: learnerB.id }),
+    /session_forbidden/,
+  );
+});

@@ -16,6 +16,75 @@ function dayKey(ts) {
   return new Date(ts).toISOString().slice(0, 10);
 }
 
+// Retention from practice activity. Takes a set of YYYY-MM-DD day keys on which
+// the learner practiced and returns the habit signals that matter for a
+// lifestyle tool (the NSM is "days with practice", not MAU):
+//   - activeDays: distinct practice days
+//   - currentStreak / longestStreak: consecutive practice days
+//   - d1ComebackRate: of practice days that had a chance for a next day,
+//     fraction followed by practice the very next day
+//   - d7ComebackRate: of practice days that had a full 7-day chance, fraction
+//     that saw any practice within the following 7 days
+// Recent days that haven't had their full follow-up window yet are excluded
+// from the denominators so the rates aren't artificially depressed.
+function computeRetention(dayKeys, now = new Date()) {
+  const days = [...dayKeys].sort();
+  const activeDays = days.length;
+  const has = (k) => dayKeys.has(k);
+  const addDays = (key, n) => {
+    const d = new Date(key + 'T00:00:00Z');
+    d.setUTCDate(d.getUTCDate() + n);
+    return d.toISOString().slice(0, 10);
+  };
+  const todayKey = new Date(now).toISOString().slice(0, 10);
+
+  // Streaks.
+  let longestStreak = 0;
+  let run = 0;
+  let prev = null;
+  for (const k of days) {
+    if (prev && addDays(prev, 1) === k) run += 1;
+    else run = 1;
+    if (run > longestStreak) longestStreak = run;
+    prev = k;
+  }
+  // Current streak: walk back from today (or yesterday) while days are present.
+  let currentStreak = 0;
+  let cursor = has(todayKey) ? todayKey : addDays(todayKey, -1);
+  while (has(cursor)) {
+    currentStreak += 1;
+    cursor = addDays(cursor, -1);
+  }
+
+  // D1 / D7 comeback rates.
+  let d1Num = 0;
+  let d1Den = 0;
+  let d7Num = 0;
+  let d7Den = 0;
+  for (const k of days) {
+    if (addDays(k, 1) <= todayKey) {
+      d1Den += 1;
+      if (has(addDays(k, 1))) d1Num += 1;
+    }
+    if (addDays(k, 7) <= todayKey) {
+      d7Den += 1;
+      for (let n = 1; n <= 7; n++) {
+        if (has(addDays(k, n))) { d7Num += 1; break; }
+      }
+    }
+  }
+
+  return {
+    activeDays,
+    currentStreak,
+    longestStreak,
+    d1ComebackRate: d1Den ? d1Num / d1Den : null,
+    d7ComebackRate: d7Den ? d7Num / d7Den : null,
+  };
+}
+
+export const _internals = { computeRetention };
+
 function fillDays(seriesMap, days) {
   const out = [];
   const today = new Date();
@@ -113,6 +182,11 @@ export async function learnerAnalytics({ userId, days = 30 }) {
     count: [...masteryMap.values()].filter((m) => m.level === lvl).length,
   }));
 
+  // Retention / habit signal. Practice days are derived from ALL attempts
+  // pulled (not just the window) so streaks reflect real activity.
+  const practiceDays = new Set(attempts.map((a) => dayKey(a.created_at)));
+  const retention = computeRetention(practiceDays);
+
   const totalsWindow = windowed.length;
   const totalsCorrect = windowed.filter((a) => a.correct).length;
   return {
@@ -123,6 +197,7 @@ export async function learnerAnalytics({ userId, days = 30 }) {
       accuracy: totalsWindow ? totalsCorrect / totalsWindow : 0,
     },
     daily: fillDays(series, days),
+    retention,
     errorTagCounts: errorCounts,
     toughestExercises: toughest,
     responseTimeTrend: responseTrend,
@@ -198,6 +273,28 @@ export async function adminAnalytics({ days = 30 }) {
   const learners = new Set();
   for (const a of attempts) learners.add(a.user_id);
 
+  // Cohort retention. Per-user practice days → personal comeback rates →
+  // cohort average. Caveat: practice days are scoped to this window, so a
+  // user active before `since` has a truncated history here; treat as a
+  // window-bounded signal, not lifetime retention.
+  const daysByUser = new Map();
+  for (const a of attempts) {
+    if (!a.user_id) continue;
+    if (!daysByUser.has(a.user_id)) daysByUser.set(a.user_id, new Set());
+    daysByUser.get(a.user_id).add(dayKey(a.created_at));
+  }
+  const perUser = [...daysByUser.values()].map((set) => computeRetention(set));
+  const avg = (vals) => (vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : null);
+  const d1Vals = perUser.map((r) => r.d1ComebackRate).filter((v) => v != null);
+  const d7Vals = perUser.map((r) => r.d7ComebackRate).filter((v) => v != null);
+  const retention = {
+    learners: perUser.length,
+    avgActiveDays: avg(perUser.map((r) => r.activeDays)),
+    multiDayLearners: perUser.filter((r) => r.activeDays >= 2).length,
+    d1ComebackRate: avg(d1Vals),
+    d7ComebackRate: avg(d7Vals),
+  };
+
   // Calibration follow-ups: items needing author review.
   const followups = enriched
     .filter((e) => e.calibrationSignal === 'too_hard' || e.calibrationSignal === 'too_easy')
@@ -213,6 +310,7 @@ export async function adminAnalytics({ days = 30 }) {
       itemsObserved: enriched.length,
     },
     daily: fillDays(series, days),
+    retention,
     moduleRollup,
     exerciseDifficulty: enriched
       .slice()
