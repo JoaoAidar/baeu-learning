@@ -106,14 +106,40 @@ test('translation: formality mismatch (formal expected, casual answer)', () => {
   assert.ok(r.errorTags.includes('honorific_formality'));
 });
 
-test('translation: verb conjugation (shared stem, different ending)', () => {
-  const ex = {
-    type: 'translation',
-    correct_answer: '먹어요',
-    accepted_answers: ['먹어요'],
-    skill_tags: ['verbs'],
-  };
-  const r = classifyAnswer(ex, '먹었다');
+test('translation: tense error (present written where past expected)', () => {
+  const ex = { type: 'translation', correct_answer: '먹었어요', accepted_answers: ['먹었어요'], skill_tags: ['verbs'] };
+  const r = classifyAnswer(ex, '먹어요'); // present, but past expected
   assert.equal(r.correct, false);
-  assert.ok(r.errorTags.includes('verb_conjugation'));
+  assert.ok(r.errorTags.includes('tense'), `expected tense, got ${r.errorTags}`);
+  // tense is more specific — don't also emit the generic verb_conjugation
+  assert.ok(!r.errorTags.includes('verb_conjugation'));
+});
+
+test('translation: tense error (past written where future expected)', () => {
+  const ex = { type: 'translation', correct_answer: '갈 거예요', accepted_answers: ['갈 거예요'], skill_tags: ['verbs'] };
+  const r = classifyAnswer(ex, '갔어요'); // past, but future expected
+  assert.equal(r.correct, false);
+  assert.ok(r.errorTags.includes('tense'), `expected tense, got ${r.errorTags}`);
+});
+
+test('translation: verb conjugation that is NOT a tense difference', () => {
+  const ex = { type: 'translation', correct_answer: '가요', accepted_answers: ['가요'], skill_tags: ['verbs'] };
+  const r = classifyAnswer(ex, '가다'); // dictionary form — no detectable tense
+  assert.equal(r.correct, false);
+  assert.ok(r.errorTags.includes('verb_conjugation'), `expected verb_conjugation, got ${r.errorTags}`);
+  assert.ok(!r.errorTags.includes('tense'));
+});
+
+test('translation: particle omission is tagged particle', () => {
+  const ex = { type: 'translation', correct_answer: '사과를 먹어요', accepted_answers: ['사과를 먹어요'], skill_tags: ['particles'] };
+  const r = classifyAnswer(ex, '사과 먹어요'); // dropped 를
+  assert.equal(r.correct, false);
+  assert.ok(r.errorTags.includes('particle'), `expected particle, got ${r.errorTags}`);
+});
+
+test('translation: syntax error (missing word in a sentence)', () => {
+  const ex = { type: 'translation', correct_answer: '저는 매일 한국어를 공부해요', accepted_answers: ['저는 매일 한국어를 공부해요'], skill_tags: ['sentence'] };
+  const r = classifyAnswer(ex, '저는 한국어를 공부해요'); // dropped 매일
+  assert.equal(r.correct, false);
+  assert.ok(r.errorTags.includes('syntax'), `expected syntax, got ${r.errorTags}`);
 });

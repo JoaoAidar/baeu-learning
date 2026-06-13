@@ -188,7 +188,34 @@ function responseTimeBySkill(attempts, limit = 10) {
     .slice(0, limit);
 }
 
-export const _internals = { computeRetention, responseTimeStats, computeForgetting, responseTimeBySkill };
+// Sentence-error breakdown scoped to free-text/sentence exercises. MC answers
+// can only be attributed to the question's topic, but text answers get the fine
+// classification (tense, particle, syntax, conjugation, spacing, romanization…).
+// This isolates *where the learner errs when producing Korean*, separate from
+// the mixed errorTagCounts. Counts only attempts whose exercise_type is a text
+// type (older attempts predate exercise_type and are skipped).
+const TEXT_TYPES = new Set(['translation', 'fill_blank']);
+function sentenceErrorBreakdown(attempts) {
+  const byTag = {};
+  let textAttempts = 0;
+  let textWrong = 0;
+  for (const a of attempts) {
+    if (!TEXT_TYPES.has(a.exercise_type)) continue;
+    textAttempts += 1;
+    if (a.correct) continue;
+    textWrong += 1;
+    for (const t of a.error_tags || []) byTag[t] = (byTag[t] || 0) + 1;
+  }
+  return { textAttempts, textWrong, byTag };
+}
+
+export const _internals = {
+  computeRetention,
+  responseTimeStats,
+  computeForgetting,
+  responseTimeBySkill,
+  sentenceErrorBreakdown,
+};
 
 function fillDays(seriesMap, days) {
   const out = [];
@@ -310,6 +337,7 @@ export async function learnerAnalytics({ userId, days = 30 }) {
     retention,
     responseTime: responseTimeStats(windowed),
     responseBySkill: responseTimeBySkill(windowed),
+    sentenceErrors: sentenceErrorBreakdown(windowed),
     forgetting,
     errorTagCounts: errorCounts,
     toughestExercises: toughest,

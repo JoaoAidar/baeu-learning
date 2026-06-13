@@ -78,6 +78,7 @@ export async function submitAnswer({ sessionId, userId = null, exerciseId, answe
       response_ms: Number.isFinite(responseMs) ? responseMs : null,
       error_tags: errorTags,
       skill_tags: skillTags,
+      exercise_type: exercise.type ?? null,
     });
   } catch (err) {
     // Postgres unique_violation OR memory-store synthetic duplicate marker.
@@ -236,6 +237,8 @@ const TAG_LABELS = {
   word_order: 'word order',
   verb_conjugation: 'verb conjugation',
   honorific_formality: 'formality / honorifics',
+  tense: 'tense (past / present / future)',
+  syntax: 'sentence construction',
   hangul_reading: 'reading Hangul',
   spacing: 'spacing',
   romanization_dependency: 'writing in Hangul (avoid romanization)',

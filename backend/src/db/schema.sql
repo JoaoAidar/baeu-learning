@@ -188,6 +188,9 @@ create index if not exists practice_attempts_session_idx on practice_attempts(se
 create index if not exists practice_attempts_user_idx on practice_attempts(user_id);
 create index if not exists practice_attempts_error_tags_idx on practice_attempts using gin (error_tags);
 create index if not exists practice_attempts_created_idx on practice_attempts(user_id, created_at desc);
+-- Snapshot the exercise type on each attempt so analytics can scope error
+-- breakdowns to free-text/sentence exercises (translation/fill_blank) vs MC.
+alter table practice_attempts add column if not exists exercise_type text;
 
 -- Double-submit guard. A user submitting the same exercise to the same session
 -- with the same response_ms is a double-tap. response_ms won't generally repeat

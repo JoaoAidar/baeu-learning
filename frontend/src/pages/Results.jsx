@@ -204,14 +204,40 @@ export default function Results() {
         </div>
       </Card>
 
+      {data.sentenceErrors && data.sentenceErrors.textAttempts > 0 && (
+        <Card
+          title="Sentence errors"
+          subtitle={`Free-text answers · ${data.sentenceErrors.textWrong}/${data.sentenceErrors.textAttempts} missed`}
+        >
+          {Object.keys(data.sentenceErrors.byTag).length === 0 ? (
+            <p className="text-gray-500 text-sm">No mistakes on free-text answers in this window. 👍</p>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-2">
+                Where you slip when producing Korean sentences (not multiple choice):
+              </p>
+              <div className="flex flex-wrap gap-1.5" data-testid="results-sentence-errors">
+                {Object.entries(data.sentenceErrors.byTag)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([t, n]) => (
+                    <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                      {ERROR_LABELS[t] || t} · {n}
+                    </span>
+                  ))}
+              </div>
+            </>
+          )}
+        </Card>
+      )}
+
       {Object.keys(data.errorTagCounts).length > 0 && (
-        <Card title="Error breakdown" subtitle={`Last ${days} days`}>
+        <Card title="All errors (incl. multiple choice)" subtitle={`Last ${days} days`}>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(data.errorTagCounts)
               .sort((a, b) => b[1] - a[1])
               .map(([t, n]) => (
-                <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                  {t} · {n}
+                <span key={t} className="px-2.5 py-1 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
+                  {ERROR_LABELS[t] || t} · {n}
                 </span>
               ))}
           </div>
@@ -220,6 +246,20 @@ export default function Results() {
     </div>
   );
 }
+
+const ERROR_LABELS = {
+  vocabulary: 'vocabulary',
+  particle: 'particles',
+  word_order: 'word order',
+  syntax: 'sentence construction',
+  tense: 'tense',
+  verb_conjugation: 'verb conjugation',
+  honorific_formality: 'formality',
+  hangul_reading: 'hangul reading',
+  spacing: 'spacing',
+  romanization_dependency: 'romanization',
+  unknown: 'unclassified',
+};
 
 function Card({ title, subtitle, children }) {
   return (

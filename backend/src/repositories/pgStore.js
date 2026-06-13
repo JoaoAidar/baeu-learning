@@ -200,8 +200,8 @@ export function createPgStore({ connectionString }) {
       one(
         `insert into practice_attempts (
             session_id, user_id, exercise_id, answer, correct,
-            response_ms, error_tags, skill_tags
-         ) values ($1,$2,$3,$4,$5,$6,$7,$8) returning *`,
+            response_ms, error_tags, skill_tags, exercise_type
+         ) values ($1,$2,$3,$4,$5,$6,$7,$8,$9) returning *`,
         [
           row.session_id,
           row.user_id,
@@ -211,6 +211,7 @@ export function createPgStore({ connectionString }) {
           row.response_ms ?? null,
           JSON.stringify(row.error_tags || []),
           JSON.stringify(row.skill_tags || []),
+          row.exercise_type ?? null,
         ]
       ),
     listAttemptsForSession: (sessionId) =>
