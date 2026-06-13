@@ -9,8 +9,10 @@
 
 import { getStore } from '../config/db.js';
 import { getMasteryMap } from './MasteryService.js';
+import { getSrsMap } from './SrsService.js';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+const MATURE_INTERVAL_DAYS = 21; // SRS items spaced ≥3 weeks are "mature"
 
 function dayKey(ts) {
   return new Date(ts).toISOString().slice(0, 10);
@@ -131,7 +133,62 @@ function responseTimeStats(attempts, fastMs = FAST_MS) {
   };
 }
 
-export const _internals = { computeRetention, responseTimeStats };
+// Forgetting / leeches from the per-item SRS state. Lapses (a previously-known
+// item answered wrong) are the clearest "I forgot this" signal. We surface the
+// worst offenders ("leeches"), how much is in active relearn, what's due now,
+// and how much has reached a mature (long) interval.
+function computeForgetting(srsRows, now = Date.now()) {
+  const rows = Array.isArray(srsRows) ? srsRows : [];
+  const lapsesOf = (r) => Number(r.lapses) || 0;
+  const dueMs = (r) => (r.due_at ? new Date(r.due_at).getTime() : 0);
+  const totalLapses = rows.reduce((s, r) => s + lapsesOf(r), 0);
+  const leeches = rows
+    .filter((r) => lapsesOf(r) >= 2)
+    .sort((a, b) => lapsesOf(b) - lapsesOf(a))
+    .slice(0, 10)
+    .map((r) => ({
+      exerciseId: r.exercise_id,
+      lapses: lapsesOf(r),
+      intervalDays: Number(r.interval_days) || 0,
+      ease: Number(r.ease) || null,
+    }));
+  return {
+    trackedItems: rows.length,
+    totalLapses,
+    itemsInRelearn: rows.filter((r) => lapsesOf(r) > 0 && (Number(r.repetitions) || 0) === 0).length,
+    dueNow: rows.filter((r) => dueMs(r) <= now).length,
+    matureItems: rows.filter((r) => (Number(r.interval_days) || 0) >= MATURE_INTERVAL_DAYS).length,
+    leeches,
+  };
+}
+
+// Average response time per skill — which skills are fast (fluent) vs slow
+// (effortful). Drawn from timed attempts' skill_tags.
+function responseTimeBySkill(attempts, limit = 10) {
+  const by = new Map();
+  for (const a of attempts) {
+    if (typeof a.response_ms !== 'number' || a.response_ms < 0) continue;
+    for (const skill of a.skill_tags || []) {
+      if (!by.has(skill)) by.set(skill, { sum: 0, n: 0, correct: 0 });
+      const g = by.get(skill);
+      g.sum += a.response_ms;
+      g.n += 1;
+      if (a.correct) g.correct += 1;
+    }
+  }
+  return [...by.entries()]
+    .map(([skill, g]) => ({
+      skill,
+      attempts: g.n,
+      avgMs: Math.round(g.sum / g.n),
+      accuracy: g.correct / g.n,
+    }))
+    .filter((r) => r.attempts >= 2)
+    .sort((a, b) => b.avgMs - a.avgMs)
+    .slice(0, limit);
+}
+
+export const _internals = { computeRetention, responseTimeStats, computeForgetting, responseTimeBySkill };
 
 function fillDays(seriesMap, days) {
   const out = [];
@@ -235,6 +292,11 @@ export async function learnerAnalytics({ userId, days = 30 }) {
   const practiceDays = new Set(attempts.map((a) => dayKey(a.created_at)));
   const retention = computeRetention(practiceDays);
 
+  // Forgetting / leeches from per-item SRS state (lifetime, not windowed —
+  // forgetting is about the whole deck). No-op-safe if SRS is unavailable.
+  const srsMap = await getSrsMap(userId);
+  const forgetting = computeForgetting([...srsMap.values()]);
+
   const totalsWindow = windowed.length;
   const totalsCorrect = windowed.filter((a) => a.correct).length;
   return {
@@ -247,6 +309,8 @@ export async function learnerAnalytics({ userId, days = 30 }) {
     daily: fillDays(series, days),
     retention,
     responseTime: responseTimeStats(windowed),
+    responseBySkill: responseTimeBySkill(windowed),
+    forgetting,
     errorTagCounts: errorCounts,
     toughestExercises: toughest,
     responseTimeTrend: responseTrend,

@@ -90,6 +90,41 @@ test('responseTimeStats: quadrants, automaticity, and averages', () => {
   assert.equal(stats.medianMs, 4000); // sorted [1000,2000,4000,9000,12000]
 });
 
+test('computeForgetting: leeches, relearn, due, mature from SRS rows', () => {
+  const now = Date.parse('2026-06-13T12:00:00Z');
+  const rows = [
+    { exercise_id: 'leech', lapses: 4, repetitions: 0, interval_days: 0, ease: 1.6, due_at: '2026-06-13T11:00:00Z' }, // overdue, in relearn
+    { exercise_id: 'shaky', lapses: 2, repetitions: 3, interval_days: 5, ease: 2.1, due_at: '2026-06-20T00:00:00Z' }, // leech but not due
+    { exercise_id: 'mature', lapses: 0, repetitions: 6, interval_days: 30, ease: 2.6, due_at: '2026-07-10T00:00:00Z' }, // mature
+    { exercise_id: 'fresh', lapses: 0, repetitions: 1, interval_days: 1, ease: 2.5, due_at: '2026-06-13T06:00:00Z' }, // due now
+  ];
+  const f = Analytics._internals.computeForgetting(rows, now);
+  assert.equal(f.trackedItems, 4);
+  assert.equal(f.totalLapses, 6);
+  assert.equal(f.itemsInRelearn, 1); // only 'leech' (lapses>0 & reps===0)
+  assert.equal(f.dueNow, 2); // 'leech' and 'fresh'
+  assert.equal(f.matureItems, 1); // 'mature' (interval>=21)
+  assert.deepEqual(f.leeches.map((l) => l.exerciseId), ['leech', 'shaky']); // lapses>=2, sorted desc
+});
+
+test('responseTimeBySkill: avg per skill from timed attempts', () => {
+  const rows = [
+    { correct: true, response_ms: 2000, skill_tags: ['particles'] },
+    { correct: false, response_ms: 8000, skill_tags: ['particles'] },
+    { correct: true, response_ms: 1000, skill_tags: ['hangul'] },
+    { correct: true, response_ms: 3000, skill_tags: ['hangul'] },
+    { correct: true, skill_tags: ['hangul'] }, // untimed → ignored
+  ];
+  const r = Analytics._internals.responseTimeBySkill(rows);
+  const particles = r.find((x) => x.skill === 'particles');
+  const hangul = r.find((x) => x.skill === 'hangul');
+  assert.equal(particles.avgMs, 5000);
+  assert.equal(particles.attempts, 2);
+  assert.equal(hangul.avgMs, 2000);
+  assert.equal(hangul.accuracy, 1);
+  assert.equal(r[0].skill, 'particles'); // slowest first
+});
+
 test('responseTimeStats: empty input is null-safe', () => {
   const s = Analytics._internals.responseTimeStats([]);
   assert.equal(s.count, 0);

@@ -119,6 +119,55 @@ export default function Results() {
         </Card>
       )}
 
+      {data.forgetting && data.forgetting.trackedItems > 0 && (
+        <Card title="Forgetting & leeches" subtitle="From your spaced-repetition schedule">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" data-testid="results-forgetting">
+            <Mini label="Tracked items" value={data.forgetting.trackedItems} />
+            <Mini label="Due now" value={data.forgetting.dueNow} />
+            <Mini label="In relearn" value={data.forgetting.itemsInRelearn} />
+            <Mini label="Mature (≥21d)" value={data.forgetting.matureItems} />
+          </div>
+          {data.forgetting.leeches.length === 0 ? (
+            <p className="text-gray-500 text-sm">No leeches yet — nothing you've repeatedly forgotten. 👍</p>
+          ) : (
+            <>
+              <p className="text-xs text-gray-500 mb-2">
+                Leeches — items you keep forgetting (most lapses first):
+              </p>
+              <ul className="space-y-1.5" data-testid="results-leeches">
+                {data.forgetting.leeches.map((l) => (
+                  <li key={l.exerciseId} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="text-gray-600 truncate" title={l.exerciseId}>
+                      #{String(l.exerciseId).slice(0, 8)}
+                    </span>
+                    <span className="flex items-center gap-3 text-gray-700">
+                      <span className="text-red-600 font-semibold">{l.lapses} lapses</span>
+                      <span className="text-gray-400">interval {l.intervalDays}d</span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+        </Card>
+      )}
+
+      {data.responseBySkill && data.responseBySkill.length > 0 && (
+        <Card title="Pace by skill" subtitle="Where recall is slow vs fluent">
+          <ul className="space-y-1.5" data-testid="results-pace-by-skill">
+            {data.responseBySkill.map((s) => (
+              <li key={s.skill} className="flex items-center justify-between gap-3 text-sm">
+                <span className="text-gray-700">{s.skill}</span>
+                <span className="flex items-center gap-3 text-gray-600">
+                  <span>{(s.avgMs / 1000).toFixed(1)}s</span>
+                  <span className="text-gray-400">{Math.round(s.accuracy * 100)}% · {s.attempts} att</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
       <Card title="Toughest exercises" subtitle="Lowest accuracy among items you've seen ≥2 times">
         {data.toughestExercises.length === 0 ? (
           <p className="text-gray-500 text-sm">Not enough repetitions yet to spot patterns.</p>
