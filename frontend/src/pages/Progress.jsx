@@ -15,6 +15,7 @@ const LEVEL_COLORS = [
 export default function Progress() {
   const [overview, setOverview] = useState(null);
   const [skills, setSkills] = useState([]);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const toast = useToast();
 
@@ -24,6 +25,11 @@ export default function Progress() {
       .then(([o, s]) => { if (!cancelled) { setOverview(o); setSkills(s.skills || []); } })
       .catch((e) => !cancelled && toast.push(e.message, 'error'))
       .finally(() => !cancelled && setLoading(false));
+    // Deeper signals are a best-effort enrichment — never block or break the
+    // light Progress view if /analytics is slow or unavailable.
+    api.results(30)
+      .then((a) => { if (!cancelled) setAnalytics(a); })
+      .catch(() => { /* optional */ });
     return () => { cancelled = true; };
   }, []);
 
@@ -59,6 +65,8 @@ export default function Progress() {
         <Stat label="Skills due" value={dueCount} accent={dueCount > 0} />
         <Stat label="Mastered" value={masteredCount} />
       </div>
+
+      {analytics && <LearningSignals a={analytics} />}
 
       <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6">
         <h3 className="font-heading text-xl font-bold text-gray-900 mb-4">Skills</h3>
@@ -167,6 +175,72 @@ function FocusPanel({ focusSkills, topErrorTags }) {
           Drill these →
         </a>
       </div>
+    </div>
+  );
+}
+
+// Compact glance at the deeper learning signals (full detail lives in Results).
+// Best-effort: renders nothing until /analytics resolves and has data.
+const SIGNAL_LABELS = {
+  particle: 'particles',
+  word_order: 'word order',
+  syntax: 'sentence construction',
+  tense: 'tense',
+  verb_conjugation: 'verb conjugation',
+  honorific_formality: 'formality',
+  hangul_reading: 'hangul reading',
+  spacing: 'spacing',
+  romanization_dependency: 'romanization',
+  vocabulary: 'vocabulary',
+  unknown: 'unclassified',
+};
+
+function LearningSignals({ a }) {
+  const rt = a.responseTime;
+  const f = a.forgetting;
+  const se = a.sentenceErrors;
+  const hasAny =
+    (rt && rt.count > 0) ||
+    (f && f.trackedItems > 0) ||
+    (se && se.textAttempts > 0);
+  if (!hasAny) return null;
+  const pct = (r) => (r == null ? '—' : `${Math.round(r * 100)}%`);
+  const sentenceTags = se ? Object.entries(se.byTag).sort((x, y) => y[1] - x[1]).slice(0, 6) : [];
+  return (
+    <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6" data-testid="learning-signals">
+      <div className="flex items-baseline justify-between mb-3">
+        <h3 className="font-heading text-xl font-bold text-gray-900">Learning signals</h3>
+        <a href="#/results" className="text-sm text-secondary-700 hover:text-secondary-900 font-medium no-underline">
+          Full results →
+        </a>
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {rt && rt.count > 0 && <Mini label="Automatic recall" value={pct(rt.automaticityRate)} />}
+        {rt && rt.medianMs != null && <Mini label="Median pace" value={`${(rt.medianMs / 1000).toFixed(1)}s`} />}
+        {f && f.trackedItems > 0 && <Mini label="Due to review" value={f.dueNow} />}
+        {f && f.trackedItems > 0 && <Mini label="Keep forgetting" value={f.leeches.length} />}
+      </div>
+      {sentenceTags.length > 0 && (
+        <div className="mt-4">
+          <p className="text-xs text-gray-500 mb-2">Where you slip on sentences (free-text answers):</p>
+          <div className="flex flex-wrap gap-1.5" data-testid="progress-sentence-errors">
+            {sentenceTags.map(([t, n]) => (
+              <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
+                {SIGNAL_LABELS[t] || t} · {n}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Mini({ label, value }) {
+  return (
+    <div className="text-center">
+      <div className="font-heading text-2xl font-bold text-gray-900">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
     </div>
   );
 }
