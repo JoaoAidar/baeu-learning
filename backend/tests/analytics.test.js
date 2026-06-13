@@ -65,6 +65,38 @@ test('computeRetention: streaks and D1/D7 comeback rates are deterministic', () 
   assert.equal(r.d7ComebackRate, 3 / 3);
 });
 
+test('responseTimeStats: quadrants, automaticity, and averages', () => {
+  const A = (correct, ms) => ({ correct, response_ms: ms });
+  const stats = Analytics._internals.responseTimeStats(
+    [
+      A(true, 2000), // fast correct
+      A(true, 9000), // slow correct
+      A(false, 1000), // fast wrong
+      A(false, 12000), // slow wrong
+      A(true, 4000), // fast correct
+      { correct: true }, // no response_ms → ignored
+    ],
+    6000
+  );
+  assert.equal(stats.count, 5, 'untimed attempt excluded');
+  assert.deepEqual(stats.speedAccuracy, {
+    fastCorrect: 2,
+    slowCorrect: 1,
+    fastWrong: 1,
+    slowWrong: 1,
+  });
+  assert.equal(stats.automaticityRate, 2 / 3); // 2 fast-correct of 3 correct
+  assert.equal(stats.avgCorrectMs, Math.round((2000 + 9000 + 4000) / 3));
+  assert.equal(stats.medianMs, 4000); // sorted [1000,2000,4000,9000,12000]
+});
+
+test('responseTimeStats: empty input is null-safe', () => {
+  const s = Analytics._internals.responseTimeStats([]);
+  assert.equal(s.count, 0);
+  assert.equal(s.automaticityRate, null);
+  assert.deepEqual(s.speedAccuracy, { fastCorrect: 0, slowCorrect: 0, fastWrong: 0, slowWrong: 0 });
+});
+
 test('learnerAnalytics: includes retention block', async () => {
   const user = await memoryStore.getUserByEmail('a@example.com');
   const session = await Practice.startSession({ userId: user.id });
