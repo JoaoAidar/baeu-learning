@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { api } from '../api.js';
 import { authClient } from '../lib/auth.js';
 import { useToast } from '../components/Toast.jsx';
+import { speak, hasHangul, speechSupported } from '../utils/speech.js';
 
 export default function Auth({ notice = null }) {
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'forgot'
@@ -112,7 +113,7 @@ export default function Auth({ notice = null }) {
           <Bullet>Progress tracking with skill-tag breakdowns.</Bullet>
         </ul>
 
-        <SamplePractice />
+        <DemoPractice onSignup={() => switchMode('signup')} />
 
         {modules.length > 0 && (
           <div>
@@ -296,14 +297,74 @@ export default function Auth({ notice = null }) {
   );
 }
 
-function SamplePractice() {
+// Real-content demo deck for the anonymous landing. Unlike a single hardcoded
+// MC, this runs a short multi-card loop that *demonstrates the engine*: a missed
+// card is re-queued and resurfaces shortly (spaced repetition), and the summary
+// shows a per-item review schedule. Content is bundled (no auth, no answer leak
+// from the live API), but the behavior mirrors the real SRS loop.
+const DEMO_DECK = [
+  { id: 'greet', prompt: 'What does 안녕하세요 mean?', ko: '안녕하세요',
+    options: [{ id: 'a', text: 'Hello' }, { id: 'b', text: 'Thank you' }, { id: 'c', text: 'Goodbye' }],
+    correctId: 'a', explanation: '안녕하세요 is a polite hello.' },
+  { id: 'thanks', prompt: 'What does 감사합니다 mean?', ko: '감사합니다',
+    options: [{ id: 'a', text: 'Sorry' }, { id: 'b', text: 'Thank you' }, { id: 'c', text: 'Yes' }],
+    correctId: 'b', explanation: '감사합니다 means thank you (formal).' },
+  { id: 'water', prompt: "Which word means 'water'?", ko: null,
+    options: [{ id: 'a', text: '불' }, { id: 'b', text: '물' }, { id: 'c', text: '밥' }],
+    correctId: 'b', explanation: '물 = water. 불 = fire, 밥 = rice/meal.' },
+  { id: 'one', prompt: 'What does 하나 mean?', ko: '하나',
+    options: [{ id: 'a', text: 'One' }, { id: 'b', text: 'Two' }, { id: 'c', text: 'Ten' }],
+    correctId: 'a', explanation: '하나 = one (native Korean number).' },
+  { id: 'topic', prompt: 'Which particle marks the topic of a sentence?', ko: null,
+    options: [{ id: 'a', text: '은/는' }, { id: 'b', text: '을/를' }, { id: 'c', text: '이/가' }],
+    correctId: 'a', explanation: '은/는 marks the topic; 을/를 the object, 이/가 the subject.' },
+  { id: 'love', prompt: 'What does 사랑해요 mean?', ko: '사랑해요',
+    options: [{ id: 'a', text: 'I am hungry' }, { id: 'b', text: 'See you' }, { id: 'c', text: 'I love you' }],
+    correctId: 'c', explanation: '사랑해요 = I love you.' },
+];
+
+function DemoPractice({ onSignup }) {
+  const [queue, setQueue] = useState(() => DEMO_DECK.map((_, i) => i));
+  const [cursor, setCursor] = useState(0);
   const [answer, setAnswer] = useState('');
   const [checked, setChecked] = useState(false);
-  const isCorrect = answer === 'annyeonghaseyo';
+  const [learned, setLearned] = useState({});
+  const [missedOnce, setMissedOnce] = useState({});
+  const [reviewed, setReviewed] = useState(0);
 
-  function choose(nextAnswer) {
-    setAnswer(nextAnswer);
+  const done = cursor >= queue.length;
+  const item = done ? null : DEMO_DECK[queue[cursor]];
+  const isCorrect = !!item && answer === item.correctId;
+  const masteredCount = Object.keys(learned).length;
+  // Correct on the last queued card ends the run (a miss would re-queue it).
+  const willFinish = isCorrect && cursor + 1 >= queue.length;
+
+  function next() {
+    setReviewed((n) => n + 1);
+    if (isCorrect) {
+      setLearned((l) => ({ ...l, [item.id]: true }));
+    } else {
+      setMissedOnce((m) => ({ ...m, [item.id]: true }));
+      // Spaced repetition: resurface the missed item a couple of cards later.
+      setQueue((q) => {
+        const nq = [...q];
+        nq.splice(Math.min(cursor + 2, nq.length), 0, q[cursor]);
+        return nq;
+      });
+    }
+    setAnswer('');
     setChecked(false);
+    setCursor((c) => c + 1);
+  }
+
+  function restart() {
+    setQueue(DEMO_DECK.map((_, i) => i));
+    setCursor(0);
+    setAnswer('');
+    setChecked(false);
+    setLearned({});
+    setMissedOnce({});
+    setReviewed(0);
   }
 
   return (
@@ -314,87 +375,155 @@ function SamplePractice() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs font-semibold uppercase tracking-wide text-secondary-700 mb-1">
-            Try a sample
+            Try the engine — no account
           </p>
           <h3 className="font-heading text-lg font-bold text-gray-900">
-            Match the greeting
+            {done ? 'Your review schedule' : 'Mini practice'}
           </h3>
         </div>
-        <span className="text-xs font-medium text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1">
-          No account
+        <span
+          className="text-xs font-medium text-gray-500 bg-gray-50 border border-gray-100 rounded-full px-3 py-1 whitespace-nowrap"
+          data-testid="demo-progress"
+        >
+          {masteredCount}/{DEMO_DECK.length} learned
         </span>
       </div>
 
-      <p className="mt-4 text-sm text-gray-600">
-        What does <span lang="ko">안녕하세요</span> mean?
-      </p>
-      <div className="mt-3 grid gap-2" data-testid="public-sample-options">
-        <SampleOption
-          value="annyeonghaseyo"
-          answer={answer}
-          onChoose={choose}
-        >
-          Hello
-        </SampleOption>
-        <SampleOption
-          value="gamsahamnida"
-          answer={answer}
-          onChoose={choose}
-        >
-          Thank you
-        </SampleOption>
-        <SampleOption
-          value="jaljayo"
-          answer={answer}
-          onChoose={choose}
-        >
-          Good night
-        </SampleOption>
-      </div>
-
-      <div className="mt-4 flex items-center gap-3">
-        <button
-          type="button"
-          onClick={() => setChecked(true)}
-          disabled={!answer}
-          data-testid="public-sample-check"
-          className="bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all"
-        >
-          Check answer
-        </button>
-        {checked && (
-          <p
-            className={`text-sm font-medium ${isCorrect ? 'text-green-700' : 'text-red-600'}`}
-            data-testid="public-sample-feedback"
-            role="status"
-          >
-            {isCorrect ? (
-              <>Correct. <span lang="ko">안녕하세요</span> is a polite hello.</>
-            ) : (
-              'Not quite. The answer is Hello.'
-            )}
+      {!done ? (
+        <>
+          <p className="mt-4 text-sm text-gray-700 flex items-center gap-1.5 flex-wrap">
+            <span lang={hasHangul(item.prompt) ? 'ko' : undefined}>{item.prompt}</span>
+            {hasHangul(item.ko || '') && <DemoSpeak text={item.ko} />}
           </p>
-        )}
-      </div>
+          <div className="mt-3 grid gap-2" data-testid="demo-options">
+            {item.options.map((o) => {
+              const selected = answer === o.id;
+              const state = checked
+                ? o.id === item.correctId
+                  ? 'correct'
+                  : selected
+                    ? 'wrong'
+                    : ''
+                : '';
+              return (
+                <button
+                  key={o.id}
+                  type="button"
+                  disabled={checked}
+                  onClick={() => setAnswer(o.id)}
+                  data-testid={`demo-option-${o.id}`}
+                  aria-pressed={selected}
+                  className={`flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 text-sm transition-all disabled:cursor-default ${
+                    state === 'correct'
+                      ? 'border-green-400 bg-green-50 text-green-900'
+                      : state === 'wrong'
+                        ? 'border-red-400 bg-red-50 text-red-900'
+                        : selected
+                          ? 'border-primary-400 bg-primary-50 text-primary-900'
+                          : 'border-gray-200 bg-white text-gray-700 hover:border-primary-200 hover:bg-primary-50'
+                  }`}
+                >
+                  <span lang={hasHangul(o.text) ? 'ko' : undefined}>{o.text}</span>
+                  {hasHangul(o.text) && <DemoSpeak text={o.text} />}
+                </button>
+              );
+            })}
+          </div>
+
+          {!checked ? (
+            <button
+              type="button"
+              onClick={() => setChecked(true)}
+              disabled={!answer}
+              data-testid="demo-check"
+              className="mt-4 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all"
+            >
+              Check answer
+            </button>
+          ) : (
+            <div className="mt-4" data-testid="demo-feedback" role="status">
+              <p className={`text-sm font-medium ${isCorrect ? 'text-green-700' : 'text-red-600'}`}>
+                {isCorrect ? 'Correct! ' : 'Not quite. '}
+                <span className="text-gray-600 font-normal">{item.explanation}</span>
+              </p>
+              <p className="mt-1 text-xs text-gray-500">
+                {isCorrect
+                  ? 'Scheduled to return in a few days — the gap grows each time you nail it.'
+                  : 'The engine will resurface this card shortly so it sticks.'}
+              </p>
+              <button
+                type="button"
+                onClick={next}
+                data-testid="demo-next"
+                className="mt-3 bg-gray-900 hover:bg-black text-white font-semibold py-2 px-4 rounded-lg transition-all"
+              >
+                {willFinish ? 'See schedule →' : 'Next →'}
+              </button>
+            </div>
+          )}
+        </>
+      ) : (
+        <div className="mt-4" data-testid="demo-summary">
+          <p className="text-sm text-gray-700">
+            You reviewed {reviewed} cards. Missed items kept coming back until you
+            got them — that’s the spaced-repetition engine working.
+          </p>
+          <ul className="mt-3 space-y-1.5">
+            {DEMO_DECK.map((d) => (
+              <li
+                key={d.id}
+                className="flex items-center justify-between gap-3 text-xs border border-gray-100 rounded-lg px-3 py-2"
+              >
+                <span
+                  lang={hasHangul(d.ko || d.prompt) ? 'ko' : undefined}
+                  className="text-gray-700 truncate"
+                >
+                  {d.ko || d.prompt}
+                </span>
+                <span className={`whitespace-nowrap ${missedOnce[d.id] ? 'text-amber-600' : 'text-green-600'}`}>
+                  {missedOnce[d.id] ? 'due tomorrow' : 'due in ~4 days'}
+                </span>
+              </li>
+            ))}
+          </ul>
+          <div className="mt-4 flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onSignup}
+              data-testid="demo-signup"
+              className="bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+            >
+              Sign up to practice 440+ →
+            </button>
+            <button
+              type="button"
+              onClick={restart}
+              data-testid="demo-restart"
+              className="text-sm text-gray-500 hover:text-gray-700 font-medium bg-transparent p-0"
+            >
+              Try again
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function SampleOption({ value, answer, onChoose, children }) {
-  const selected = answer === value;
+function DemoSpeak({ text }) {
+  if (!hasHangul(text) || !speechSupported()) return null;
   return (
     <button
       type="button"
-      onClick={() => onChoose(value)}
-      data-testid={`public-sample-option-${value}`}
-      aria-pressed={selected}
-      className={`text-left border rounded-lg px-3 py-2.5 text-sm transition-all ${
-        selected
-          ? 'border-primary-400 bg-primary-50 text-primary-900'
-          : 'border-gray-200 bg-white text-gray-700 hover:border-primary-200 hover:bg-primary-50'
-      }`}
+      onClick={(e) => {
+        e.stopPropagation();
+        speak(text);
+      }}
+      aria-label="Play Korean pronunciation"
+      title="Play pronunciation"
+      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors flex-shrink-0"
     >
-      {children}
+      <span aria-hidden>🔊</span>
     </button>
   );
 }

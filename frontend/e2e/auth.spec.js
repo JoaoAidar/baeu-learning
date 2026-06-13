@@ -11,11 +11,15 @@ test('landing can switch to signup and play public sample before auth', async ({
   await expect(page.getByRole('heading', { name: /create your account/i })).toBeVisible();
   await expect(page.locator('input[autocomplete="name"]')).toBeVisible();
 
+  // Anonymous demo runs the real engine loop. First card: 안녕하세요 → Hello (a).
   await expect(page.getByTestId('public-sample-practice')).toBeVisible();
-  await page.getByTestId('public-sample-option-annyeonghaseyo').click();
-  await expect(page.getByTestId('public-sample-option-annyeonghaseyo')).toHaveAttribute('aria-pressed', 'true');
-  await page.getByTestId('public-sample-check').click();
-  await expect(page.getByTestId('public-sample-feedback')).toContainText(/correct/i);
+  await page.getByTestId('demo-option-a').click();
+  await expect(page.getByTestId('demo-option-a')).toHaveAttribute('aria-pressed', 'true');
+  await page.getByTestId('demo-check').click();
+  await expect(page.getByTestId('demo-feedback')).toContainText(/correct/i);
+  // Advancing keeps you anonymous (no session created by the demo).
+  await page.getByTestId('demo-next').click();
+  await expect(page.getByTestId('demo-progress')).toContainText('1/6 learned');
 
   await expect(page.getByRole('heading', { name: /endless practice/i })).toHaveCount(0);
   await expect(page.getByTestId('logout-btn')).toHaveCount(0);
