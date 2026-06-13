@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { api } from '../api.js';
 import { useToast } from '../components/Toast.jsx';
+import { speak, hasHangul, speechSupported } from '../utils/speech.js';
 
 const TAG_LABELS = {
   vocabulary: 'vocabulary',
@@ -183,7 +184,7 @@ export default function EndlessPractice({ moduleSlug = null, moduleTitle = null,
 
   return (
     <div className="max-w-2xl mx-auto space-y-4">
-      <ScoreBar score={score} />
+      {score.total > 0 && <ScoreBar score={score} />}
       {checkpoint ? (
         <Checkpoint checkpoint={checkpoint} onContinue={(focus) => loadNext(session.id, focus)} />
       ) : feedback ? (
@@ -243,29 +244,39 @@ function QuestionCard({ question, answer, setAnswer, submit, loading }) {
         <span>·</span>
         <span>{question.difficulty}</span>
       </div>
-      <div className="text-xl font-medium text-gray-900 mb-5 leading-relaxed">
-        {question.prompt}
+      <div className="flex items-start gap-2 mb-5">
+        <div
+          className="text-xl font-medium text-gray-900 leading-relaxed"
+          lang={hasHangul(question.prompt) ? 'ko' : undefined}
+        >
+          {question.prompt}
+        </div>
+        <SpeakButton text={question.prompt} className="mt-1 flex-shrink-0" />
       </div>
 
       {isMC ? (
         <div className="grid gap-2" data-testid="mc-options">
           {(question.options || []).map((o) => (
-            <button
-              key={o.id}
-              data-testid="mc-option"
-              disabled={loading}
-              onClick={() => setAnswer(o.id)}
-              className={`text-left px-4 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
-                answer === o.id
-                  ? 'border-primary-500 bg-primary-50 text-primary-900'
-                  : 'border-gray-200 bg-white hover:border-primary-300 text-gray-800'
-              }`}
-            >
-              <span className="text-sm font-bold mr-2 text-gray-400">
-                {o.id.toUpperCase()}.
-              </span>
-              <span className="text-base">{o.text}</span>
-            </button>
+            <div key={o.id} className="flex items-center gap-1">
+              <button
+                data-testid="mc-option"
+                disabled={loading}
+                onClick={() => setAnswer(o.id)}
+                className={`flex-1 text-left px-4 py-3 rounded-lg border-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed ${
+                  answer === o.id
+                    ? 'border-primary-500 bg-primary-50 text-primary-900'
+                    : 'border-gray-200 bg-white hover:border-primary-300 text-gray-800'
+                }`}
+              >
+                <span className="text-sm font-bold mr-2 text-gray-400">
+                  {o.id.toUpperCase()}.
+                </span>
+                <span className="text-base" lang={hasHangul(o.text) ? 'ko' : undefined}>
+                  {o.text}
+                </span>
+              </button>
+              <SpeakButton text={o.text} className="flex-shrink-0" />
+            </div>
           ))}
         </div>
       ) : (
@@ -322,9 +333,15 @@ function Feedback({ feedback, onNext }) {
         </h3>
       </div>
       {!correct && feedback.expectedAnswer && (
-        <p className="text-gray-800 mb-2">
+        <p className="text-gray-800 mb-2 flex items-center gap-1.5 flex-wrap">
           <span className="text-gray-500 text-sm">Expected:</span>{' '}
-          <span className="font-semibold">{feedback.expectedAnswer}</span>
+          <span
+            className="font-semibold"
+            lang={hasHangul(feedback.expectedAnswer) ? 'ko' : undefined}
+          >
+            {feedback.expectedAnswer}
+          </span>
+          <SpeakButton text={feedback.expectedAnswer} />
         </p>
       )}
       {feedback.explanation && (
@@ -411,7 +428,9 @@ function Checkpoint({ checkpoint, onContinue }) {
           </div>
         </>
       ) : (
-        <p className="text-green-700 text-sm mb-5 font-medium">Clean round! 잘했어요.</p>
+        <p className="text-green-700 text-sm mb-5 font-medium">
+          Clean round! <span lang="ko">잘했어요</span>.
+        </p>
       )}
 
       <div className="flex flex-col sm:flex-row gap-2 justify-center">
@@ -438,5 +457,25 @@ function Tag({ children }) {
     <span className="px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 text-xs font-medium">
       {children}
     </span>
+  );
+}
+
+// Speaker button for Korean text. Renders nothing when the text has no Hangul
+// or the browser can't synthesize speech, so it never shows a dead control.
+function SpeakButton({ text, className = '' }) {
+  if (!hasHangul(text) || !speechSupported()) return null;
+  return (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        speak(text);
+      }}
+      aria-label="Play Korean pronunciation"
+      title="Play pronunciation"
+      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors ${className}`}
+    >
+      <span aria-hidden>🔊</span>
+    </button>
   );
 }

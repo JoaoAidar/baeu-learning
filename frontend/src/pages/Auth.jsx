@@ -3,7 +3,7 @@ import { api } from '../api.js';
 import { authClient } from '../lib/auth.js';
 import { useToast } from '../components/Toast.jsx';
 
-export default function Auth() {
+export default function Auth({ notice = null }) {
   const [mode, setMode] = useState('login'); // 'login' | 'signup' | 'forgot'
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -12,6 +12,7 @@ export default function Auth() {
   const [modules, setModules] = useState([]);
   const [totalPublished, setTotalPublished] = useState(0);
   const toast = useToast();
+  const googleSignInEnabled = import.meta.env.VITE_GOOGLE_SIGN_IN_ENABLED === 'true';
 
   useEffect(() => {
     let cancelled = false;
@@ -145,9 +146,18 @@ export default function Auth() {
 
       <div className="lg:col-span-2">
         <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6 sm:p-7 animate-fade-in">
+          {notice && (
+            <div
+              data-testid="auth-notice"
+              role="status"
+              className="mb-4 rounded-lg bg-secondary-50 border border-secondary-200 text-secondary-800 text-sm px-3 py-2"
+            >
+              {notice}
+            </div>
+          )}
           <div className="text-center mb-5">
             <div className="inline-flex items-center justify-center w-11 h-11 rounded-xl bg-primary-50 text-primary-600 mb-2">
-              <span className="font-heading font-bold text-lg">배</span>
+              <span lang="ko" className="font-heading font-bold text-lg">배</span>
             </div>
             <h2 className="font-heading text-xl font-bold text-gray-900">
               {isForgot
@@ -245,22 +255,26 @@ export default function Auth() {
                 </button>
               </form>
 
-              <div className="my-4 flex items-center gap-2 text-xs text-gray-400">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span>or</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
+              {googleSignInEnabled && (
+                <>
+                  <div className="my-4 flex items-center gap-2 text-xs text-gray-400">
+                    <div className="flex-1 h-px bg-gray-200" />
+                    <span>or</span>
+                    <div className="flex-1 h-px bg-gray-200" />
+                  </div>
 
-              <button
-                type="button"
-                onClick={googleSignIn}
-                disabled={loading}
-                data-testid="google-signin-btn"
-                className="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 disabled:opacity-60 text-gray-700 font-semibold py-2.5 rounded-lg transition-all bg-white"
-              >
-                <GoogleIcon />
-                <span>Continue with Google</span>
-              </button>
+                  <button
+                    type="button"
+                    onClick={googleSignIn}
+                    disabled={loading}
+                    data-testid="google-signin-btn"
+                    className="w-full flex items-center justify-center gap-2 border border-gray-300 hover:bg-gray-50 disabled:opacity-60 text-gray-700 font-semibold py-2.5 rounded-lg transition-all bg-white"
+                  >
+                    <GoogleIcon />
+                    <span>Continue with Google</span>
+                  </button>
+                </>
+              )}
 
               <div className="mt-4 text-center text-sm text-gray-500">
                 {mode === 'login' ? "Don't have an account?" : 'Already have an account?'}{' '}
@@ -311,7 +325,9 @@ function SamplePractice() {
         </span>
       </div>
 
-      <p className="mt-4 text-sm text-gray-600">What does 안녕하세요 mean?</p>
+      <p className="mt-4 text-sm text-gray-600">
+        What does <span lang="ko">안녕하세요</span> mean?
+      </p>
       <div className="mt-3 grid gap-2" data-testid="public-sample-options">
         <SampleOption
           value="annyeonghaseyo"
@@ -352,7 +368,11 @@ function SamplePractice() {
             data-testid="public-sample-feedback"
             role="status"
           >
-            {isCorrect ? 'Correct. 안녕하세요 is a polite hello.' : 'Not quite. The answer is Hello.'}
+            {isCorrect ? (
+              <>Correct. <span lang="ko">안녕하세요</span> is a polite hello.</>
+            ) : (
+              'Not quite. The answer is Hello.'
+            )}
           </p>
         )}
       </div>
