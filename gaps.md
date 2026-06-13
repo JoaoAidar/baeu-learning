@@ -359,3 +359,201 @@ Gate: `WATCH / public-backend boundaries green`.
 | Fixed-local | Prod admin smoke targeted wrong origin. | `frontend/e2e/prod-admin-smoke.spec.js` now builds API URLs from `E2E_API_BASE_URL`, `VITE_API_BASE_URL`, or `https://baeu-backend-production.up.railway.app`. | Commit/deploy harness fix. |
 | Still blocked | Google OAuth and Resend. | Railway env-name inventory lacks `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `RESEND_API_KEY`; `EMAIL_FROM` exists. | Add provider values and run targeted smokes. |
 | Watch | Legacy Vercel env. | Vercel env list still includes `VITE_API_URL` plus canonical `VITE_API_BASE_URL`; code uses `VITE_API_BASE_URL`. | Remove legacy key only with explicit approval. |
+
+## Provider/env connectivity follow-up — 2026-06-05/06
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| P0 | Google OAuth continua sem credenciais de produção no Railway. | Inventário seguro do `baeu-backend` indica `GOOGLE_CLIENT_ID=false` e `GOOGLE_CLIENT_SECRET=false`; Vercel/Railway/Neon estão conectados, mas OAuth não. | Criar OAuth client `Baeu Learning Production Web` no Google Cloud com origin `https://baeu-learning.vercel.app` e redirect `https://baeu-backend-production.up.railway.app/api/auth/callback/google`; setar envs no Railway sem imprimir valores; redeploy; smoke de login Google. |
+| P1 | OAuth client está pré-preenchido no Chrome, mas ainda não foi criado. | Google Cloud aberto no projeto `ArchiTrack`; form de OAuth Web preenchido e botão Create habilitado. | João confirmar criação externa da credencial; depois capturar ID/secret de forma segura e aplicar no Railway. |
+| P1 | Smoke de entrega Resend ainda não está provado. | Env inventory atual mostra Resend presente em produção, mas não houve confirmação de e-mail recebido/inbox. | Rodar forgot-password ou e-mail transacional com conta smoke e verificar entrega via inbox/Gmail connector. |
+
+
+## Auditoria heavy/product/persona - 2026-06-06-0200
+
+Fonte: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0200`.
+
+- Status: gap ainda aberto após provider + HTTP + browser persona + repo surface scan.
+- Produto: Baeu Learning.
+- Próximo gate: Conta smoke/admin padronizada; Google OAuth se for requisito; prova de progressao persistida e admin content import.
+- Critério de fechamento: evidência atualizada no run ou smoke recorrente com conta dedicada, sem depender de sessão manual.
+
+
+## Produto/comercial/TAM/personas - 2026-06-06
+
+Fonte: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0200/_PRODUCT-COMMERCIAL-TAM.md`.
+
+- Score comercial/produto: **58/100**.
+- Tese: Produto learner parece bom para pratica diaria, mas precisa wedge: comunidade K-pop/K-drama ou B2B cultura coreana.
+- Anti-tese: B2C language learning tem CAC alto, churn alto e competidores enormes.
+- TAM/SAM rough: Nicho global crescente: Duolingo/AJU reporta coreano como 6a lingua mais estudada e 5,5M learners globais; Brasil e submercado menor e B2C baixo ARPU.
+- Personas prioritarias: Learner K-pop/K-drama; professor/admin; estudante TOPIK; auditor pedagogico.
+- Monetizacao sugerida: R$19-49/mes B2C; cohorts/tutoria podem subir ARPU.
+- Gap pontuado: Provar progressao persistida, admin/cohort smoke e decisao Google/OAuth.
+- Criterio de fechamento: demonstrar este gap com smoke/prova de primeira jornada e atualizar o score no proximo run.
+
+## Deep product audit — 2026-06-06 (RUN_ID 2026-06-06-0445) — GATE: AMBER
+
+Read-only static audit (no edits, no secrets). Evidence: `~/Documents/AI/Audits/runs/2026-06-06-0445/other/baeu-deep.md`. Live health `{"ok":true,"store":"pg"}`; Railway logs = 11 perf-warnings-at-error-level, all HTTP 200, no 5xx.
+
+**Adaptivity/SRS claim VERIFIED REAL** (not placeholder): SM-2-lite per-item (`SrsService.js`, table `user_exercise_srs`) + per-skill mastery (`MasteryService.js`), both wired into `ExerciseSelector.selectNext()` and recorded on every answer (`PracticeService.js:95-102`). Strongest core-claim implementation in the suite.
+
+| # | Sev | Finding | Evidence |
+|---|---|---|---|
+| G1 | Med | "Try a sample" = hardcoded single MC; does not showcase adaptive/SRS headline promise. | `frontend/src/pages/Auth.jsx:285-360` |
+| G2 | Med | LLM daily cost cap is in-process counter, resets on restart — not billing-grade. | `backend/src/services/LLMGenerator.js:14-37` |
+| G3 | Med | `requireEmailVerification: false` — any email signs up + practices immediately. | `backend/src/auth.js:56` |
+| G4 | Low | Hard tier ~10/440, ~75% translation-type → fast plateau. | `topik1Content.js`; gaps.md |
+| G5 | Low | Perf warnings logged at `error` level (all 200) pollute alerting; 750-850ms cold-wake. | Railway logs |
+| G6 | Low | SRS prod-write not re-proven w/ live authed answer this run; prior silent no-op regression. | `SrsService.js:64-102` |
+
+## E2E/Smoke — 2026-06-06-0445
+Canonical URL: https://baeu-learning.vercel.app (resolved via vercel api-get /v9/projects/baeu-learning → targets.production.alias[0]; project baeu-learning confirmed).
+
+| Check | Result | Detail |
+|---|---|---|
+| Local backend `npm test` (node --test) | PASS | 98 passed / 0 fail (35s). Warnings only: Better Auth BASE_URL not set in test env; SRS table missing locally (expected, degrades to no-op). |
+| HTTP `/` | PASS | 200, 0.07s |
+| HTTP `/api/health` | PASS | 200, 0.04s |
+| HTTP hash-router root `/#/` | PASS | 200, 0.05s |
+
+Red flags: none new. SRS prod-write still not re-proven with a live authed answer this run (see G6).
+
+## Correção Prod Smoke — 2026-06-06-0445
+- RETRATADO: "backend offline" foi falso positivo (domínio errado no smoke). Backend Railway `baeu-backend-production.up.railway.app/api/v1/health` = 200 {"ok":true,"store":"pg"}.
+- P2 (real): Vercel SPA retorna 200+HTML pra qualquer path (catch-all) → health probe na URL Vercel é falso-verde; usar o backend Railway direto. Front aponta via VITE_API_URL.
+
+## Análise Comercial/Produto/UX — 2026-06-06
+
+Fonte: `~/Documents/AI/Audits/product-analysis/baeu-2026-06-06.md`. RUN 2026-06-06. Read-only (sem secrets/edits). Live: health `{ok:true,store:pg}`, `/api/v1/modules total_published=437` (8 módulos), `/api/v1/practice/next`=401 anon.
+
+**GATE: AMBER.** Núcleo adaptativo/SRS é REAL (SM-2-lite + mastery por skill, ambos persistidos no Neon e consumidos no `ExerciseSelector`) — justifica AMBER, não RED. Bloqueado de GREEN por: sample ≠ engine (valor invisível pré-signup), sem monetização/guardrail de custo billing-grade, conteúdo top-tier raso (~10/437 hard, ~75% translation), retenção não-instrumentada. Comercial: NOT READY. Learner-loop: LIMITED-READY (cohort supervisionado).
+
+| Lens | Sub-gate | P0 principal |
+|---|---|---|
+| Comercial | AMBER→RED | Sem paid loop nem wedge de aquisição; diferenciador invisível ao comprador (sample 1 MC hardcoded, `Auth.jsx:285-360`). |
+| Produto | AMBER | Sem first-value real pré-signup; promessa só acessível após o passo de maior fricção. |
+| UX | AMBER | Sample é dead-end false-affordance; a11y quase ausente (~6 aria + ~4 keyboard no app inteiro); sem streaks/nudges. |
+| Adversarial | AMBER | Sample ≠ engine (false-green primário); SRS prod-write não re-provado live (G6 aberto); "mastery" sem dados de eficácia; retenção não medida. |
+
+**Maior oportunidade comercial:** wedge B2B/cohort (tutores/escolas/sponsors) — a página About já vende exatamente isso e é o único caminho com WTP real e CAC baixo; B2C austero text-only não compete com Anki/Duolingo grátis.
+
+**Maior risco:** retenção estruturalmente não-suportada e não-medida (sem habit loop, sem analytics, sem áudio, ~10 hard items) → churn por novidade no B2C self-serve, sem instrumento para sequer detectá-lo.
+
+**Top recs (com gate de aceite):** R1(P0) demo anônimo real (~5 questões via `/practice/next`, sem conta) · R2(P0) LLM cap billing-grade (persistido, sobrevive restart) · R3(P0/P1) cohort roster + analytics retenção (DAU, day-1/7) · R4(P1) áudio + hard-tier · R5(P1) streak+email nudge (Resend já presente) · R6(P1) placement diagnostic. 30/60/90: provar avaliabilidade → provar que retenção pode existir → provar o moat com números antes de cobrar (R$19–49/mês B2C e/ou por-seat cohort).
+
+## Audit RUN_ID 2026-06-06-0523
+
+**Auditor:** Claude (Cowork) | **Scope:** infra health curl + git log 14d + gaps analysis + E2E analysis
+**Gate:** PASS (single-user João) | Scope: ferramenta pessoal, não produto comercial
+
+### Health checks ao vivo (2026-06-06T08:28 UTC)
+
+| Serviço | Status | Tempo | Nota |
+|---------|--------|-------|------|
+| baeu-backend /health | 200 OK | 0.49s | ok:true, store:pg — acordado apesar de sleep=true |
+| baeu-backend /modules | 200 OK | 1.18s | 437 publicados, 8 módulos |
+| baeu-backend /exercises | 200 OK | — | endpoint acessível |
+| baeu-backend /practice/start | 401 | — | auth barrier esperada; SRS não verificado sem token |
+| baeu-frontend | 200 OK | 0.07s | Vercel edge |
+
+### Interpretação do commit "ready-to-use state" (02/06)
+
+**O que ficou incluído (done):** SRS SM-2 ativo em prod (user_exercise_srs criada via migrate:srs); 437 exercícios publicados em 8 módulos; schema.sql agora idempotente (footgun removido); FocusPanel de diagnóstico; CTA "Praticar pontos fracos"; LLM generator com spend cap; SrsService com graceful no-op fallback.
+
+**O que ficou de fora (known gaps não bloqueadores para uso pessoal):**
+- Conteúdo translation-heavy (~75%); hard tier com apenas 10 exercícios (vs 218 easy/212 medium)
+- Google OAuth e Resend não configurados — password reset só em console.log
+- /modules latência 1.18s — slow query (sem índice) flagrada em audit 05/27
+- LLM daily cap em memória (resetado no redeploy; não persistido em DB)
+- sleep=true no Railway — cold start se ficar inativo; aceitável para uso pessoal
+
+### Gate e entradas para gaps
+
+Gate: **PASS** para uso pessoal João. SRS ativo, conteúdo suficiente (437), learner path funcional.
+
+Entradas sugeridas para o gaps file:
+- P1: adicionar índice em `modules order_index, title` e em `exercises(module_id, published)` para reduzir latência /modules de ~1.2s para <200ms.
+- P1: configurar RESEND_API_KEY para password reset funcionar em prod.
+- P2: persistir LLM daily cap em DB (hoje resetado no redeploy).
+- P2: expandir conteúdo hard tier (hoje 10 exercícios) via admin generator com cap.
+- P2: smoke recorrente com token real para verificar SRS write path end-to-end.
+
+---
+
+## Frameworks Analysis — 2026-06-06-0454
+
+**Auditor:** Claude (Cowork) | **Escopo:** JTBD/VPC/Kano/AARRR/Moat/Lean | Doc: `frameworks-sintese-2026-06-06.md`
+
+| Severity | Finding | Gate |
+|---|---|---|
+| P0 | AARRR quebra primeiro na ATIVAÇÃO: parede de signup antes de provar o engine (sample fake `Auth.jsx:285-360`). Teste ≤2 sem: demo anônimo de ~5 questões reais via `/practice/next` (guest token) + analytics day-1/7 + outbound a 3-5 tutores TOPIK | demo real live |
+| P1 | Kano: áudio ausente é básico VIOLADO em produto de língua; ~10/437 hard = platô rápido. TTS nos itens de vocab + hard-tier via LLM generator existente (cap persistido em DB) | TTS + tier |
+| P1 | Moat: SRS é commodity (Anki grátis); moats possíveis em ordem — dados de eficácia (exige instrumentação, hoje zero), conteúdo TOPIK+diagnóstico zero-setup, B2B tutor/coorte (switching cost social). Posicionamento: "motor de drill TOPIK-1 que diz ao tutor o que está fraco", não "app de coreano" | wedge B2B decidido |
+| P2 | Claim de outcome sem dado: "steady mastery" é claim de mecanismo — instrumentar retenção antes de qualquer marketing | day-1/7 medido |
+
+---
+
+## User-Value Frameworks — 2026-06-06-0454
+
+**Auditor:** Claude (Cowork) | **Escopo:** Forças/TTFV/Hooked/HEART/NSM/Peak-End | Doc: `~/Documents/AI/Audits/product-analysis/user-value-frameworks-2026-06-06.md`
+
+| Severity | Finding | Gate |
+|---|---|---|
+| P0 | 1º valor = diagnóstico de fraqueza ("você erra partículas") após ~5 questões — deve acontecer ANTES da conta; hoje enterrado pós-signup no FocusPanel | demo anônima com diagnóstico no fim |
+| P1 | Hooked sem gatilho externo (Resend presente, não configurado) e investimento invisível (sem streak); Peak-End p/ usuário forte = tédio de itens fáceis; celebrar fila-due zerada | nudge + streak + celebração |
+| P1 | NSM: itens due completados/usuário/semana; day-1/7 é o sinal vital ausente — dados já persistidos, falta agregar | retention medida |
+
+---
+
+## Análise de Produto (frameworks) — 2026-06-06-0538
+Brief: /Users/joaoadair/Documents/AI/Audits/product-analysis/frameworks/2026-06-06-0538/baeu-learning.md
+- **Valor real:** alto como ferramenta pessoal (SRS por exercício + FocusPanel = JTBD exato do João) + valor de engenharia: SrsService (SM-2), FocusPanel, LLM generator c/ cap e schema user_exercise_srs são transferíveis.
+- **Recomendação:** manter pessoal (decisão registrada correta). B2C amplo: Anki/Duolingo intransponíveis; nicho PT-BR+TOPIK+B2B tutor é marginal.
+- **Reaproveitar:** extrair SrsService/FocusPanel/generator como lib interna antes do próximo produto de aprendizado.
+
+## Provider/log check — 2026-06-06-0539
+
+Fonte: `/Users/joaoadair/Documents/Codex/2026-06-06/abra-os-logs-de-railway-e/outputs/stack-deploy-logs-vercel-railway-grafana-2026-06-06-0539.md`.
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| P1 | Google auth provider está quebrado em prod. | Railway `baeu-backend` 2h error filter: `Better Auth`: `Provider not found ... { provider: 'google' }`. | Configurar/remover Google provider de forma explícita; smoke login Google ou ausência intencional sem erro de provider nos logs. |
+| P1 | Latência de `/api/v1/modules` continua aparecendo como erro operacional. | Railway `baeu-backend` 1h: slow SQL ~820ms e `slow GET /api/v1/modules 200 821.3ms`; health 200 ~0.50s. | Índice/cache/EXPLAIN para módulos+contagem de exercícios; meta: `/api/v1/modules` p95 < 200ms em warmed path. |
+| P2 | Observabilidade Tempo está conectada para backend, mas não substitui o gap de auth/perf. | Grafana `tempo-search baeu-backend` retornou traces recentes; logs ainda mostram auth provider e slow query. | Manter trace coverage e criar alerta específico para slow module query/auth provider errors. |
+
+---
+
+## Análise Usuário/Valor — 2026-06-06-0548
+Brief: /Users/joaoadair/Documents/AI/Audits/product-analysis/frameworks-user/2026-06-06-0548/internal-tools.md
+- **Momento de valor:** drill diário porque o sistema LEMBRA + FocusPanel mostra progresso que o Anki não mostra em PT-BR. Parcialmente sentido (~2-3x/semana) mas não mensurável (sem session_start, sem streak observável). Único dos internos com loop Hooked viável (SRS = investimento crescente).
+- **Gatilho 30d:** logar sessões + e-mail de streak via Resend + streak na home (~1 dia de eng fecha o loop e torna o hábito verificável).
+
+## Persona/browser smoke — 2026-06-06-1009
+
+| Priority | Finding | Evidence | Closure gate |
+|---|---|---|---|
+| P1 | Prod learner smoke abortou na primeira navegação, embora o browser sweep leve tenha carregado a landing. A prova de first-value segue instável. | `work/persona-smokes-2026-06-06T1009/baeu-e2e-audit-rerun.log`: `page.goto: net::ERR_ABORTED`; cleanup failed non-fatal. Browser sweep: `/` 200 desktop/mobile com H1 de fluência coreana. | Rodar prod smoke duas vezes seguidas com signup sintético, practice feedback, progress persistence e cleanup OK. |
+
+## Dossiê custo/escala — 2026-06-06-0811
+
+| Estado | Custo/mês | Notas |
+|---|---|---|
+| Hoje (sleep=true, uso esporádico) | ~R$0 | Neon free + Railway dorme |
+| Hábito diário com LLM generator capped | R$10–30 | Neon free + Railway ~R$5–15 sleep-off + LLM R$2–10/mês (gemini-flash, cap 200/dia) |
+| Recomendação | **MANTER** | Custo desprezível; SRS real; ferramenta pessoal João |
+
+## UX Smoke — 2026-06-06 (frameworks: 5s/LIFT/Nielsen/Mobile/Tema/WCAG)
+
+Notas: 5s 9 · LIFT 8.5 · Nielsen 8 · Mobile 8.5 · Tema 8 · WCAG 6.5. Evidência: /tmp/ux-smoke/baeu-*.png (temporário).
+
+| Sev | Achado | Evidência | Fix |
+|---|---|---|---|
+| P1 | Inputs Email/Senha renderizam com fundo escuro (~#333) dentro de card branco em página clara — visual quebrado e texto/placeholder possivelmente ilegível (suspeita: estilo dark-mode/autofill vazando) | baeu-desktop.png e baeu-mobile.png | Forçar bg claro + texto escuro nos inputs |
+| P2 | "Check answer" disabled em vermelho claro sobre branco — estado pouco distinguível | baeu-desktop.png | Disabled cinza + tooltip |
+| P2 | Headings pulam nível (h1 → h3) | snapshot a11y | Promover seções a h2 |
+| P2 | Login abaixo de toda a dobra no mobile (depois de 4 cards) | baeu-mobile.png | CTA "Entrar" sticky/âncora |
+
+## Análise de produto fleet — 2026-06-06 (resumo)
+
+Score comercial 58 (incubar nicho) · Maturidade ~75-80% — **a maior da fleet** (SRS SM-2 vivo, 440 exercícios, e2e 20/20). Dor: learner de coreano quer prática diária estruturada. Adesão: 1 usuário real. Recomendação: lifestyle product — manter barato, cohorts/professor p/ ARPU; sem pressão de GTM. Próximos: índice/cache (queries 800-1200ms), Redis p/ rate-limit, Resend+OAuth. Relatório completo: /Users/joaoadair/Documents/Obsidian Vault/70-analysis/product-audits/2026-06-06-0925-fleet-product-analysis.md

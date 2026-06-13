@@ -7,7 +7,10 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  /* Baeu ships a single light theme. Declaring "light dark" let the browser
+     paint native form controls (inputs) with a dark background when the OS was
+     in dark mode — black inputs on the white auth card. Force light. */
+  color-scheme: light;
   color: #202124;
   background-color: #f8f9fa;
 

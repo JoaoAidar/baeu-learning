@@ -11,6 +11,7 @@
     "migrate:srs": "node src/db/migrate-srs.js",
     "migrate:reset": "node src/db/migrate-reset.js",
     "cleanup:test-users": "node src/db/cleanup-test-users.js",
+    "smoke:provider-contract": "node scripts/provider-contract-smoke.mjs",
     "test": "node --test 'tests/*.test.js'"
   },
   "dependencies": {

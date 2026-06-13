@@ -1079,11 +1079,11 @@ Empty. Every remaining item depends on user action in an external provider (Goog
 ---
 
 <!-- deployed-brutal-audit:baeu-learning:start -->
-## Brutal Audit Deploy - 2026-06-01
+## Brutal Audit Deploy - 2026-06-06
 
 Source: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`.
 
-**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=40.8ms, api_health 5/5 [200] p95=390.2ms.
+**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=50.2ms, api_health 5/5 [200] p95=365.3ms.
 
 | Priority | Finding | Evidence | Closure gate |
 | --- | --- | --- | --- |
@@ -1701,3 +1701,90 @@ Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-05-29-1951/prod-user-flo
 Verdict: `SYNTHETIC FLOW PASS` for learner first-value. `npm run e2e:prod-smoke` passed against `https://baeu-learning.vercel.app`: synthetic learner signup/login, practice feedback, progress survival after relogin, and cleanup all completed. Synthetic account: `audit-1780097723549@test.local`; log confirms `cleanup: deleted synthetic learner`.
 
 Remaining gap: admin/author/operator flows were not tested. Preserve this learner smoke as a release gate; broaden only if those roles matter for launch.
+
+## Brutal Audit — 2026-06-02
+
+**Source report:** `/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-02-brutal-audit/BRUTAL_AUDIT.md`
+
+**Verdict:** LIMITED READY. The learner first-value path is production-proven today, but the product is not buyer/admin/provider-ready until Google OAuth, Resend delivery, admin/cohort smoke, LLM provider cap, and local Playwright harness reliability are closed.
+
+| Severity | Surface | Finding | Evidence | Closure gate |
+|---|---|---|---|---|
+| OK | Learner production path | Fresh learner signup -> practice -> feedback -> Progress Total 1 -> logout/login -> persisted Progress Total 1 passed; synthetic account cleanup succeeded. | `cd frontend && npm run e2e:prod-smoke -- --workers=1` -> 1 passed; cleanup deleted `audit-1780430529191@test.local`. | Keep this as the release gate before learner demos. |
+| OK | Runtime deploy | Frontend 200 on `https://baeu-learning.vercel.app`; backend health 200 `{"ok":true,"store":"pg"}`; Vercel latest production deploy READY; Railway `baeu-backend` latest deploy SUCCESS. | Vercel/Railway wrappers and HTTP probes on 2026-06-02. | Do not use stale Railway aliases; keep canonical URLs in all smokes/docs. |
+| OK | Observability | Grafana Tempo returned 10 traces for `service.name=baeu-backend` after smoke traffic. | `grafana_service.py tempo-search --service-name baeu-backend --limit 10`. | Add dashboard/alert acceptance checks if this becomes an ops handoff. |
+| P1 | Google OAuth | `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` are absent from safe Railway env-name inventory while the UI still exposes Continue with Google. | `railway_service.py env` returned 37 keys and did not include Google OAuth keys. | Configure Google OAuth + redeploy + browser smoke, or hide/label the button. |
+| P1 | Resend delivery | `RESEND_API_KEY` is now present, but real password-reset email delivery was not smoked in this audit. | Safe Railway env-name inventory shows `RESEND_API_KEY`; no inbox/provider delivery proof today. | Run password-reset delivery smoke and record result. |
+| P1 | Admin/LLM cost | OpenRouter wrapper auth OK, but provider key `limit` is `null`; code has in-process LLM caps only. | `openrouter_service.py key --format json`; `backend/src/services/LLMGenerator.js`. | Set/verify product/provider cap before scaled admin generation. |
+| P1 | Local Playwright harness | Local e2e timed out twice waiting for Playwright `webServer`; manual backend startup on a clean port worked. | `DATABASE_URL= VITE_API_BASE_URL= CI=1 npm run e2e ...` and rerun with unique ports both timed out before specs. | Fix webServer startup/log capture; local CI should not false-red before specs run. |
+| P2 | Docs/trust | README still contains stale Supabase-era setup; buyer/cohort proof remains thinner than the learner proof. | README vs DEPLOY/RUNBOOK; About/browser proof only covers basic trust surface. | Rewrite README to current Neon/Railway/Vercel architecture and add compact buyer/cohort proof. |
+
+**False-green rule:** web/API liveness, Vercel READY, and learner smoke must stay separate from provider/admin/buyer readiness. Do not claim READY from the learner path alone.
+
+---
+
+## Persona-browser MVP sweep — 2026-06-05-1716
+
+**Auditor:** Claude (Cowork) | **Modo:** read-only (login não cruzado)
+
+| Severity | Finding | Status / Gate |
+|---|---|---|
+| ✅ | Landing aberta com demo interativo ("Match the greeting"); app gated por login email/Google; health baeu-backend 200 {ok,store:pg}; console limpo; About com claims escopados e honestos | OK |
+| Watch | Conteúdo autenticado (437 questões, Progress page, fila de revisão adaptativa) só verificável atrás do login — não confirmado | pass autenticado pra confirmar contagens/progresso |
+| P2 | Form de login inline na landing de marketing (ruído / convida sondagem de credencial) | separar marketing de superfície de login |
+
+
+---
+
+## Exposure & auth-posture audit — 2026-06-05-1926
+
+**Auditor:** Claude (Cowork, agente exposure) | read-only, GET-only
+
+| Severity | Finding | Evidência / Gate |
+|---|---|---|
+| MEDIUM | `GET /api/v1/exercises` sem auth vaza `correct_answer` + `accepted_answers` (gabarito) — `routes/exercises.js:5` → listPublishedExercises (`pgStore.js:69`) faz `select *`. Live: retorna a resposta correta | projeção learner-safe; rows completas só no path autenticado de correção |
+| LOW | Rate-limit per-process in-memory (`rateLimit.js`), sem cap nas leituras públicas (scraping barato do catálogo); sem RLS (scoping por query discipline) | rate-limit nas leituras públicas; RLS defense-in-depth |
+| ✅ | Admin protegido (timing-safe ADMIN_TOKEN, role check 403); helmet+HSTS+CSP+nosniff+X-Frame; CORS fail-closed em prod; boot guards; sem secrets hardcoded | OK — postura forte |
+
+---
+
+## Heavy Audit Coverage — 2026-06-05-2338
+
+**Auditor:** Codex + sidecars | **Escopo:** provider/cost + public functional smoke + repo/flow + persona/brutal.
+
+| Severity | Finding | Status |
+|---|---|---|
+| LIMITED READY | Run coverage completed. | Top gate: Learner path is plausible, but Google OAuth/provider delivery and public answer-key leakage remain gates. |
+
+Evidence: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-05-2338/projects/baeu-learning.md`.
+## Kairos Heavy Audit 2026-06-06-0158
+
+Evidence: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0158/projects/baeu-learning-browser-persona.md`
+
+- P1 | Production learner persistence not verified in current read-only audit. Evidence: open sample feedback and backend health were observed, but synthetic learner smoke was not executed because it mutates production data. Acceptance: approved smoke proves signup -> practice -> feedback -> progress -> relogin persistence -> cleanup.
+- P1 | Admin/provider path remains evidence-blocked. Evidence: `#/admin` shows `x-admin-token` unlock prompt; no safe admin credential/session was used. Acceptance: documented safe admin smoke verifies access control and non-destructive admin surfaces, or admin remains out of readiness scope.
+- P1 | Auth method support not proven. Evidence: login/signup/Google controls visible, but no account/session flow executed. Acceptance: one documented auth path passes production smoke; unsupported auth options are hidden or labeled.
+- P2 | Protected hash routes need clearer blocked state. Evidence: logged-out `#/practice`, `#/progress`, and `#/results` render generic landing/auth state. Acceptance: route-specific auth-required copy explains what unlocks after login.
+
+## Prod Smoke — 2026-06-06-0445
+Canonical: web=https://baeu-learning.vercel.app | api=https://baeu-learning-api-production.up.railway.app
+
+| Target | URL | Status | Latency | Result |
+|---|---|---|---|---|
+| web-root | /  | 200 | 0.04s | PASS |
+| api-health | /api/v1/health | 404 | 0.49s | FAIL (Railway "Application not found" — service not deployed) |
+| api-root | / | 404 | 0.37s | FAIL |
+
+RED FLAG: Railway API returns edge-level "Application not found" on all paths (/, /readyz, /api/health, /api/v1/health). Frontend up but backend appears down/undeployed.
+
+---
+
+## Browser/persona regression - 2026-06-06-0711
+
+Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0711-deployed-heavy-audit/browser-persona.md`
+
+| Severity | Finding | Evidence | Closure gate |
+| --- | --- | --- | --- |
+| P0 | Production home/login were captured stuck in `Loading...`, so prior learner first-value evidence cannot be treated as current without a fresh browser smoke. | Screenshots: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0711-deployed-heavy-audit/evidence/browser-persona/screen-baeu-home.png` and `screen-baeu-learning-vercel-app-login.png`. | Fresh prod smoke proves landing/login boot, signup/login -> practice -> feedback -> progress -> relogin persistence -> cleanup. |
+
+False-green path: older successful learner smoke remains valuable history, but current browser boot failure outranks it for morning readiness.

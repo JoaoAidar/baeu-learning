@@ -13,6 +13,21 @@ import { ToastProvider, useToast } from './components/Toast.jsx';
 import { api } from './api.js';
 import { authClient } from './lib/auth.js';
 
+const BASE_TITLE = 'Baeu — Korean Practice';
+function titleForPath(path) {
+  const p = path || '/';
+  if (p.startsWith('/progress')) return `Progress · ${BASE_TITLE}`;
+  if (p.startsWith('/results')) return `Results · ${BASE_TITLE}`;
+  if (p.startsWith('/practice')) return `Practice · ${BASE_TITLE}`;
+  if (p.startsWith('/module/')) return `Module · ${BASE_TITLE}`;
+  if (p.startsWith('/lesson/')) return `Lesson · ${BASE_TITLE}`;
+  if (p.startsWith('/about')) return `About · ${BASE_TITLE}`;
+  if (p.startsWith('/account')) return `Account · ${BASE_TITLE}`;
+  if (p.startsWith('/admin')) return `Admin · ${BASE_TITLE}`;
+  if (p.startsWith('/reset-password')) return `Reset password · ${BASE_TITLE}`;
+  return BASE_TITLE;
+}
+
 function parseHash(hash) {
   // e.g. "#/practice?module=greetings" → { path: '/practice', query: { module: 'greetings' } }
   const raw = (hash || '#/').replace(/^#/, '');
@@ -81,6 +96,12 @@ function Shell() {
     window.addEventListener('baeu:unauthorized', onUnauthorized);
     return () => window.removeEventListener('baeu:unauthorized', onUnauthorized);
   }, [user?.id]);
+
+  // Hash-router doesn't change document.title on its own, so every route shared
+  // the static title. Keep the tab label in sync with the current page.
+  useEffect(() => {
+    document.title = titleForPath(route.path);
+  }, [route.path]);
 
   if (isPending) {
     return <BootSplash />;
@@ -163,7 +184,20 @@ function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, 
   if (isAbout) return <About />;
   if (isAdmin) return <Admin />;
   if (!isKnownRoute) return <NotFound />;
-  if (!user) return <Auth />;
+  if (!user) {
+    // Deep-linking into a protected route while logged out dropped you on the
+    // bare landing with no explanation. Tell you why you're seeing the login.
+    const dest = isProgress
+      ? 'your progress'
+      : isResults
+        ? 'your results'
+        : isAccount
+          ? 'your account'
+          : isLesson || isModule || isPractice
+            ? 'that practice'
+            : null;
+    return <Auth notice={dest ? `Log in to continue to ${dest}.` : null} />;
+  }
   if (isAccount) return <AccountSettings user={user} />;
   if (isResults) return <Results />;
   if (isProgress) return <Progress />;
@@ -184,21 +218,33 @@ function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, 
 }
 
 function BootSplash() {
-  // The backend (Railway) sleeps and cold-starts in a few seconds. While the
-  // session check is pending, a bare spinner reads as "frozen". After a short
-  // delay, tell the user the server may be waking up so the wait feels intended.
+  // The backend (Railway) sleeps and cold-starts in a few seconds. A bare
+  // "Loading…" on a gray page reads as "broken site" in the first second, so
+  // we show the Baeu brand mark + a spinner immediately (intentional, on-brand
+  // wait) and surface the "server waking up" hint quickly (~1.2s) since the
+  // cold start is the expected cause of any wait past the first moment.
   const [waking, setWaking] = useState(false);
   useEffect(() => {
-    const t = setTimeout(() => setWaking(true), 4000);
+    const t = setTimeout(() => setWaking(true), 1200);
     return () => clearTimeout(t);
   }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background-default px-4">
-      <div className="text-center">
-        <div className="text-gray-500">Loading…</div>
+      <div className="text-center" role="status" aria-live="polite">
+        <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary-500 text-white font-heading font-bold text-2xl mb-4 animate-pulse">
+          <span lang="ko">배</span>
+        </div>
+        <div className="font-heading text-lg font-bold text-gray-900">Baeu</div>
+        <div className="mt-3 flex items-center justify-center gap-2 text-gray-500 text-sm">
+          <span
+            className="inline-block w-4 h-4 border-2 border-gray-300 border-t-primary-500 rounded-full animate-spin"
+            aria-hidden
+          />
+          <span>{waking ? 'Waking up the practice server…' : 'Loading…'}</span>
+        </div>
         {waking && (
-          <p className="mt-2 text-sm text-gray-400 max-w-xs mx-auto">
-            The server may be waking up — this can take a few seconds on the first load.
+          <p className="mt-2 text-xs text-gray-400 max-w-xs mx-auto">
+            First load after a while can take a few seconds. Hang tight.
           </p>
         )}
       </div>
@@ -290,11 +336,11 @@ function Header({ user, role, active, onLogout }) {
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="container py-3 sm:py-4 flex flex-wrap items-center gap-2 sm:gap-4">
         <a href="#/" className="flex items-center gap-2 no-underline flex-shrink-0">
-          <span className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">배</span>
+          <span lang="ko" className="w-8 h-8 rounded-lg bg-primary-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">배</span>
           <span className="font-heading font-bold text-xl text-gray-900 leading-none">Baeu</span>
           <span className="text-gray-400 text-sm hidden sm:inline">· Korean practice</span>
         </a>
-        <nav className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-1 sm:gap-3 text-sm">
+        <nav className="w-full sm:w-auto sm:ml-auto flex flex-nowrap sm:flex-wrap items-center gap-1 sm:gap-3 text-sm overflow-x-auto sm:overflow-visible [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
           {user && (
             <>
               <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
@@ -307,7 +353,7 @@ function Header({ user, role, active, onLogout }) {
             <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
           )}
           {user && (
-            <div className="flex items-center gap-1 sm:gap-2 ml-auto sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200">
+            <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200 flex-shrink-0">
               <a
                 href="#/account"
                 data-testid="account-link"

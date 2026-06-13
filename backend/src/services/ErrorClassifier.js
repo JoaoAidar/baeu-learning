@@ -94,9 +94,20 @@ function isAcceptedAnswer(exercise, answer) {
   return accepted.includes(norm);
 }
 
+// For multiple_choice, `correct_answer` is the option *id* (a/b/c/d). Comparing
+// answers uses that id, but the learner-facing "Expected:" line must show the
+// option's *content* (e.g. "안녕하세요"), not the bare letter "a". Resolve the
+// correct option's text, falling back to the id when options aren't available.
+function mcExpectedDisplay(exercise) {
+  const id = exercise.correct_answer;
+  const options = Array.isArray(exercise.options) ? exercise.options : [];
+  const match = options.find((o) => String(o?.id) === String(id));
+  return match && match.text != null && match.text !== '' ? match.text : id;
+}
+
 function classifyMultipleChoice(exercise, answer) {
-  const expected = exercise.correct_answer;
-  const correct = normalize(answer) === normalize(expected);
+  const correct = normalize(answer) === normalize(exercise.correct_answer);
+  const expected = mcExpectedDisplay(exercise);
   if (correct) return { correct: true, errorTags: [], expected };
   return { correct: false, errorTags: mcErrorTags(exercise.skill_tags), expected };
 }

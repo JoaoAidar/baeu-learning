@@ -32,6 +32,25 @@ test('multiple_choice: wrong selection attributes error to the skill topic', () 
   assert.deepEqual(classifyAnswer(formalityMc, 'b').errorTags, ['honorific_formality']);
 });
 
+test('multiple_choice: expected shows the option text, not the letter id', () => {
+  const withOptions = {
+    type: 'multiple_choice',
+    correct_answer: 'c',
+    options: [
+      { id: 'a', text: 'Thank you' },
+      { id: 'b', text: 'Good night' },
+      { id: 'c', text: '안녕하세요' },
+    ],
+    skill_tags: ['greetings'],
+  };
+  // Wrong pick still resolves the human-readable expected content.
+  assert.equal(classifyAnswer(withOptions, 'a').expected, '안녕하세요');
+  // Correct pick too.
+  assert.equal(classifyAnswer(withOptions, 'c').expected, '안녕하세요');
+  // No options available → fall back to the id (graceful).
+  assert.equal(classifyAnswer(mc, 'b').expected, 'a');
+});
+
 const tr = {
   type: 'translation',
   correct_answer: '저는 사과를 먹어요',

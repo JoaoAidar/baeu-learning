@@ -36,7 +36,7 @@ test('seed covers core skills', () => {
 test('catalog has a hard tier and reinforced grammar drills', () => {
   const items = buildSampleExercises();
   const hard = items.filter((i) => i.difficulty === 'hard');
-  assert.ok(hard.length >= 8, `expected hard items, got ${hard.length}`);
+  assert.ok(hard.length >= 45, `expected a deep hard tier (50+ target), got ${hard.length}`);
   const wordOrder = items.filter((i) => (i.skill_tags || []).includes('word_order'));
   assert.ok(wordOrder.length >= 10, `expected word_order coverage, got ${wordOrder.length}`);
 });
