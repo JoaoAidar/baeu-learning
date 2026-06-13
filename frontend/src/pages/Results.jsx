@@ -79,6 +79,17 @@ export default function Results() {
         </p>
       </Card>
 
+      {data.retention && (
+        <Card title="Habit" subtitle="Consistency drives spaced repetition">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="results-retention">
+            <Mini label="Active days" value={data.retention.activeDays} />
+            <Mini label="Current streak" value={`${data.retention.currentStreak}d`} />
+            <Mini label="Longest streak" value={`${data.retention.longestStreak}d`} />
+            <Mini label="Return next day" value={pctOrDash(data.retention.d1ComebackRate)} />
+          </div>
+        </Card>
+      )}
+
       <Card title="Response time" subtitle="Average ms per correct answer">
         {data.responseTimeTrend.length === 0 ? (
           <p className="text-gray-500 text-sm">No timing data yet — answer a few more cards.</p>
@@ -86,6 +97,27 @@ export default function Results() {
           <ResponseTrend rows={data.responseTimeTrend} />
         )}
       </Card>
+
+      {data.responseTime && data.responseTime.count > 0 && (
+        <Card
+          title="Pace & automaticity"
+          subtitle={`Fast = ≤${Math.round(data.responseTime.fastThresholdMs / 1000)}s`}
+        >
+          <div className="grid grid-cols-3 gap-3 mb-4">
+            <Mini label="Median" value={`${(data.responseTime.medianMs / 1000).toFixed(1)}s`} />
+            <Mini
+              label="Avg (correct)"
+              value={data.responseTime.avgCorrectMs ? `${(data.responseTime.avgCorrectMs / 1000).toFixed(1)}s` : '—'}
+            />
+            <Mini label="Automatic recall" value={pctOrDash(data.responseTime.automaticityRate)} />
+          </div>
+          <SpeedAccuracy sa={data.responseTime.speedAccuracy} />
+          <p className="text-xs text-gray-500 mt-3">
+            Fast + correct means the answer is becoming automatic. Fast + wrong is
+            usually guessing; slow + wrong is where to slow down and review.
+          </p>
+        </Card>
+      )}
 
       <Card title="Toughest exercises" subtitle="Lowest accuracy among items you've seen ≥2 times">
         {data.toughestExercises.length === 0 ? (
@@ -157,6 +189,36 @@ function Stat({ label, value }) {
     <div className="bg-white rounded-xl shadow-card border border-gray-100 p-4">
       <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">{label}</div>
       <div className="font-heading text-3xl font-bold text-gray-900 mt-1">{value}</div>
+    </div>
+  );
+}
+
+function Mini({ label, value }) {
+  return (
+    <div className="text-center">
+      <div className="font-heading text-2xl font-bold text-gray-900">{value}</div>
+      <div className="text-xs text-gray-500">{label}</div>
+    </div>
+  );
+}
+
+function pctOrDash(r) {
+  return r == null ? '—' : `${Math.round(r * 100)}%`;
+}
+
+function SpeedAccuracy({ sa }) {
+  const cell = (label, n, cls) => (
+    <div className={`rounded-lg p-3 ${cls}`}>
+      <div className="font-heading text-xl font-bold">{n}</div>
+      <div className="text-xs leading-tight mt-0.5">{label}</div>
+    </div>
+  );
+  return (
+    <div className="grid grid-cols-2 gap-2" data-testid="results-speed-accuracy">
+      {cell('Fast + correct (automatic)', sa.fastCorrect, 'bg-green-50 text-green-800')}
+      {cell('Slow + correct (effortful)', sa.slowCorrect, 'bg-secondary-50 text-secondary-800')}
+      {cell('Fast + wrong (guessing)', sa.fastWrong, 'bg-amber-50 text-amber-800')}
+      {cell('Slow + wrong (struggling)', sa.slowWrong, 'bg-red-50 text-red-800')}
     </div>
   );
 }

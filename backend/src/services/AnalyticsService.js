@@ -83,7 +83,55 @@ function computeRetention(dayKeys, now = new Date()) {
   };
 }
 
-export const _internals = { computeRetention };
+// Response time as a learning signal. Speed on correct answers is a fluency /
+// automaticity proxy: recall that's both fast AND correct is becoming automatic,
+// while slow-correct is effortful retrieval and fast-wrong is guessing. We split
+// every timed attempt into a speed×accuracy quadrant and surface an
+// automaticity rate (fast-correct ÷ all correct).
+const FAST_MS = 6000; // ≤6s on a correct answer ≈ automatic recall
+
+function responseTimeStats(attempts, fastMs = FAST_MS) {
+  const timed = attempts.filter(
+    (a) => typeof a.response_ms === 'number' && a.response_ms >= 0
+  );
+  const speedAccuracy = { fastCorrect: 0, slowCorrect: 0, fastWrong: 0, slowWrong: 0 };
+  if (!timed.length) {
+    return {
+      count: 0,
+      avgMs: null,
+      medianMs: null,
+      avgCorrectMs: null,
+      avgWrongMs: null,
+      automaticityRate: null,
+      fastThresholdMs: fastMs,
+      speedAccuracy,
+    };
+  }
+  const avg = (arr) =>
+    arr.length ? Math.round(arr.reduce((s, v) => s + v, 0) / arr.length) : null;
+  const all = timed.map((a) => a.response_ms).sort((x, y) => x - y);
+  const mid = Math.floor(all.length / 2);
+  const median = all.length % 2 ? all[mid] : Math.round((all[mid - 1] + all[mid]) / 2);
+  const correct = timed.filter((a) => a.correct).map((a) => a.response_ms);
+  const wrong = timed.filter((a) => !a.correct).map((a) => a.response_ms);
+  for (const a of timed) {
+    const fast = a.response_ms <= fastMs;
+    if (a.correct) speedAccuracy[fast ? 'fastCorrect' : 'slowCorrect'] += 1;
+    else speedAccuracy[fast ? 'fastWrong' : 'slowWrong'] += 1;
+  }
+  return {
+    count: timed.length,
+    avgMs: avg(all),
+    medianMs: median,
+    avgCorrectMs: avg(correct),
+    avgWrongMs: avg(wrong),
+    automaticityRate: correct.length ? speedAccuracy.fastCorrect / correct.length : null,
+    fastThresholdMs: fastMs,
+    speedAccuracy,
+  };
+}
+
+export const _internals = { computeRetention, responseTimeStats };
 
 function fillDays(seriesMap, days) {
   const out = [];
@@ -198,6 +246,7 @@ export async function learnerAnalytics({ userId, days = 30 }) {
     },
     daily: fillDays(series, days),
     retention,
+    responseTime: responseTimeStats(windowed),
     errorTagCounts: errorCounts,
     toughestExercises: toughest,
     responseTimeTrend: responseTrend,
