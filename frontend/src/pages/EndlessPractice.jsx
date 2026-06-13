@@ -8,6 +8,8 @@ const TAG_LABELS = {
   particle: 'particles',
   word_order: 'word order',
   verb_conjugation: 'verb conjugation',
+  tense: 'tense',
+  syntax: 'sentence construction',
   honorific_formality: 'formality',
   hangul_reading: 'hangul reading',
   spacing: 'spacing',

@@ -125,6 +125,20 @@ test('responseTimeBySkill: avg per skill from timed attempts', () => {
   assert.equal(r[0].skill, 'particles'); // slowest first
 });
 
+test('sentenceErrorBreakdown: scopes error tags to text exercises only', () => {
+  const rows = [
+    { exercise_type: 'translation', correct: false, error_tags: ['tense', 'particle'] },
+    { exercise_type: 'fill_blank', correct: false, error_tags: ['particle'] },
+    { exercise_type: 'translation', correct: true, error_tags: [] },
+    { exercise_type: 'multiple_choice', correct: false, error_tags: ['vocabulary'] }, // excluded
+    { exercise_type: null, correct: false, error_tags: ['tense'] }, // legacy → excluded
+  ];
+  const r = Analytics._internals.sentenceErrorBreakdown(rows);
+  assert.equal(r.textAttempts, 3);
+  assert.equal(r.textWrong, 2);
+  assert.deepEqual(r.byTag, { tense: 1, particle: 2 });
+});
+
 test('responseTimeStats: empty input is null-safe', () => {
   const s = Analytics._internals.responseTimeStats([]);
   assert.equal(s.count, 0);

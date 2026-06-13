@@ -14,6 +14,24 @@ const PARTICLE_PAIRS = [
 const FORMAL_ENDINGS = ['습니다', 'ㅂ니다', '니다', '십시오', '세요', '으세요'];
 const CASUAL_ENDINGS = ['요', '아요', '어요', '해요', '이야', '야'];
 
+// Tense (tempo) detection for free-text/sentence answers. High-precision over
+// recall: a `tense` error fires only when BOTH expected and answer have a
+// detectable tense and they differ (e.g. present written where past was
+// expected). More specific than the generic verb_conjugation tag.
+const FUTURE_RE = /(거예요|거에요|겠어요|겠습니다|ㄹ게요|을게요|게요)/;
+// Past: standalone past morphemes 았/었/였, or common merged ㅆ-batchim forms of
+// TOPIK-1 verbs (가→갔, 오→왔, 하→했, 보→봤, 마시→마셨, 주→줬, 배우→배웠 …).
+const PAST_RE = /(았|었|였|했|갔|왔|봤|샀|줬|셨|웠|렸|났|탔|팠|졌|쳤|켰|폈|꼈)/;
+const PRESENT_RE = /(아요|어요|여요|예요|이에요|ㅂ니다|습니다)$/;
+
+function tenseOf(s) {
+  const n = normalize(s);
+  if (FUTURE_RE.test(n)) return 'future';
+  if (PAST_RE.test(n)) return 'past';
+  if (PRESENT_RE.test(n)) return 'present';
+  return null;
+}
+
 // Multiple-choice can't reveal *which* aspect was missed (it's a single pick),
 // so we attribute the error to the question's topic via its skill_tags. This
 // keeps the diagnostic honest: a missed particle/verb/formality MC no longer
@@ -161,12 +179,13 @@ function classifyText(exercise, answer) {
     }
   }
 
-  // Particle: char bag differs only on particle chars / pair swap
+  // Particle: char bag differs only on particle chars — covers a swap (은↔는),
+  // an omission (dropped 를), or an addition (extra 가). As long as every
+  // differing char is a known particle and the rest of the sentence matches.
   if (expectedHasHangul) {
     const { missing, extra } = bagDiff(charBag(expected), charBag(answer));
     const onlyParticles =
-      missing.length > 0 &&
-      extra.length > 0 &&
+      missing.length + extra.length > 0 &&
       missing.every((c) => PARTICLES.includes(c)) &&
       extra.every((c) => PARTICLES.includes(c));
     if (onlyParticles) tags.add('particle');
@@ -191,8 +210,31 @@ function classifyText(exercise, answer) {
     tags.add('honorific_formality');
   }
 
-  // Verb conjugation: same stem prefix but different ending
-  if (expectedHasHangul && answerHasHangul && !tags.has('particle')) {
+  // Tense (tempo): both sides have a detectable tense and they differ
+  // (e.g. wrote present 가요 where past 갔어요 was expected).
+  if (expectedHasHangul && answerHasHangul) {
+    const expTense = tenseOf(expected);
+    const ansTense = tenseOf(answer);
+    if (expTense && ansTense && expTense !== ansTense) tags.add('tense');
+  }
+
+  // Syntax / sentence construction: a multi-word sentence where the learner
+  // dropped or added a word (token-count mismatch) but kept some of it — a
+  // structural error distinct from word_order (reorder) and vocabulary (wrong
+  // word). Skip if it's purely a reorder already caught above.
+  if (expTokens.length >= 3 && expTokens.length !== ansTokens.length && !tags.has('word_order')) {
+    const overlap = expTokens.filter((t) => ansTokens.includes(t)).length;
+    if (overlap >= 1) tags.add('syntax');
+  }
+
+  // Verb conjugation: same stem prefix but different ending. Skip when a more
+  // specific tense/particle error already explains the miss.
+  if (
+    expectedHasHangul &&
+    answerHasHangul &&
+    !tags.has('particle') &&
+    !tags.has('tense')
+  ) {
     const minLen = Math.min(expectedNorm.length, answerNorm.length);
     let shared = 0;
     for (let i = 0; i < minLen; i++) {
