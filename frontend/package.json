@@ -12,6 +12,7 @@
     "e2e:install": "playwright install --with-deps chromium",
     "e2e:prod-smoke": "E2E_PROD_SMOKE=1 E2E_NO_WEBSERVER=1 E2E_BASE_URL=https://baeu-learning.vercel.app playwright test e2e/prod-smoke.spec.js",
     "e2e:prod-admin-smoke": "E2E_PROD_ADMIN_SMOKE=1 E2E_NO_WEBSERVER=1 E2E_BASE_URL=https://baeu-learning.vercel.app playwright test e2e/prod-admin-smoke.spec.js",
+    "e2e:prod-idor-smoke": "E2E_PROD_IDOR_SMOKE=1 E2E_NO_WEBSERVER=1 E2E_BASE_URL=https://baeu-learning.vercel.app playwright test e2e/prod-idor-smoke.spec.js",
     "test:e2e:audit": "npm run e2e:prod-smoke -- --workers=1"
   },
   "dependencies": {
