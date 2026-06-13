@@ -91,7 +91,7 @@ export default function Auth({ notice = null }) {
 
   return (
     <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
-      <section className="lg:col-span-3 space-y-6 animate-fade-in" data-testid="landing-hero">
+      <section className="order-2 lg:order-1 lg:col-span-3 space-y-6 animate-fade-in" data-testid="landing-hero">
         <div>
           <p className="text-primary-600 font-semibold text-sm tracking-wide uppercase mb-2">
             Korean practice, daily
@@ -145,7 +145,7 @@ export default function Auth({ notice = null }) {
         )}
       </section>
 
-      <div className="lg:col-span-2">
+      <div className="order-1 lg:order-2 lg:col-span-2">
         <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6 sm:p-7 animate-fade-in">
           {notice && (
             <div

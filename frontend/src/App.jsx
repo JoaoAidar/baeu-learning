@@ -340,7 +340,7 @@ function Header({ user, role, active, onLogout }) {
           <span className="font-heading font-bold text-xl text-gray-900 leading-none">Baeu</span>
           <span className="text-gray-400 text-sm hidden sm:inline">· Korean practice</span>
         </a>
-        <nav className="w-full sm:w-auto sm:ml-auto flex flex-nowrap sm:flex-wrap items-center gap-1 sm:gap-3 text-sm overflow-x-auto sm:overflow-visible [-webkit-overflow-scrolling:touch] [scrollbar-width:none]">
+        <nav className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-1 sm:gap-3 text-sm">
           {user && (
             <>
               <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
@@ -357,7 +357,7 @@ function Header({ user, role, active, onLogout }) {
               <a
                 href="#/account"
                 data-testid="account-link"
-                className={`px-2 py-1.5 rounded-md no-underline transition-colors whitespace-nowrap ${
+                className={`px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md no-underline transition-colors whitespace-nowrap ${
                   active === 'account' ? 'text-primary-700 font-semibold' : 'text-gray-600 hover:text-primary-500'
                 }`}
               >
@@ -368,7 +368,7 @@ function Header({ user, role, active, onLogout }) {
                 type="button"
                 data-testid="logout-btn"
                 onClick={onLogout}
-                className="px-2 py-1.5 rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent whitespace-nowrap"
+                className="px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent whitespace-nowrap"
               >
                 Log out
               </button>
@@ -384,7 +384,7 @@ function NavLink({ href, active, children }) {
   return (
     <a
       href={href}
-      className={`px-2 sm:px-3 py-1.5 rounded-md no-underline transition-colors whitespace-nowrap ${
+      className={`px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md no-underline transition-colors whitespace-nowrap ${
         active
           ? 'bg-primary-50 text-primary-700 font-semibold'
           : 'text-gray-600 hover:text-primary-500'

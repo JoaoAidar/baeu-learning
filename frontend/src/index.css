@@ -84,25 +84,34 @@ h2, h3, h4, h5, h6 {
   color: var(--color-text-primary);
 }
 
+/* Buttons are styled by Tailwind utility classes throughout the app. We only
+   set type/cursor globally here. Do NOT set a background on `button` or
+   `button:hover`: a global `button:hover` (specificity 0,1,1) outranks Tailwind's
+   `.bg-white` (0,1,0), which painted every tapped option dark-red with unreadable
+   text on mobile (where :hover sticks after a tap). */
 button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+/* Starter-template defaults, scoped to UNCLASSED buttons only (there are none in
+   the app today) so a stray bare <button> still looks intentional without ever
+   overriding a Tailwind-classed button. */
+button:not([class]) {
   border-radius: 0.5rem;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
   font-weight: 500;
-  font-family: inherit;
   background-color: var(--color-primary);
   color: white;
-  cursor: pointer;
   transition: all 0.25s ease;
 }
-
-button:hover {
+button:not([class]):hover {
   background-color: var(--color-primary-dark);
   transform: translateY(-1px);
 }
 
-button:focus,
 button:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
@@ -134,8 +143,10 @@ img {
   height: auto;
 }
 
-/* Focus styles for accessibility */
-*:focus {
+/* Focus styles for accessibility — only for keyboard/AT users (:focus-visible),
+   so mouse clicks and taps on cards/links don't leave a stuck red outline that
+   reads like an error state. */
+*:focus-visible {
   outline: 2px solid var(--color-primary);
   outline-offset: 2px;
 }
