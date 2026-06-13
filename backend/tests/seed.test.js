@@ -41,6 +41,28 @@ test('catalog has a hard tier and reinforced grammar drills', () => {
   assert.ok(wordOrder.length >= 10, `expected word_order coverage, got ${wordOrder.length}`);
 });
 
+test('past-tense + tense-contrast drills exist and are well-formed', () => {
+  const items = buildSampleExercises();
+  const past = items.filter(
+    (i) => i.type === 'fill_blank' && (i.skill_tags || []).includes('past')
+  );
+  assert.ok(past.length >= 12, `expected past-tense drills, got ${past.length}`);
+  for (const it of past) {
+    assert.ok(it.correct_answer && it.accepted_answers.includes(it.correct_answer));
+  }
+  const tense = items.filter(
+    (i) => i.type === 'multiple_choice' && (i.skill_tags || []).includes('tense')
+  );
+  assert.ok(tense.length >= 4, `expected tense-contrast MC, got ${tense.length}`);
+  for (const it of tense) {
+    assert.equal(it.options.length, 4, `4 options expected: ${it.prompt}`);
+    // selector adds a per-tag bonus; keep these from dominating the catalog.
+    assert.ok((it.skill_tags || []).length <= 3, `<=3 tags expected: ${it.prompt}`);
+    const correct = it.options.find((o) => o.id === it.correct_answer);
+    assert.ok(correct && correct.text === it.accepted_answers[0]);
+  }
+});
+
 test('particle-contrast drills are well-formed multiple choice', () => {
   const items = buildSampleExercises();
   const pc = items.filter((i) => (i.skill_tags || []).includes('particle_contrast'));

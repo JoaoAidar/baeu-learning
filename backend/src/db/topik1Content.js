@@ -108,6 +108,39 @@ const VERBS = [
   ['to study', '공부하다', '공부해요', '공부합니다'],
 ];
 
+// Past polite (-았/었어요). Forms are verified explicitly (not derived) to avoid
+// vowel-harmony mistakes. Past tense was previously only present inside hard
+// sentences — these are dedicated conjugation drills. [en, dictionary, past].
+const VERBS_PAST = [
+  ['to go', '가다', '갔어요'],
+  ['to come', '오다', '왔어요'],
+  ['to eat', '먹다', '먹었어요'],
+  ['to drink', '마시다', '마셨어요'],
+  ['to do', '하다', '했어요'],
+  ['to see / watch', '보다', '봤어요'],
+  ['to buy', '사다', '샀어요'],
+  ['to give', '주다', '줬어요'],
+  ['to read', '읽다', '읽었어요'],
+  ['to learn', '배우다', '배웠어요'],
+  ['to know', '알다', '알았어요'],
+  ['to live', '살다', '살았어요'],
+  ['to wait', '기다리다', '기다렸어요'],
+  ['to like', '좋아하다', '좋아했어요'],
+  ['to study', '공부하다', '공부했어요'],
+];
+
+// Tense discrimination: pick the right form for an English sentence. Trains
+// recognition of present vs past vs future (-(으)ㄹ 거예요) — a core TOPIK-1 skill
+// not previously drilled in isolation. All four options are real, verified forms.
+const TENSE_MC = [
+  { en: 'I went to school yesterday.', answer: '갔어요', distractors: ['가요', '갈 거예요', '가세요'], skill: 'past' },
+  { en: 'I will eat tomorrow.', answer: '먹을 거예요', distractors: ['먹어요', '먹었어요', '먹으세요'], skill: 'future' },
+  { en: 'I watched a movie.', answer: '봤어요', distractors: ['봐요', '볼 거예요', '보세요'], skill: 'past' },
+  { en: 'I bought bread.', answer: '샀어요', distractors: ['사요', '살 거예요', '사세요'], skill: 'past' },
+  { en: 'I will learn Korean.', answer: '배울 거예요', distractors: ['배워요', '배웠어요', '배우세요'], skill: 'future' },
+  { en: 'I study every day.', answer: '공부해요', distractors: ['공부했어요', '공부할 거예요', '공부하세요'], skill: 'present' },
+];
+
 const PARTICLES = [
   { sentence: '저___ 학생입니다.', en: 'I am a student.', answer: '는', alts: [], skill: 'topic_marker' },
   { sentence: '오빠___ 멋있어요.', en: 'My older brother is cool.', answer: '는', alts: [], skill: 'topic_marker' },
@@ -540,6 +573,47 @@ function particleContrastModule() {
   });
 }
 
+// Past-tense conjugation drills (fill_blank). New skill: 'past'.
+function pastTenseModule() {
+  return VERBS_PAST.map(([en, dict, past]) => ({
+    module_slug: 'verbs-present',
+    type: 'fill_blank',
+    difficulty: 'medium',
+    prompt: `Past polite (-았/었어요) form of ${dict} (${en})`,
+    correct_answer: past,
+    accepted_answers: [past],
+    explanation: `${dict} → ${past} (past, polite).`,
+    skill_tags: ['verbs', 'verb_conjugation', 'past'],
+    metadata: {},
+    status: 'published',
+  }));
+}
+
+// Tense-discrimination multiple choice (present vs past vs future).
+function tenseContrastModule() {
+  return TENSE_MC.map(({ en, answer, distractors, skill }) => {
+    const options = shuffle([
+      { id: 'a', text: answer },
+      ...distractors.slice(0, 3).map((t, i) => ({ id: 'bcd'[i], text: t })),
+    ]);
+    return {
+      module_slug: 'verbs-present',
+      type: 'multiple_choice',
+      difficulty: 'medium',
+      prompt: `Pick the correct verb form: "${en}"`,
+      options,
+      correct_answer: options.find((o) => o.text === answer).id,
+      accepted_answers: [answer],
+      explanation: `"${en}" → ${answer} (${skill}).`,
+      // Keep to 3 tags: the selector adds a per-tag bonus, so a higher tag count
+      // would over-serve these items relative to the rest of the catalog.
+      skill_tags: ['verb_conjugation', 'tense', skill],
+      metadata: {},
+      status: 'published',
+    };
+  });
+}
+
 function verbsModule() {
   const out = [];
   for (const [en, dict, polite, formal] of VERBS) {
@@ -853,6 +927,8 @@ export function buildTopik1Content() {
     ...particlesModule(),
     ...particleContrastModule(),
     ...verbsModule(),
+    ...pastTenseModule(),
+    ...tenseContrastModule(),
     ...vocabDailyModule(),
     ...patternsModule(),
     ...wordOrderModule(),

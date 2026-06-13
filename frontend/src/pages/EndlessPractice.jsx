@@ -475,7 +475,7 @@ function SpeakButton({ text, className = '' }) {
       }}
       aria-label="Play Korean pronunciation"
       title="Play pronunciation"
-      className={`inline-flex items-center justify-center w-7 h-7 rounded-full text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors ${className}`}
+      className={`inline-flex items-center justify-center w-9 h-9 text-base rounded-full text-gray-500 hover:text-primary-600 hover:bg-primary-50 transition-colors ${className}`}
     >
       <span aria-hidden>🔊</span>
     </button>

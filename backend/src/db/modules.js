@@ -32,8 +32,8 @@ export const MODULES = [
   },
   {
     slug: 'verbs-present',
-    title: 'Verbs — Present Tense',
-    description: 'Dictionary form, polite -아/어요, and formal -ㅂ니다 across common verbs.',
+    title: 'Verbs & Conjugation',
+    description: 'Dictionary form, polite -아/어요, formal -ㅂ니다, and past -았/었어요 across common verbs.',
     order_index: 50,
     icon: '하',
   },
