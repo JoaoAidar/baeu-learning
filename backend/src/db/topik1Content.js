@@ -499,6 +499,47 @@ function particlesModule() {
   }));
 }
 
+// Particle-contrast multiple choice. "Which particle?" is the #1 beginner error,
+// but the catalog only trained it as fill_blank. This reuses the already-verified
+// PARTICLES answers and turns each into a discrimination drill — restricted to the
+// UNAMBIGUOUS skills (object 을/를, location 에/에서) and items with no accepted
+// variants, so a distractor is never secretly also-correct. Distractors are
+// particles from a different function (clearly wrong), plus the sibling location
+// particle for the high-value 에/에서 contrast. Additive + idempotent (distinct
+// prompt prefix from the fill_blank module, so seed dedupe won't collide).
+function particleContrastModule() {
+  const eligible = PARTICLES.filter(
+    (p) => (p.skill === 'object_marker' || p.skill === 'location') && p.alts.length === 0
+  );
+  return eligible.map(({ sentence, en, answer, skill }) => {
+    const distractors =
+      skill === 'location'
+        ? [answer === '에' ? '에서' : '에', '를', '가']
+        : ['에', '에서', '가'];
+    const options = shuffle([
+      { id: 'a', text: answer },
+      ...distractors.slice(0, 3).map((t, i) => ({ id: 'bcd'[i], text: t })),
+    ]);
+    const explanation =
+      skill === 'location'
+        ? `에 marks a destination or static location; 에서 marks where an action happens. Here it is ${answer}.`
+        : `${answer} is the object particle (을 after a final consonant, 를 after a vowel). Here it is ${answer}.`;
+    return {
+      module_slug: 'particles',
+      type: 'multiple_choice',
+      difficulty: 'medium',
+      prompt: `Choose the correct particle: ${sentence} ("${en}")`,
+      options,
+      correct_answer: options.find((o) => o.text === answer).id,
+      accepted_answers: [answer],
+      explanation,
+      skill_tags: ['particles', 'particle_contrast', skill],
+      metadata: {},
+      status: 'published',
+    };
+  });
+}
+
 function verbsModule() {
   const out = [];
   for (const [en, dict, polite, formal] of VERBS) {
@@ -810,6 +851,7 @@ export function buildTopik1Content() {
     ...greetingsModule(),
     ...numbersModule(),
     ...particlesModule(),
+    ...particleContrastModule(),
     ...verbsModule(),
     ...vocabDailyModule(),
     ...patternsModule(),

@@ -41,6 +41,21 @@ test('catalog has a hard tier and reinforced grammar drills', () => {
   assert.ok(wordOrder.length >= 10, `expected word_order coverage, got ${wordOrder.length}`);
 });
 
+test('particle-contrast drills are well-formed multiple choice', () => {
+  const items = buildSampleExercises();
+  const pc = items.filter((i) => (i.skill_tags || []).includes('particle_contrast'));
+  assert.ok(pc.length >= 10, `expected a particle-contrast set, got ${pc.length}`);
+  for (const it of pc) {
+    assert.equal(it.type, 'multiple_choice');
+    assert.equal(it.options.length, 4, `4 options expected: ${it.prompt}`);
+    const texts = it.options.map((o) => o.text);
+    assert.equal(new Set(texts).size, texts.length, `no duplicate options: ${it.prompt}`);
+    const correct = it.options.find((o) => o.id === it.correct_answer);
+    assert.ok(correct, `correct_answer must map to an option: ${it.prompt}`);
+    assert.equal(correct.text, it.accepted_answers[0], `correct option matches answer: ${it.prompt}`);
+  }
+});
+
 test('seedNewExercises is additive and idempotent (no duplicate prompts)', async () => {
   memoryStore.reset();
   const first = await runSeedIfEmpty();
