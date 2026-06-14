@@ -61,23 +61,35 @@ export default function Results() {
       </div>
 
       <Card title="Daily activity" subtitle={`Last ${days} days`}>
-        <div className="flex items-end gap-1 h-32" data-testid="results-daily">
-          {data.daily.map((d) => {
-            const h = Math.max(2, (d.attempts / maxDaily) * 100);
-            const accRatio = d.attempts ? d.correct / d.attempts : 0;
-            return (
-              <div key={d.date} className="flex-1 flex flex-col items-center justify-end" title={`${d.date}: ${d.attempts} attempts, ${d.correct} correct`}>
-                <div
-                  className={`w-full rounded-t ${d.attempts === 0 ? 'bg-gray-100' : accRatio >= 0.8 ? 'bg-green-500' : accRatio >= 0.5 ? 'bg-secondary-500' : 'bg-red-400'}`}
-                  style={{ height: `${h}%` }}
-                />
-              </div>
-            );
-          })}
-        </div>
-        <p className="text-xs text-gray-500 mt-2">
-          Bar color = accuracy that day. Hover for raw counts.
-        </p>
+        {data.totals.attempts === 0 ? (
+          <EmptyHint>
+            No activity in this window yet — finish a practice session and your
+            daily volume shows up here.
+          </EmptyHint>
+        ) : (
+          <>
+            {/* The lane gives the chart a visible region so sparse data reads as
+                "a quiet chart" rather than an empty/broken card. */}
+            <div className="flex items-end gap-1 h-32 rounded-lg bg-gray-50 px-2 pt-2" data-testid="results-daily">
+              {data.daily.map((d) => {
+                const accRatio = d.attempts ? d.correct / d.attempts : 0;
+                // Empty days get a thin, visible tick; active days a real bar.
+                const h = d.attempts ? Math.max(8, (d.attempts / maxDaily) * 100) : 4;
+                return (
+                  <div key={d.date} className="flex-1 flex flex-col items-center justify-end" title={`${d.date}: ${d.attempts} attempts, ${d.correct} correct`}>
+                    <div
+                      className={`w-full rounded-t ${d.attempts === 0 ? 'bg-gray-200' : accRatio >= 0.8 ? 'bg-green-500' : accRatio >= 0.5 ? 'bg-secondary-500' : 'bg-red-400'}`}
+                      style={{ height: `${h}%` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+            <p className="text-xs text-gray-500 mt-2">
+              Bar color = accuracy that day. Hover for raw counts.
+            </p>
+          </>
+        )}
       </Card>
 
       {data.retention && (
@@ -93,7 +105,10 @@ export default function Results() {
 
       <Card title="Response time" subtitle="Average ms per correct answer">
         {data.responseTimeTrend.length === 0 ? (
-          <p className="text-gray-500 text-sm">No timing data yet — answer a few more cards.</p>
+          <EmptyHint>
+            No timing data yet — answer a few more cards and your speed trend
+            appears here.
+          </EmptyHint>
         ) : (
           <ResponseTrend rows={data.responseTimeTrend} />
         )}
@@ -276,6 +291,16 @@ const ERROR_LABELS = {
   romanization_dependency: 'romanization',
   unknown: 'unclassified',
 };
+
+// Intentional empty state — a soft dashed panel reads as "nothing here yet"
+// rather than a card that failed to render.
+function EmptyHint({ children }) {
+  return (
+    <div className="rounded-lg bg-gray-50 border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500">
+      {children}
+    </div>
+  );
+}
 
 function Card({ title, subtitle, children }) {
   return (
