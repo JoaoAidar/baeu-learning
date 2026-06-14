@@ -41,6 +41,30 @@ test('catalog has a hard tier and reinforced grammar drills', () => {
   assert.ok(wordOrder.length >= 10, `expected word_order coverage, got ${wordOrder.length}`);
 });
 
+test('depth content (hangul/numbers/greetings/grammar) is well-formed', () => {
+  const items = buildSampleExercises();
+  // New skills introduced by the depth expansion.
+  for (const skill of ['batchim', 'counters', 'connectives']) {
+    const hits = items.filter((i) => (i.skill_tags || []).includes(skill));
+    assert.ok(hits.length >= 3, `expected ${skill} drills, got ${hits.length}`);
+  }
+  // All multiple-choice depth items must be well-formed and ≤3 tags.
+  const depthMc = items.filter(
+    (i) =>
+      i.type === 'multiple_choice' &&
+      (i.skill_tags || []).some((t) => ['counters', 'connectives', 'register', 'batchim'].includes(t))
+  );
+  assert.ok(depthMc.length >= 8, `expected depth MC, got ${depthMc.length}`);
+  for (const it of depthMc) {
+    assert.equal(it.options.length, 4, `4 options: ${it.prompt}`);
+    assert.ok((it.skill_tags || []).length <= 3, `<=3 tags: ${it.prompt}`);
+    const texts = it.options.map((o) => o.text);
+    assert.equal(new Set(texts).size, texts.length, `no dup options: ${it.prompt}`);
+    const correct = it.options.find((o) => o.id === it.correct_answer);
+    assert.ok(correct && correct.text === it.accepted_answers[0], `correct maps: ${it.prompt}`);
+  }
+});
+
 test('past-tense + tense-contrast drills exist and are well-formed', () => {
   const items = buildSampleExercises();
   const past = items.filter(
