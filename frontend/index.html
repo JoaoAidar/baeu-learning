@@ -20,6 +20,24 @@
     />
     <meta property="og:locale" content="en_US" />
     <meta name="twitter:card" content="summary" />
+    <!-- Apply the saved/OS theme before first paint to avoid a light flash on
+         dark-mode loads. Mirrors src/utils/theme.js (resolveTheme/applyTheme). -->
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem('baeu-theme');
+          if (t !== 'dark' && t !== 'light') {
+            t = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+          if (t === 'dark') {
+            document.documentElement.classList.add('dark');
+            document.documentElement.style.colorScheme = 'dark';
+            var m = document.querySelector('meta[name="theme-color"]');
+            if (m) m.setAttribute('content', '#0f1115');
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

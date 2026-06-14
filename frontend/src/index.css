@@ -7,48 +7,63 @@
   line-height: 1.5;
   font-weight: 400;
 
-  /* Baeu ships a single light theme. Declaring "light dark" let the browser
-     paint native form controls (inputs) with a dark background when the OS was
-     in dark mode — black inputs on the white auth card. Force light. */
+  /* Theme is class-driven (html.dark), not media-query driven, so the in-app
+     toggle and `prefers-color-scheme` can both be honored without one fighting
+     the other. color-scheme follows the active theme so native controls
+     (form fields, scrollbars) paint to match — this is what kills the old
+     "black/white input on a white/dark card" bug. */
   color-scheme: light;
-  color: #202124;
-  background-color: #f8f9fa;
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  
-  /* Custom CSS variables for consistent theming */
+
+  /* Brand accents (stable across themes) */
   --color-primary: #d62828;
   --color-primary-light: #f87171;
   --color-primary-dark: #991b1b;
   --color-secondary: #023e8a;
   --color-secondary-light: #60a5fa;
   --color-secondary-dark: #1e3a8a;
+
+  /* Light surfaces + text */
   --color-background: #f8f9fa;
   --color-background-paper: #ffffff;
   --color-text-primary: #202124;
   --color-text-secondary: #5f6368;
+
+  /* Form fields — explicit so inputs never inherit an ambiguous bg/text
+     (the white-on-white / black-on-white native-control bug). */
+  --field-bg: #ffffff;
+  --field-text: #202124;
+  --field-placeholder: #9aa0a6;
+  --field-border: #dadce0;
 }
 
-/* Dark mode variables */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f9fafb;
-    background-color: #111827;
-    
-    --color-primary: #f87171;
-    --color-primary-light: #fca5a5;
-    --color-primary-dark: #dc2626;
-    --color-secondary: #60a5fa;
-    --color-secondary-light: #93c5fd;
-    --color-secondary-dark: #1d4ed8;
-    --color-background: #111827;
-    --color-background-paper: #1f2937;
-    --color-text-primary: #f9fafb;
-    --color-text-secondary: #d1d5db;
-  }
+html.dark {
+  color-scheme: dark;
+
+  /* Accents lift on dark so red/blue read as accents, not mud. */
+  --color-primary: #f87171;
+  --color-primary-light: #fca5a5;
+  --color-primary-dark: #ef4444;
+  --color-secondary: #60a5fa;
+  --color-secondary-light: #93c5fd;
+  --color-secondary-dark: #3b82f6;
+
+  /* Warm-slate dark surfaces, layered for depth. */
+  --color-background: #0f1115;
+  --color-background-paper: #181b21;
+  --color-text-primary: #f3f4f6;
+  --color-text-secondary: #9aa3af;
+
+  --field-bg: #11151b;
+  --field-text: #f3f4f6;
+  --field-placeholder: #6b7280;
+  --field-border: #2a313b;
 }
 
 a {

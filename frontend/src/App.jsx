@@ -9,6 +9,7 @@ import Module from './pages/Module.jsx';
 import Lesson from './pages/Lesson.jsx';
 import About from './pages/About.jsx';
 import AccountSettings from './components/AccountSettings.jsx';
+import ThemeToggle from './components/ThemeToggle.jsx';
 import { ToastProvider, useToast } from './components/Toast.jsx';
 import { api } from './api.js';
 import { authClient } from './lib/auth.js';
@@ -352,6 +353,7 @@ function Header({ user, role, active, onLogout }) {
           {role === 'admin' && (
             <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
           )}
+          <ThemeToggle className="ml-0.5" />
           {user && (
             <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200 flex-shrink-0">
               <a
