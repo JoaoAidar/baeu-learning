@@ -179,6 +179,22 @@ Verify in Grafana Cloud Tempo by filtering `service.name=baeu-backend`.
 
 ---
 
+## Pre/post-deploy lifecycle smoke
+
+Full disposable-account journey against the deployed frontend — creates a
+synthetic learner, exercises dark mode / Results empty states / practice
+placeholders / Results-with-data, then **deletes the account via the UI**
+(safety-net cleanup if it fails). Run before/after a deploy:
+
+```sh
+cd frontend && npm run e2e:prod-lifecycle
+```
+
+Spec: `frontend/e2e/prod-lifecycle-smoke.spec.js` (gated by `E2E_PROD_LIFECYCLE=1`).
+For the raw API-only signup/delete check, see the one-liners below.
+
+---
+
 ## Health-check one-liners
 
 ```sh
