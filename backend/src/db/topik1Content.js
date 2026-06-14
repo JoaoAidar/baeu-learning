@@ -1,6 +1,8 @@
 // TOPIK 1 content generators. Each returns exercises with `module_slug` set.
 // Seed step resolves slug → module_id at insert time.
 
+import { buildDepthContent } from './topik1Depth.js';
+
 // ---------- VOCAB SOURCE TABLES ----------
 
 const VOCAB = [
@@ -934,5 +936,6 @@ export function buildTopik1Content() {
     ...wordOrderModule(),
     ...readingModule(),
     ...hardModule(),
+    ...buildDepthContent(),
   ];
 }
