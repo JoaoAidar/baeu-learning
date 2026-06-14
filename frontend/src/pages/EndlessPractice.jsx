@@ -17,6 +17,21 @@ const TAG_LABELS = {
   unknown: 'unclassified',
 };
 
+// Free-text prompt hint. Several distinct drills share `type: 'translation'`
+// — "Romanize …", "Translate to Korean …", and "What does … mean" — but each
+// expects a different answer (romanization / Korean / English). The old code
+// always said "meaning in English", which was wrong for the first two. Key off
+// the prompt wording so the placeholder matches what's actually expected.
+function placeholderFor(question) {
+  const prompt = (question.prompt || '').toLowerCase();
+  if (/\bromaniz/.test(prompt)) return 'Type the romanization (e.g. "bap")…';
+  if (/to korean|in korean|in hangul/.test(prompt)) return 'Type your answer in Korean…';
+  if (question.type === 'translation' || /translate|\bmean(s|ing)?\b/.test(prompt)) {
+    return 'Type the meaning in English…';
+  }
+  return 'Type your answer…';
+}
+
 export default function EndlessPractice({ moduleSlug = null, moduleTitle = null, initialFocus = null }) {
   const [session, setSession] = useState(null);
   const [question, setQuestion] = useState(null);
@@ -287,11 +302,7 @@ function QuestionCard({ question, answer, setAnswer, submit, loading }) {
           value={answer}
           onChange={(e) => setAnswer(e.target.value)}
           onKeyDown={(e) => { if (e.key === 'Enter') submit(); }}
-          placeholder={
-            question.type === 'translation'
-              ? 'Type the meaning in English...'
-              : 'Type your answer...'
-          }
+          placeholder={placeholderFor(question)}
           className="w-full px-4 py-3 text-lg border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
         />
       )}
