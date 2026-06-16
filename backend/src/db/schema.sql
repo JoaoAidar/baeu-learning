@@ -245,3 +245,30 @@ create index if not exists user_exercise_srs_due_idx
 alter table exercises drop constraint if exists exercises_type_check;
 alter table exercises add constraint exercises_type_check
   check (type in ('multiple_choice','translation','fill_blank'));
+
+-- ============================================================================
+-- 7. Conversation simulator (SNS-style chat practice). A conversation is a
+-- multi-turn exchange between the learner and an LLM-driven persona; at the end
+-- an evaluator stores structured semantic + syntactic feedback on the row.
+-- ============================================================================
+
+create table if not exists conversations (
+  id uuid primary key default gen_random_uuid(),
+  user_id text not null references "user"(id) on delete cascade,
+  persona_slug text not null,
+  status text not null default 'active' check (status in ('active','ended')),
+  feedback jsonb,
+  created_at timestamptz default now(),
+  ended_at timestamptz
+);
+create index if not exists conversations_user_idx on conversations(user_id, created_at desc);
+
+create table if not exists conversation_messages (
+  id uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references conversations(id) on delete cascade,
+  role text not null check (role in ('persona','learner')),
+  content text not null,
+  created_at timestamptz default now()
+);
+create index if not exists conversation_messages_conv_idx
+  on conversation_messages(conversation_id, created_at asc);

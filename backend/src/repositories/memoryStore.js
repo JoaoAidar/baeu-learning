@@ -11,6 +11,8 @@ const store = {
   mastery: new Map(), // key = `${user_id}::${skill}`
   srs: new Map(), // key = `${user_id}::${exercise_id}`
   lessons: new Map(),
+  conversations: new Map(), // id -> conversation row
+  conversationMessages: [], // { id, conversation_id, role, content, created_at }
 };
 
 export const memoryStore = {
@@ -26,6 +28,51 @@ export const memoryStore = {
     store.mastery.clear();
     store.srs.clear();
     store.lessons.clear();
+    store.conversations.clear();
+    store.conversationMessages.length = 0;
+  },
+
+  // conversation simulator
+  async createConversation({ user_id, persona_slug }) {
+    const id = randomUUID();
+    const row = {
+      id,
+      user_id,
+      persona_slug,
+      status: 'active',
+      feedback: null,
+      created_at: new Date().toISOString(),
+      ended_at: null,
+    };
+    store.conversations.set(id, row);
+    return row;
+  },
+  async getConversation(id) {
+    return store.conversations.get(id) || null;
+  },
+  async addConversationMessage({ conversation_id, role, content }) {
+    const row = {
+      id: randomUUID(),
+      conversation_id,
+      role,
+      content,
+      created_at: new Date().toISOString(),
+    };
+    store.conversationMessages.push(row);
+    return row;
+  },
+  async listConversationMessages(conversationId) {
+    return store.conversationMessages
+      .filter((m) => m.conversation_id === conversationId)
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  },
+  async endConversation(id, feedback) {
+    const c = store.conversations.get(id);
+    if (!c) return null;
+    c.status = 'ended';
+    c.feedback = feedback;
+    c.ended_at = new Date().toISOString();
+    return c;
   },
 
   // user roles — application-side authorization. Keyed by Better Auth user id

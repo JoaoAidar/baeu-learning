@@ -430,5 +430,33 @@ export function createPgStore({ connectionString }) {
           order by order_index asc limit 1`,
         [JSON.stringify([errorTag])]
       ),
+
+    // conversation simulator
+    createConversation: ({ user_id, persona_slug }) =>
+      one(
+        `insert into conversations (user_id, persona_slug)
+         values ($1, $2) returning *`,
+        [user_id, persona_slug]
+      ),
+    getConversation: (id) => one('select * from conversations where id = $1', [id]),
+    addConversationMessage: ({ conversation_id, role, content }) =>
+      one(
+        `insert into conversation_messages (conversation_id, role, content)
+         values ($1, $2, $3) returning *`,
+        [conversation_id, role, content]
+      ),
+    listConversationMessages: (conversationId) =>
+      all(
+        `select * from conversation_messages
+          where conversation_id = $1 order by created_at asc`,
+        [conversationId]
+      ),
+    endConversation: (id, feedback) =>
+      one(
+        `update conversations
+            set status = 'ended', feedback = $2::jsonb, ended_at = now()
+          where id = $1 returning *`,
+        [id, JSON.stringify(feedback)]
+      ),
   };
 }
