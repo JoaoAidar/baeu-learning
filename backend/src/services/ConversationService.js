@@ -6,6 +6,7 @@
 import { getStore } from '../config/db.js';
 import { PERSONAS, getPersona, publicPersona } from '../db/personas.js';
 import { personaReply, evaluateConversation } from './ConversationLLM.js';
+import { recordConversationDiagnostics } from './ConversationDiagnostics.js';
 
 // Max total messages (persona + learner) per conversation. Bounds LLM spend and
 // keeps the end-of-chat evaluation focused. Env-overridable.
@@ -101,7 +102,21 @@ export async function end({ userId, conversationId, fetchImpl }) {
 
   const feedback = await evaluateConversation({ persona, history, locale: 'en', fetchImpl });
   await store.endConversation(conversationId, feedback);
-  return { feedback, alreadyEnded: false };
+
+  // Feed the chat's mistakes into the shared diagnostics so conversation shows
+  // up in Progress/Results alongside drills. Best-effort: never block feedback.
+  let diagnostics = null;
+  try {
+    diagnostics = await recordConversationDiagnostics({
+      userId,
+      personaSlug: conversation.persona_slug,
+      feedback,
+    });
+  } catch (err) {
+    diagnostics = { recorded: 0, error: err?.code || 'diagnostics_failed' };
+  }
+
+  return { feedback, diagnostics, alreadyEnded: false };
 }
 
 export async function get({ userId, conversationId }) {

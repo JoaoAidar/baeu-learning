@@ -12,6 +12,9 @@ const ACCENTS = {
   blue: 'bg-blue-100 text-blue-800 border-blue-200',
   green: 'bg-green-100 text-green-800 border-green-200',
   pink: 'bg-pink-100 text-pink-800 border-pink-200',
+  purple: 'bg-purple-100 text-purple-800 border-purple-200',
+  teal: 'bg-teal-100 text-teal-800 border-teal-200',
+  rose: 'bg-rose-100 text-rose-800 border-rose-200',
 };
 
 export default function Chat() {
