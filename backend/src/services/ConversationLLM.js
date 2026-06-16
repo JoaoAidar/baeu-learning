@@ -4,7 +4,8 @@
 // Provider-agnostic OpenRouter chat-completions, same env contract as
 // LLMGenerator (LLM_API_KEY/OPENROUTER_API_KEY, LLM_BASE_URL, LLM_MODEL).
 
-const DEFAULT_BASE = 'https://openrouter.ai/api/v1/chat/completions';
+import { chatCompletionsUrl } from '../util/llmUrl.js';
+
 const DEFAULT_MODEL = 'anthropic/claude-3.5-sonnet';
 
 function clampInt(raw, fallback, min, max) {
@@ -41,7 +42,7 @@ function reserveCall() {
 async function callOpenRouter({ messages, maxTokens, temperature, json = false, fetchImpl }) {
   const apiKey = process.env.LLM_API_KEY || process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw httpError(503, 'llm_not_configured');
-  const url = process.env.LLM_BASE_URL || DEFAULT_BASE;
+  const url = chatCompletionsUrl();
   const model = process.env.LLM_MODEL || DEFAULT_MODEL;
 
   reserveCall();

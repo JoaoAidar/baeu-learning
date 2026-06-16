@@ -1,7 +1,8 @@
 // LLM-backed exercise generator. Provider-agnostic; defaults to OpenRouter.
 // Output is run through AdminService.validateExercise before insertion.
 
-const DEFAULT_BASE = 'https://openrouter.ai/api/v1/chat/completions';
+import { chatCompletionsUrl } from '../util/llmUrl.js';
+
 const DEFAULT_MODEL = 'anthropic/claude-3.5-sonnet';
 
 const VALID_TYPES = ['multiple_choice', 'translation', 'fill_blank'];
@@ -94,7 +95,7 @@ export async function generateExercises({
   const apiKey = process.env.LLM_API_KEY || process.env.OPENROUTER_API_KEY;
   if (!apiKey) throw httpError(503, 'llm_not_configured');
 
-  const url = process.env.LLM_BASE_URL || DEFAULT_BASE;
+  const url = chatCompletionsUrl();
   const model = process.env.LLM_MODEL || DEFAULT_MODEL;
   const max = Math.min(Math.max(Number(count) || 10, 1), MAX_PER_REQUEST);
 
