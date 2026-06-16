@@ -2,6 +2,7 @@
 // Seed step resolves slug → module_id at insert time.
 
 import { buildDepthContent } from './topik1Depth.js';
+import { buildDepth2Content } from './topik1Depth2.js';
 
 // ---------- VOCAB SOURCE TABLES ----------
 
@@ -937,5 +938,6 @@ export function buildTopik1Content() {
     ...readingModule(),
     ...hardModule(),
     ...buildDepthContent(),
+    ...buildDepth2Content(),
   ];
 }
