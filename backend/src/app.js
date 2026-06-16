@@ -11,6 +11,7 @@ import adminRouter from './routes/admin.js';
 import exercisesRouter from './routes/exercises.js';
 import meRouter from './routes/me.js';
 import analyticsRouter from './routes/analytics.js';
+import chatRouter from './routes/chat.js';
 import { getStore } from './config/db.js';
 import { perfMiddleware } from './middleware/perf.js';
 
@@ -84,6 +85,7 @@ export function createApp() {
   app.use('/api/v1/exercises', exercisesRouter);
   app.use('/api/v1/me', meRouter);
   app.use('/api/v1/analytics', analyticsRouter);
+  app.use('/api/v1/chat', chatRouter);
 
   app.use((req, res) => res.status(404).json({ error: 'not_found', path: req.path }));
 

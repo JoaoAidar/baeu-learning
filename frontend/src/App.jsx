@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import EndlessPractice from './pages/EndlessPractice.jsx';
+import Chat from './pages/Chat.jsx';
 import Auth from './pages/Auth.jsx';
 import Admin from './pages/Admin.jsx';
 import Progress from './pages/Progress.jsx';
@@ -20,6 +21,7 @@ function titleForPath(path) {
   if (p.startsWith('/progress')) return `Progress · ${BASE_TITLE}`;
   if (p.startsWith('/results')) return `Results · ${BASE_TITLE}`;
   if (p.startsWith('/practice')) return `Practice · ${BASE_TITLE}`;
+  if (p.startsWith('/chat')) return `Conversation · ${BASE_TITLE}`;
   if (p.startsWith('/module/')) return `Module · ${BASE_TITLE}`;
   if (p.startsWith('/lesson/')) return `Lesson · ${BASE_TITLE}`;
   if (p.startsWith('/about')) return `About · ${BASE_TITLE}`;
@@ -113,6 +115,7 @@ function Shell() {
   const isProgress = path.startsWith('/progress');
   const isResults = path.startsWith('/results');
   const isPractice = path.startsWith('/practice');
+  const isChat = path.startsWith('/chat');
   const isModule = path.startsWith('/module/');
   const isLesson = path.startsWith('/lesson/');
   const isAbout = path.startsWith('/about');
@@ -126,6 +129,7 @@ function Shell() {
     isProgress ||
     isResults ||
     isPractice ||
+    isChat ||
     isModule ||
     isLesson ||
     isAbout ||
@@ -138,11 +142,13 @@ function Shell() {
       ? 'results'
       : isProgress
       ? 'progress'
-      : isAbout
-        ? 'about'
-        : isAccount
-          ? 'account'
-          : 'practice';
+      : isChat
+        ? 'chat'
+        : isAbout
+          ? 'about'
+          : isAccount
+            ? 'account'
+            : 'practice';
 
   // Reset-password is reachable WITHOUT a session (you hit it from the email link).
   if (isResetPassword) {
@@ -170,6 +176,7 @@ function Shell() {
           isProgress,
           isResults,
           isPractice,
+          isChat,
           isModule,
           isLesson,
           isAbout,
@@ -181,7 +188,7 @@ function Shell() {
   );
 }
 
-function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isResults, isPractice, isModule, isLesson, isAbout, isAccount, isKnownRoute }) {
+function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, isResults, isPractice, isChat, isModule, isLesson, isAbout, isAccount, isKnownRoute }) {
   if (isAbout) return <About />;
   if (isAdmin) return <Admin />;
   if (!isKnownRoute) return <NotFound />;
@@ -194,9 +201,11 @@ function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, 
         ? 'your results'
         : isAccount
           ? 'your account'
-          : isLesson || isModule || isPractice
-            ? 'that practice'
-            : null;
+          : isChat
+            ? 'conversation practice'
+            : isLesson || isModule || isPractice
+              ? 'that practice'
+              : null;
     return <Auth notice={dest ? `Log in to continue to ${dest}.` : null} />;
   }
   if (isAccount) return <AccountSettings user={user} />;
@@ -205,6 +214,7 @@ function renderPage({ query, user, moduleSlug, lessonSlug, isAdmin, isProgress, 
   if (isLesson && lessonSlug) {
     return <Lesson slug={lessonSlug} returnTo={query.from || '#/'} />;
   }
+  if (isChat) return <Chat />;
   if (isPractice) {
     return (
       <EndlessPractice
@@ -345,6 +355,7 @@ function Header({ user, role, active, onLogout }) {
           {user && (
             <>
               <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
+              <NavLink href="#/chat" active={active === 'chat'}>Chat</NavLink>
               <NavLink href="#/progress" active={active === 'progress'}>Progress</NavLink>
               <NavLink href="#/results" active={active === 'results'}>Results</NavLink>
             </>

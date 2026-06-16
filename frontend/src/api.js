@@ -172,6 +172,31 @@ export const api = {
   // Deep learner results (per-exercise difficulty, response-time trend, error
   // breakdown). Auth via session cookie.
   results: (days = 30) => call(`/api/v1/analytics/results?days=${days}`),
+
+  // Conversation simulator. LLM-backed turns are slow (and the backend may be
+  // cold-starting), so these use generous timeouts and no auto-retry on POST.
+  chat: {
+    personas: () => call('/api/v1/chat/personas'),
+    start: (personaSlug) =>
+      call('/api/v1/chat/conversations', {
+        method: 'POST',
+        body: JSON.stringify({ personaSlug }),
+        timeoutMs: 20_000,
+      }),
+    reply: (id, text) =>
+      call(`/api/v1/chat/conversations/${encodeURIComponent(id)}/reply`, {
+        method: 'POST',
+        body: JSON.stringify({ text }),
+        timeoutMs: 40_000,
+      }),
+    end: (id) =>
+      call(`/api/v1/chat/conversations/${encodeURIComponent(id)}/end`, {
+        method: 'POST',
+        body: '{}',
+        timeoutMs: 60_000,
+      }),
+    get: (id) => call(`/api/v1/chat/conversations/${encodeURIComponent(id)}`),
+  },
 };
 
 export const adminApi = {
