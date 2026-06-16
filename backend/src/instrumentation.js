@@ -83,6 +83,10 @@ if (endpoint && endpoint.trim().length > 0) {
           severityNumber,
           severityText,
           body: args.map(stringifyArg).join(" "),
+          attributes: {
+            service: serviceName,
+            service_name: serviceName,
+          },
         });
       } catch {
         /* never let logging break the app */

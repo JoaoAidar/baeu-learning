@@ -2,10 +2,14 @@
 
 ## Read First
 
+- `project-state.md` — runtime truth, gates, env names, next actions (start here).
+- `gaps-live.md` — CONSOLIDADO (open gaps + grep-index); full history in
+  `gaps-archive-2026-06-07.md`. Append dated entries, never delete archive.
+- `route-map.md` — frontend hash routes + backend API map with verified states.
+- `personas/` — João-learner (primária), tutor B2B (hipotética), linguista cética (adversária).
 - `README.md` — stack, DB schema, endpoints, test users (PT-BR).
 - `DEPLOY.md` — Neon + Railway + Vercel deploy steps and env var names.
 - `RUNBOOK.md` — manual provider/ops steps.
-- `gaps-live.md` — dated audit log + current blockers. Append, never recreate.
 - This repo is on the user's real Mac at `/Users/joaoadair/Documents/AI/Baeu_Learning`.
   Edit only inside this path.
 
@@ -13,6 +17,17 @@
 
 Korean-learning web app (TOPIK 1). Learner first-value path:
 **signup/login -> practice question -> answer feedback -> progress update.**
+
+**Status estratégico (decisão 2026-06-06-1214): LIFESTYLE/PASSION PROJECT.**
+No B2C GTM. ICE 7.7 lifestyle / 4.7 B2C. Best code in the fleet; the SRS engine
+(`backend/src/services/SrsService.js`, SM-2) is an extraction candidate as an
+internal lib. Canonical prod: web `https://baeu-learning.vercel.app` (SPA,
+hash routes), API `https://baeu-backend-production.up.railway.app/api/v1/*`
+(health: `/api/v1/health` — NOT `/api/health`, that's 404).
+
+Known gotchas: Google button renders but OAuth is dead in prod (`GOOGLE_*` envs
+missing — `sign-in/social` returns 404); `<html lang="en">` on a Korean app;
+no meta/OG; two parallel token systems (`styles/designSystem.js` + `theme.js`).
 
 - **Backend** (`backend/`): Node + Express (ESM), Postgres via `pg` on Neon,
   `better-auth` for auth, OpenTelemetry instrumentation, Resend email,
