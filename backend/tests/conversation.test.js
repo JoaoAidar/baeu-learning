@@ -35,7 +35,7 @@ function setup() {
 test('listPersonas returns the curated set with no system prompt leaked', () => {
   setup();
   const personas = Chat.listPersonas();
-  assert.equal(personas.length, 4);
+  assert.equal(personas.length, 7);
   for (const p of personas) {
     assert.ok(p.slug && p.name && p.scenario);
     assert.equal(p.system, undefined); // never leak the prompt
@@ -113,6 +113,48 @@ test('end evaluates the transcript and is idempotent', async () => {
   });
   assert.equal(again.alreadyEnded, true);
   assert.deepEqual(again.feedback.semantic, first.feedback.semantic);
+});
+
+test('end feeds conversation mistakes into diagnostics (attempts + mastery)', async () => {
+  setup();
+  const { conversationId } = await Chat.start({ userId: 'u1', personaSlug: 'jihun-colleague' });
+  await Chat.reply({ userId: 'u1', conversationId, text: '나는 학생이다', fetchImpl: fakeFetch() });
+
+  // Feedback with a register issue on one message → should record an attempt
+  // tagged honorific_formality and lapse the 'formality' mastery skill.
+  const feedback = {
+    overall: { summary: 's', level: 'TOPIK 1', encouragement: 'e' },
+    messages: [
+      {
+        original: '나는 학생이다',
+        hasIssues: true,
+        corrected: '저는 학생이에요',
+        issues: [{ type: 'register', explanation: 'Use polite 존댓말.' }],
+        naturalness: 'too blunt',
+      },
+    ],
+    semantic: { communicated: true, notes: '' },
+    vocab: [],
+    phrases: [],
+  };
+  const res = await Chat.end({
+    userId: 'u1',
+    conversationId,
+    fetchImpl: fakeFetch('네', feedback),
+  });
+  assert.equal(res.diagnostics.recorded, 1);
+  assert.equal(res.diagnostics.withIssues, 1);
+
+  const attempts = await memoryStore.listAttemptsForUser('u1');
+  const convAttempt = attempts.find((a) => a.exercise_type === 'conversation');
+  assert.ok(convAttempt, 'a conversation attempt was recorded');
+  assert.equal(convAttempt.correct, false);
+  assert.ok(convAttempt.error_tags.includes('honorific_formality'));
+
+  const mastery = await memoryStore.getMastery('u1', 'formality');
+  assert.ok(mastery, 'formality mastery row exists');
+  assert.equal(mastery.total_attempts, 1);
+  assert.equal(mastery.total_correct, 0);
 });
 
 test('end with no learner turns is rejected', async () => {
