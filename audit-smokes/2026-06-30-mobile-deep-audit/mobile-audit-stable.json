@@ -1,0 +1,200 @@
+{
+  "generatedAt": "2026-06-30T01:21:03.286Z",
+  "email": "mobile-stable-1782782437896@test.local",
+  "cleanup": {
+    "ok": true,
+    "status": 200,
+    "body": {
+      "success": true,
+      "message": "User deleted"
+    }
+  },
+  "events": [],
+  "results": [
+    {
+      "label": "stable-03-home-ready",
+      "metrics": {
+        "url": "https://baeu-learning.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "headings": [
+          "Start with Hangul",
+          "Modules"
+        ],
+        "visibleText": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAbout\nAccount\nLog out\n\nTODAY'S KOREAN\n\nStart with Hangul\n\nHangul & Reading is the cleanest first step. Get one corrected card, then your progress starts tracking.\n\n620 questions across 8 modules.\n\nStart Hangul & Reading\n→\nMixed practice\nDUE NOW\n0\nATTEMPTS\n0\nWEAK FOCUS\nclear\n\nNew here? Try Hangul & Reading first — it builds the alphabet you'll need for everything else.\n\n×\nModules\n한\nHangul & Reading\n83 q\n\nLearn the Korean alphabet — vowels, consonants, and how syllables combine.\n\n안\nGreetings & Politeness\n42 q\n\nHello, thank you, sorry — and the formality levels behind them.\n\n一\nNumbers & Counting\n52 q\n\nNative and Sino-Korean numbers, plus counters for time, age, and money.\n\n은\nParticles\n51 q\n\nThe system: 은/는, 이/가, 을/를, 에, 에서 — what each one marks and why.\n\n하\nVerbs & Conjugation\n80 q\n\nDictionary form, polite -아/어요, formal -ㅂ니다, and past -았/었어요 across common verbs.\n\n집\nDaily Life Vocabulary\n134 q\n\nFood, family, places, time, objects, colors — everyday words in context.\n\n문\nSentence Patterns\n102 q\n\nSOV order, the copula, negation, questions — building real sentences.\n\n글\nReading & Translation\n76 q\n\nTranslate full sentences and short passages, both directi",
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92
+          },
+          {
+            "tag": "button",
+            "text": "×",
+            "w": 28,
+            "h": 28,
+            "top": 599
+          }
+        ]
+      }
+    },
+    {
+      "label": "stable-08-progress-ready",
+      "metrics": {
+        "url": "https://baeu-learning.vercel.app/#/progress",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "headings": [
+          "Skills"
+        ],
+        "visibleText": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAbout\nAccount\nLog out\nSTREAK\n0d\nTOTAL\n0\nACCURACY\n0%\nLAST 7D\n0\n0%\nSKILLS DUE\n0\nMASTERED\n0\nSkills\n\nNo skill data yet — answer a few questions first.",
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92
+          }
+        ]
+      }
+    },
+    {
+      "label": "stable-09-results-ready",
+      "metrics": {
+        "url": "https://baeu-learning.vercel.app/#/results",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "headings": [
+          "Your results",
+          "Keep it simple for now",
+          "Daily activity",
+          "Review forecast"
+        ],
+        "visibleText": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAbout\nAccount\nLog out\nYour results\nLast 7 days\nLast 30 days\nLast 90 days\nATTEMPTS\n0\nCORRECT\n0\nACCURACY\n0%\nTOUGH ITEMS\n0\nKeep it simple for now\n\nNo attempts in this window yet. Start with one short practice round and this page will turn into a report.\n\nDo 5 cards →\nDaily activity\nLast 30 days\nNo activity in this window yet — finish a practice session and your daily volume shows up here.\nReview forecast\nWhen items come due\n0\nDue now\n0\nTomorrow\n0\nNext 7 days\n0\nOverdue",
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92
+          },
+          {
+            "tag": "select",
+            "text": "Last 7 days\nLast 30 days\nLast 90 days",
+            "w": 129,
+            "h": 37,
+            "top": 133
+          }
+        ]
+      }
+    },
+    {
+      "label": "stable-10-chat-ready",
+      "metrics": {
+        "url": "https://baeu-learning.vercel.app/#/chat",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "headings": [
+          "Conversation practice",
+          "Start with a short, low-stakes chat"
+        ],
+        "visibleText": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAbout\nAccount\nLog out\nConversation practice\n\nChat in Korean (Hangul) with a partner. When you're done, get feedback on what you wrote — meaning, grammar, particles and naturalness.\n\nStart with a short, low-stakes chat\n\nPick the recommended scenario first, write 3-5 short replies, then end the chat. Feedback is generated after the conversation, so it may take a moment and should be treated as practice guidance, not native review.\n\nLoading scenarios…",
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92
+          }
+        ]
+      }
+    },
+    {
+      "label": "stable-11-about-ready",
+      "metrics": {
+        "url": "https://baeu-learning.vercel.app/#/about",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "headings": [
+          "About Baeu",
+          "Who it's for",
+          "What's there today",
+          "For cohorts and sponsors",
+          "Pedagogy scope",
+          "Privacy and support",
+          "Pricing"
+        ],
+        "visibleText": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAbout\nAccount\nLog out\nAbout Baeu\n\nBaeu is a Korean practice app that turns short, mixed exercises into steady mastery through spaced review.\n\nWho it's for\n\nSelf-directed learners working toward TOPIK 1 who want frequent, low-friction practice with honest progress signals — not a course.\n\nWhat's there today\n\nA handful of modules and published questions across translation, multiple choice, and fill-in-the-blank. The adaptive review queue resurfaces what you keep getting wrong, and the Progress page shows accuracy, skill mastery, weak tags, and recent activity.\n\nFor cohorts and sponsors\n\nBaeu is currently best suited for a small, supervised learner cohort: a teacher, parent, or sponsor can ask learners to practice daily and review their Progress screen as a lightweight report. It is not yet a school LMS, placement test, certificate, or payment product.\n\nLATEST LEARNER SMOKE\nPassed 2026-06-29\nACCOUNT SAFETY SMOKE\nPassed IDOR check\nNATIVE REVIEW\nDraft grammar still flagged\nTry learner flow →\nView progress report\nPedagogy scope\n\nThe curriculum is TOPIK 1-oriented and intentionally narrow: Hangul, beginner grammar, common vocabulary, particles, senten",
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92
+          }
+        ]
+      }
+    }
+  ]
+}

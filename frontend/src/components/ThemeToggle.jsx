@@ -4,7 +4,7 @@ import { getActiveTheme, toggleTheme } from '../utils/theme.js';
 // Sun/moon toggle. Stays in sync with the active theme (including OS-driven
 // changes while no explicit choice is stored) by polling the <html> class on
 // the lightweight `theme` matchMedia event the manager already wires up.
-export default function ThemeToggle({ className = '' }) {
+export default function ThemeToggle({ className = '', testId = 'theme-toggle' }) {
   const [theme, setTheme] = useState(() => getActiveTheme());
 
   useEffect(() => {
@@ -23,10 +23,10 @@ export default function ThemeToggle({ className = '' }) {
     <button
       type="button"
       onClick={() => setTheme(toggleTheme())}
-      data-testid="theme-toggle"
+      data-testid={testId}
       aria-label={isDark ? 'Switch to light theme' : 'Switch to dark theme'}
       title={isDark ? 'Light mode' : 'Dark mode'}
-      className={`relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent ${className}`}
+      className={`relative w-11 h-11 inline-flex items-center justify-center rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent ${className}`}
     >
       {isDark ? (
         // Sun

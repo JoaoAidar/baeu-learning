@@ -16,7 +16,7 @@ export function ToastProvider({ children }) {
   return (
     <ToastCtx.Provider value={{ push }}>
       {children}
-      <div className="fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm">
+      <div className="fixed inset-x-3 bottom-3 z-50 flex flex-col gap-2 sm:inset-x-auto sm:bottom-auto sm:top-4 sm:right-4 sm:max-w-sm">
         {toasts.map((t) => (
           <div
             key={t.id}

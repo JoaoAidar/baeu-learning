@@ -2633,3 +2633,49 @@ Produto só deve avançar como resposta específica a `` para `B2C/prosumer ou e
 | Public routes | Browser wrapper deploy-smoke passed `/`, `/#/about`, `/#/progress`, `/#/results`, `/#/chat`, and invalid-route recovery with `bad_count=0`. | OK |
 
 **Still open:** real learner/sponsor validation of daily return/WTP; Google OAuth/Resend provider configuration; prod admin smoke with sanctioned `E2E_ADMIN_TOKEN`; native review for draft lessons.
+
+## Mobile deep audit — 2026-06-30T01:20Z
+
+**Auditor:** Codex using `brutal-visual-audit` | **Target:** `https://baeu-learning.vercel.app`
+
+**Source artifact:** `audit-smokes/2026-06-30-mobile-deep-audit/MOBILE_DEEP_AUDIT.md`
+
+| Severity | Surface | Finding | Gate |
+|---|---|---|---|
+| P1 | Progress mobile | Fresh/low-data Progress is a dead end: empty metrics and no next action. | Add low-data panel with "Do 5 cards" and "Back to Today". |
+| P1 | Mobile nav | Desktop nav is compressed into two mobile rows and consumes first-viewport work space. | Compact nav into core mobile tabs and move About/Account/theme/logout into menu. |
+| P2 | Toast | Signup toast can cover mobile nav and route state. | Move toast to bottom or below nav on mobile. |
+| P2 | Results | Low-data summary works, but repeated zero-state sections still elongate mobile. | Collapse details until enough attempts exist. |
+| P2 | Public landing/About | Landing leads with login before value; About sponsor proof is credible but too deep/card-heavy. | Reorder mobile first value and move sponsor trust higher. |
+| P3 | Tap targets | Theme, coachmark close, select, and demo controls are under 44px comfort target. | Enforce 44px minimum hit areas. |
+
+**Proof:** mobile captures at 390px and 360px had `0` console/page errors, `0` horizontal overflow findings, and synthetic user cleanup returned `200 success:true`.
+
+## Mobile remediation implementation — 2026-06-30T01:33Z
+
+**Executor:** Codex | **Scope:** frontend-only corrections from mobile deep audit.
+
+| Audit finding | Correction | Evidence |
+|---|---|---|
+| Progress mobile low-data dead end | Added `progress-low-data-panel` with "Do 5 cards" and "Back to Today" CTAs. | `frontend/src/pages/Progress.jsx`; local `npm run build` passed. |
+| Desktop nav compressed into mobile | Reworked Header: mobile primary tabs show Practice/Chat/Progress/Results; About/Account/Admin/Log out moved behind `More`; desktop nav remains complete. | `frontend/src/App.jsx`; build passed. |
+| Toast covers top nav | Toast container now sits at bottom on mobile and top-right on desktop. | `frontend/src/components/Toast.jsx`; build passed. |
+| Results repeats zero-state on mobile | Added mobile `Details` disclosure for Daily Activity + Review Forecast while keeping desktop analytics visible. | `frontend/src/pages/Results.jsx`; build passed. |
+| Tap targets under 44px | Theme toggle, coachmark close, Results select, auth/demo controls, and pronunciation buttons now use 44px minimum hit areas. | `ThemeToggle.jsx`, `Home.jsx`, `Auth.jsx`, `Results.jsx`; build passed. |
+
+**Validation note:** default local e2e could not run because port `3001` was occupied by another local project (`LicitacoesDash`). A manual alternate-port attempt exposed backend CORS restrictions for `127.0.0.1:5174`; those failures are environment/proxy issues, not app regressions. Production smokes must be run after deploy.
+
+## Mobile remediation deploy proof — 2026-06-30T01:48Z
+
+**Executor:** Codex | **Deployment:** `dpl_4B1xiW8yqFmHikvA9cNpSYc6e9z8` | **Alias:** `https://baeu-learning.vercel.app`
+
+**Source artifact:** `audit-smokes/2026-06-30-mobile-fix-proof/MOBILE_FIX_PROOF.md`
+
+| Surface | Evidence | Status |
+|---|---|---|
+| Vercel production | Final production deploy returned `READY` and canonical alias points at the mobile-fix build. | OK |
+| Learner first-value | `npm run e2e:prod-smoke -- --workers=1` passed signup -> feedback -> progress -> relogin persistence -> cleanup. | OK |
+| Lifecycle / low-data Results | `npm run e2e:prod-lifecycle -- --workers=1` passed signup -> theme -> low-data Results -> practice -> results-with-data -> delete. | OK |
+| Mobile post-fix proof | 390px browser capture shows compact nav, bottom toast, Progress low-data CTA, simplified Results, and More menu; `mobile-fix-proof.json` has zero console/page/request errors and zero horizontal overflow. | OK |
+
+**Residual mobile note:** the brand/home link is still measured at `89x32`, below the 44px comfort target, but it did not block the tested mobile learner flow.

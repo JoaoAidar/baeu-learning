@@ -76,7 +76,7 @@ export default function Home() {
             type="button"
             onClick={dismissCoachmark}
             aria-label="Dismiss tip"
-            className="absolute top-2 right-2 w-7 h-7 rounded-md text-gray-500 hover:text-gray-800 hover:bg-white/60 bg-transparent flex items-center justify-center"
+            className="absolute top-1 right-1 w-11 h-11 rounded-md text-gray-500 hover:text-gray-800 hover:bg-white/60 bg-transparent flex items-center justify-center"
           >
             ×
           </button>

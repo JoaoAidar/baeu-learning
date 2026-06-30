@@ -343,6 +343,12 @@ function ResetPassword({ query }) {
 }
 
 function Header({ user, role, active, onLogout }) {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+  }, [active, user?.id]);
+
   return (
     <header className="bg-white border-b border-gray-200 sticky top-0 z-40">
       <div className="container py-3 sm:py-4 flex flex-wrap items-center gap-2 sm:gap-4">
@@ -351,53 +357,111 @@ function Header({ user, role, active, onLogout }) {
           <span className="font-heading font-bold text-xl text-gray-900 leading-none">Baeu</span>
           <span className="text-gray-400 text-sm hidden sm:inline">· Korean practice</span>
         </a>
-        <nav className="w-full sm:w-auto sm:ml-auto flex flex-wrap items-center gap-1 sm:gap-3 text-sm">
-          {user && (
-            <>
-              <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
-              <NavLink href="#/chat" active={active === 'chat'}>Chat</NavLink>
-              <NavLink href="#/progress" active={active === 'progress'}>Progress</NavLink>
-              <NavLink href="#/results" active={active === 'results'}>Results</NavLink>
-            </>
-          )}
+        <nav className="ml-auto hidden sm:flex items-center gap-3 text-sm">
+          <PrimaryNavLinks user={user} active={active} role={role} />
           <NavLink href="#/about" active={active === 'about'}>About</NavLink>
-          {role === 'admin' && (
-            <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
-          )}
           <ThemeToggle className="ml-0.5" />
-          {user && (
-            <div className="flex items-center gap-1 sm:gap-2 ml-1 sm:ml-2 pl-2 sm:pl-3 border-l border-gray-200 flex-shrink-0">
-              <a
-                href="#/account"
-                data-testid="account-link"
-                className={`px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md no-underline transition-colors whitespace-nowrap ${
-                  active === 'account' ? 'text-primary-700 font-semibold' : 'text-gray-600 hover:text-primary-500'
-                }`}
-              >
-                Account
-              </a>
-              <span className="text-gray-300 hidden sm:inline">·</span>
-              <button
-                type="button"
-                data-testid="logout-btn"
-                onClick={onLogout}
-                className="px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent whitespace-nowrap"
-              >
-                Log out
-              </button>
-            </div>
-          )}
+          {user && <AccountNav active={active} onLogout={onLogout} />}
         </nav>
+
+        <div className="ml-auto flex sm:hidden items-center gap-1">
+          <ThemeToggle testId="theme-toggle-mobile" />
+          {user && (
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-more-menu"
+              className={`min-h-[44px] px-3 inline-flex items-center rounded-md bg-transparent font-semibold transition-colors ${
+                ['about', 'account', 'admin'].includes(active)
+                  ? 'bg-primary-50 text-primary-700'
+                  : 'text-gray-600 hover:text-primary-500 hover:bg-primary-50'
+              }`}
+            >
+              More
+            </button>
+          )}
+        </div>
+
+        {user && (
+          <nav className="w-full grid grid-cols-4 gap-1 text-sm sm:hidden" aria-label="Primary mobile navigation">
+            <NavLink href="#/" active={active === 'practice'} compact>Practice</NavLink>
+            <NavLink href="#/chat" active={active === 'chat'} compact>Chat</NavLink>
+            <NavLink href="#/progress" active={active === 'progress'} compact>Progress</NavLink>
+            <NavLink href="#/results" active={active === 'results'} compact>Results</NavLink>
+          </nav>
+        )}
+
+        {!user && (
+          <nav className="w-full flex items-center gap-1 text-sm sm:hidden" aria-label="Public mobile navigation">
+            <NavLink href="#/about" active={active === 'about'} compact>About</NavLink>
+          </nav>
+        )}
+
+        {user && mobileMenuOpen && (
+          <div
+            id="mobile-more-menu"
+            className="w-full sm:hidden grid grid-cols-2 gap-2 border-t border-gray-100 pt-2"
+          >
+            <NavLink href="#/about" active={active === 'about'} compact>About</NavLink>
+            <NavLink href="#/account" active={active === 'account'} compact testId="account-link">Account</NavLink>
+            {role === 'admin' && <NavLink href="#/admin" active={active === 'admin'} compact>Admin</NavLink>}
+            <button
+              type="button"
+              data-testid="logout-btn"
+              onClick={onLogout}
+              className="min-h-[44px] px-3 inline-flex items-center justify-center rounded-md text-gray-600 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent whitespace-nowrap"
+            >
+              Log out
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );
 }
 
-function NavLink({ href, active, children }) {
+function PrimaryNavLinks({ user, active, role }) {
+  return (
+    <>
+      {user && (
+        <>
+          <NavLink href="#/" active={active === 'practice'}>Practice</NavLink>
+          <NavLink href="#/chat" active={active === 'chat'}>Chat</NavLink>
+          <NavLink href="#/progress" active={active === 'progress'}>Progress</NavLink>
+          <NavLink href="#/results" active={active === 'results'}>Results</NavLink>
+        </>
+      )}
+      {role === 'admin' && (
+        <NavLink href="#/admin" active={active === 'admin'}>Admin</NavLink>
+      )}
+    </>
+  );
+}
+
+function AccountNav({ active, onLogout }) {
+  return (
+    <div className="flex items-center gap-2 ml-2 pl-3 border-l border-gray-200 flex-shrink-0">
+      <NavLink href="#/account" active={active === 'account'} testId="account-link">Account</NavLink>
+      <span className="text-gray-300 hidden sm:inline">·</span>
+      <button
+        type="button"
+        data-testid="logout-btn"
+        onClick={onLogout}
+        className="px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md text-gray-500 hover:text-primary-500 hover:bg-primary-50 transition-colors bg-transparent whitespace-nowrap"
+      >
+        Log out
+      </button>
+    </div>
+  );
+}
+
+function NavLink({ href, active, children, compact = false, testId }) {
   return (
     <a
       href={href}
-      className={`px-3 py-2.5 min-h-[44px] inline-flex items-center rounded-md no-underline transition-colors whitespace-nowrap ${
+      data-testid={testId}
+      className={`${compact ? 'px-2 justify-center text-center' : 'px-3'} py-2.5 min-h-[44px] inline-flex items-center rounded-md no-underline transition-colors whitespace-nowrap ${
         active
           ? 'bg-primary-50 text-primary-700 font-semibold'
           : 'text-gray-600 hover:text-primary-500'

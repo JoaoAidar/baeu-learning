@@ -1,0 +1,38 @@
+{
+  "out": "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof",
+  "base": "https://baeu-learning.vercel.app",
+  "email": "mobile-fix-1782784081480@test.local",
+  "cleanup": {
+    "ok": true,
+    "status": 200,
+    "body": {
+      "success": true,
+      "message": "User deleted"
+    }
+  },
+  "events": [
+    {
+      "type": "note",
+      "text": "Results details disclosure not present for this data state."
+    }
+  ],
+  "screenshots": [
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof/00-landing.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof/01-home-toast-bottom.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof/02-home-ready-nav-compact.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof/03-progress-low-data-cta.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof/04-results-collapsed-details.png",
+    "/Users/joaoadair/Documents/AI/Baeu_Learning/audit-smokes/2026-06-30-mobile-fix-proof/06-more-menu.png"
+  ],
+  "overflow": [],
+  "smallTargets": [
+    {
+      "tag": "A",
+      "label": "배Baeu· Korean practice",
+      "width": 89,
+      "height": 32
+    }
+  ],
+  "title": "Results · Baeu — Korean Practice",
+  "hash": "#/results"
+}

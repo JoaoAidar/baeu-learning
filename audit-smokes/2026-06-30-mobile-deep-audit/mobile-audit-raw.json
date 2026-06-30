@@ -1,0 +1,1205 @@
+{
+  "generatedAt": "2026-06-30T01:19:41.863Z",
+  "base": "https://baeu-learning.vercel.app",
+  "email": "mobile-audit-1782782367839@test.local",
+  "cleanup": {
+    "ok": true,
+    "status": 200,
+    "body": {
+      "success": true,
+      "message": "User deleted"
+    }
+  },
+  "consoleEvents": [],
+  "results": [
+    {
+      "device": "iphone390",
+      "step": "01",
+      "label": "landing",
+      "metrics": {
+        "title": "Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 44,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          },
+          {
+            "tag": "button",
+            "text": "🔊",
+            "w": 24,
+            "h": 24,
+            "top": 1077,
+            "cls": "inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover"
+          },
+          {
+            "tag": "button",
+            "text": "Hello",
+            "w": 324,
+            "h": 42,
+            "top": 1113,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Thank you",
+            "w": 324,
+            "h": 42,
+            "top": 1163,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Goodbye",
+            "w": 324,
+            "h": 42,
+            "top": 1213,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Check answer",
+            "w": 139,
+            "h": 40,
+            "top": 1271,
+            "cls": "mt-4 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not"
+          },
+          {
+            "tag": "button",
+            "text": "Forgot password?",
+            "w": 103,
+            "h": 16,
+            "top": 404,
+            "cls": "text-xs text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+          },
+          {
+            "tag": "button",
+            "text": "Sign up",
+            "w": 50,
+            "h": 20,
+            "top": 498,
+            "cls": "text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nAbout",
+            "top": 0,
+            "bottom": 85,
+            "height": 85,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "",
+            "top": 16,
+            "bottom": 16,
+            "height": 0,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Build real Korean fluency one question at a time.",
+          "Mini practice",
+          "What's inside",
+          "Welcome back"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "02",
+      "label": "signup",
+      "metrics": {
+        "title": "Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 44,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          },
+          {
+            "tag": "button",
+            "text": "🔊",
+            "w": 24,
+            "h": 24,
+            "top": 1143,
+            "cls": "inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover"
+          },
+          {
+            "tag": "button",
+            "text": "Hello",
+            "w": 324,
+            "h": 42,
+            "top": 1179,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Thank you",
+            "w": 324,
+            "h": 42,
+            "top": 1229,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Goodbye",
+            "w": 324,
+            "h": 42,
+            "top": 1279,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Check answer",
+            "w": 139,
+            "h": 40,
+            "top": 1337,
+            "cls": "mt-4 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not"
+          },
+          {
+            "tag": "button",
+            "text": "Log in",
+            "w": 40,
+            "h": 20,
+            "top": 564,
+            "cls": "text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nAbout",
+            "top": 0,
+            "bottom": 85,
+            "height": 85,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "",
+            "top": 16,
+            "bottom": 16,
+            "height": 0,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Build real Korean fluency one question at a time.",
+          "Mini practice",
+          "What's inside",
+          "Create your account"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "03",
+      "label": "home-today",
+      "metrics": {
+        "title": "Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          },
+          {
+            "tag": "button",
+            "text": "×",
+            "w": 28,
+            "h": 28,
+            "top": 531,
+            "cls": "absolute top-2 right-2 w-7 h-7 rounded-md text-gray-500 hover:text-gray-800 hove"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Today",
+          "Modules"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "04",
+      "label": "module",
+      "metrics": {
+        "title": "Module · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/module/hangul",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": []
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "05",
+      "label": "practice-start",
+      "metrics": {
+        "title": "Practice · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/practice?module=hangul",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Module practice"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "06",
+      "label": "question",
+      "metrics": {
+        "title": "Practice · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/practice?module=hangul",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          },
+          {
+            "tag": "button",
+            "text": "🔊",
+            "w": 36,
+            "h": 36,
+            "top": 194,
+            "cls": "inline-flex items-center justify-center w-9 h-9 text-base rounded-full text-gray"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": []
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "07",
+      "label": "feedback",
+      "metrics": {
+        "title": "Practice · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/practice?module=hangul",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Not quite"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "08",
+      "label": "progress",
+      "metrics": {
+        "title": "Progress · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/progress",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": []
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "09",
+      "label": "results-after-one",
+      "metrics": {
+        "title": "Results · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/results",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Account created. 환영합니다!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": []
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "10",
+      "label": "chat-picker",
+      "metrics": {
+        "title": "Conversation · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/chat",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "",
+            "top": 16,
+            "bottom": 16,
+            "height": 0,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Conversation practice",
+          "Start with a short, low-stakes chat"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "11",
+      "label": "about",
+      "metrics": {
+        "title": "About · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/about",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "",
+            "top": 16,
+            "bottom": 16,
+            "height": 0,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "About Baeu",
+          "Who it's for",
+          "What's there today",
+          "For cohorts and sponsors",
+          "Pedagogy scope",
+          "Privacy and support",
+          "Pricing"
+        ]
+      }
+    },
+    {
+      "device": "iphone390",
+      "step": "12",
+      "label": "account",
+      "metrics": {
+        "title": "Account · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/account",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "scrollWidth": 390,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "",
+            "top": 16,
+            "bottom": 16,
+            "height": 0,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Account",
+          "Sessions",
+          "Danger zone"
+        ]
+      }
+    },
+    {
+      "device": "narrow360",
+      "step": "01",
+      "label": "landing",
+      "metrics": {
+        "title": "Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "scrollWidth": 360,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 44,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          },
+          {
+            "tag": "button",
+            "text": "🔊",
+            "w": 24,
+            "h": 24,
+            "top": 1117,
+            "cls": "inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover"
+          },
+          {
+            "tag": "button",
+            "text": "Hello",
+            "w": 294,
+            "h": 42,
+            "top": 1153,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Thank you",
+            "w": 294,
+            "h": 42,
+            "top": 1203,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Goodbye",
+            "w": 294,
+            "h": 42,
+            "top": 1253,
+            "cls": "flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 "
+          },
+          {
+            "tag": "button",
+            "text": "Check answer",
+            "w": 139,
+            "h": 40,
+            "top": 1311,
+            "cls": "mt-4 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not"
+          },
+          {
+            "tag": "button",
+            "text": "Forgot password?",
+            "w": 103,
+            "h": 16,
+            "top": 404,
+            "cls": "text-xs text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+          },
+          {
+            "tag": "button",
+            "text": "Sign up",
+            "w": 50,
+            "h": 20,
+            "top": 498,
+            "cls": "text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nAbout",
+            "top": 0,
+            "bottom": 85,
+            "height": 85,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "",
+            "top": 16,
+            "bottom": 16,
+            "height": 0,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Build real Korean fluency one question at a time.",
+          "Mini practice",
+          "What's inside",
+          "Welcome back"
+        ]
+      }
+    },
+    {
+      "device": "narrow360",
+      "step": "03",
+      "label": "home-today",
+      "metrics": {
+        "title": "Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "scrollWidth": 360,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          },
+          {
+            "tag": "button",
+            "text": "×",
+            "w": 28,
+            "h": 28,
+            "top": 531,
+            "cls": "absolute top-2 right-2 w-7 h-7 rounded-md text-gray-500 hover:text-gray-800 hove"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Welcome back!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Today",
+          "Modules"
+        ]
+      }
+    },
+    {
+      "device": "narrow360",
+      "step": "08",
+      "label": "progress",
+      "metrics": {
+        "title": "Progress · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/progress",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "scrollWidth": 360,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Welcome back!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": []
+      }
+    },
+    {
+      "device": "narrow360",
+      "step": "09",
+      "label": "results-after-one",
+      "metrics": {
+        "title": "Results · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/results",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "scrollWidth": 360,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Welcome back!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": []
+      }
+    },
+    {
+      "device": "narrow360",
+      "step": "10",
+      "label": "chat-picker",
+      "metrics": {
+        "title": "Conversation · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/chat",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "scrollWidth": 360,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Welcome back!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "Conversation practice",
+          "Start with a short, low-stakes chat"
+        ]
+      }
+    },
+    {
+      "device": "narrow360",
+      "step": "11",
+      "label": "about",
+      "metrics": {
+        "title": "About · Baeu — Korean Practice",
+        "url": "https://baeu-learning.vercel.app/#/about",
+        "viewport": {
+          "width": 360,
+          "height": 740
+        },
+        "scrollWidth": 360,
+        "horizontalOverflow": false,
+        "overflowers": [],
+        "smallTargets": [
+          {
+            "tag": "a",
+            "text": "배\nBaeu",
+            "w": 89,
+            "h": 32,
+            "top": 0,
+            "cls": "flex items-center gap-2 no-underline flex-shrink-0"
+          },
+          {
+            "tag": "button",
+            "text": "Switch to dark theme",
+            "w": 36,
+            "h": 36,
+            "top": 92,
+            "cls": "relative w-9 h-9 inline-flex items-center justify-center rounded-md text-gray-50"
+          }
+        ],
+        "fixed": [
+          {
+            "tag": "header",
+            "text": "배\nBaeu\nPractice\nChat\nProgress\nResults\nAb",
+            "top": 0,
+            "bottom": 133,
+            "height": 133,
+            "cls": "bg-white border-b border-gray-200 sticky top-0 z-40"
+          },
+          {
+            "tag": "div",
+            "text": "Welcome back!",
+            "top": 16,
+            "bottom": 62,
+            "height": 46,
+            "cls": "fixed top-4 right-4 z-50 flex flex-col gap-2 max-w-sm"
+          }
+        ],
+        "headings": [
+          "About Baeu",
+          "Who it's for",
+          "What's there today",
+          "For cohorts and sponsors",
+          "Pedagogy scope",
+          "Privacy and support",
+          "Pricing"
+        ]
+      }
+    }
+  ]
+}

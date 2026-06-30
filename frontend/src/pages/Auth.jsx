@@ -197,7 +197,7 @@ export default function Auth({ notice = null }) {
                   type="button"
                   onClick={() => switchMode('login')}
                   data-testid="auth-back-to-login"
-                  className="text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+                  className="min-h-[44px] inline-flex items-center justify-center text-primary-600 hover:text-primary-700 font-medium bg-transparent px-2"
                 >
                   Back to log in
                 </button>
@@ -239,7 +239,7 @@ export default function Auth({ notice = null }) {
                       type="button"
                       onClick={() => switchMode('forgot')}
                       data-testid="auth-forgot-password"
-                      className="text-xs text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+                      className="min-h-[44px] inline-flex items-center justify-center text-xs text-primary-600 hover:text-primary-700 font-medium bg-transparent px-2"
                     >
                       Forgot password?
                     </button>
@@ -284,7 +284,7 @@ export default function Auth({ notice = null }) {
                   onClick={() => switchMode(mode === 'login' ? 'signup' : 'login')}
                   data-testid={mode === 'login' ? 'auth-switch-signup' : 'auth-switch-login'}
                   aria-controls="auth-submit"
-                  className="text-primary-600 hover:text-primary-700 font-medium bg-transparent p-0"
+                  className="min-h-[44px] inline-flex items-center justify-center text-primary-600 hover:text-primary-700 font-medium bg-transparent px-2"
                 >
                   {mode === 'login' ? 'Sign up' : 'Log in'}
                 </button>
@@ -413,7 +413,7 @@ function DemoPractice({ onSignup }) {
                   onClick={() => setAnswer(o.id)}
                   data-testid={`demo-option-${o.id}`}
                   aria-pressed={selected}
-                  className={`flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 text-sm transition-all disabled:cursor-default ${
+                  className={`min-h-[44px] flex items-center justify-between gap-2 text-left border rounded-lg px-3 py-2.5 text-sm transition-all disabled:cursor-default ${
                     state === 'correct'
                       ? 'border-green-400 bg-green-50 text-green-900'
                       : state === 'wrong'
@@ -436,7 +436,7 @@ function DemoPractice({ onSignup }) {
               onClick={() => setChecked(true)}
               disabled={!answer}
               data-testid="demo-check"
-              className="mt-4 bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all"
+              className="mt-4 min-h-[44px] bg-primary-500 hover:bg-primary-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold py-2 px-4 rounded-lg transition-all"
             >
               Check answer
             </button>
@@ -455,7 +455,7 @@ function DemoPractice({ onSignup }) {
                 type="button"
                 onClick={next}
                 data-testid="demo-next"
-                className="mt-3 bg-gray-900 hover:bg-black text-white font-semibold py-2 px-4 rounded-lg transition-all"
+                className="mt-3 min-h-[44px] bg-gray-900 hover:bg-black text-white font-semibold py-2 px-4 rounded-lg transition-all"
               >
                 {willFinish ? 'See schedule →' : 'Next →'}
               </button>
@@ -491,7 +491,7 @@ function DemoPractice({ onSignup }) {
               type="button"
               onClick={onSignup}
               data-testid="demo-signup"
-              className="bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
+              className="min-h-[44px] bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 px-4 rounded-lg transition-all"
             >
               Sign up to practice 440+ →
             </button>
@@ -499,7 +499,7 @@ function DemoPractice({ onSignup }) {
               type="button"
               onClick={restart}
               data-testid="demo-restart"
-              className="text-sm text-gray-500 hover:text-gray-700 font-medium bg-transparent p-0"
+              className="min-h-[44px] inline-flex items-center justify-center text-sm text-gray-500 hover:text-gray-700 font-medium bg-transparent px-2"
             >
               Try again
             </button>
@@ -521,7 +521,7 @@ function DemoSpeak({ text }) {
       }}
       aria-label="Play Korean pronunciation"
       title="Play pronunciation"
-      className="inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors flex-shrink-0"
+      className="inline-flex items-center justify-center w-11 h-11 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors flex-shrink-0"
     >
       <span aria-hidden>🔊</span>
     </button>

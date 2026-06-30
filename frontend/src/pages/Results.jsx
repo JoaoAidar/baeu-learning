@@ -47,7 +47,7 @@ export default function Results() {
           data-testid="results-window"
           value={days}
           onChange={(e) => setDays(Number(e.target.value))}
-          className="px-3 py-2 border border-gray-300 rounded-lg text-sm"
+          className="min-h-[44px] px-3 py-2 border border-gray-300 rounded-lg text-sm"
         >
           <option value={7}>Last 7 days</option>
           <option value={30}>Last 30 days</option>
@@ -63,7 +63,9 @@ export default function Results() {
       </div>
 
       {lowData && <LowDataSummary attempts={data.totals.attempts} dueNow={dueNow} />}
+      {lowData && <MobileLowDataDetails data={data} days={days} maxDaily={maxDaily} />}
 
+      <div className={lowData ? 'hidden sm:block' : ''}>
       <Card title="Daily activity" subtitle={`Last ${days} days`}>
         {data.totals.attempts === 0 ? (
           <EmptyHint>
@@ -95,6 +97,7 @@ export default function Results() {
           </>
         )}
       </Card>
+      </div>
 
       {!lowData && data.retention && (
         <Card title="Habit" subtitle="Consistency drives spaced repetition">
@@ -142,6 +145,7 @@ export default function Results() {
       )}
 
       {data.forecast && (
+        <div className={lowData ? 'hidden sm:block' : ''}>
         <Card title="Review forecast" subtitle="When items come due">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="results-forecast">
             <Mini label="Due now" value={data.forecast.dueNow} />
@@ -158,6 +162,7 @@ export default function Results() {
             </a>
           )}
         </Card>
+        </div>
       )}
 
       {!lowData && data.forgetting && data.forgetting.trackedItems > 0 && (
@@ -341,6 +346,60 @@ function LowDataSummary({ attempts, dueNow }) {
   );
 }
 
+function MobileLowDataDetails({ data, days, maxDaily }) {
+  return (
+    <details className="sm:hidden bg-white rounded-xl shadow-card border border-gray-100 p-5">
+      <summary className="min-h-[44px] flex items-center justify-between cursor-pointer font-semibold text-gray-900 list-none">
+        Details
+        <span className="text-gray-400 text-sm">Daily + forecast</span>
+      </summary>
+      <div className="pt-3 space-y-4">
+        <div>
+          <div className="flex items-baseline justify-between mb-2">
+            <h3 className="font-heading text-base font-bold text-gray-900">Daily activity</h3>
+            <span className="text-xs text-gray-500">Last {days} days</span>
+          </div>
+          {data.totals.attempts === 0 ? (
+            <EmptyHint>
+              No daily bars yet.
+            </EmptyHint>
+          ) : (
+            <div className="flex items-end gap-1 h-24 rounded-lg bg-gray-50 px-2 pt-2" data-testid="results-daily-mobile">
+              {data.daily.map((d) => {
+                const accRatio = d.attempts ? d.correct / d.attempts : 0;
+                const h = d.attempts ? Math.max(8, (d.attempts / maxDaily) * 100) : 4;
+                return (
+                  <div key={d.date} className="flex-1 flex flex-col items-center justify-end" title={`${d.date}: ${d.attempts} attempts`}>
+                    <div
+                      className={`w-full rounded-t ${d.attempts === 0 ? 'bg-gray-200' : accRatio >= 0.8 ? 'bg-green-500' : accRatio >= 0.5 ? 'bg-secondary-500' : 'bg-red-400'}`}
+                      style={{ height: `${h}%` }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {data.forecast && (
+          <div>
+            <div className="flex items-baseline justify-between mb-2">
+              <h3 className="font-heading text-base font-bold text-gray-900">Review forecast</h3>
+              <span className="text-xs text-gray-500">Due queue</span>
+            </div>
+            <div className="grid grid-cols-2 gap-3" data-testid="results-forecast-mobile">
+              <Mini label="Due now" value={data.forecast.dueNow} />
+              <Mini label="Tomorrow" value={data.forecast.tomorrow} />
+              <Mini label="Next 7 days" value={data.forecast.next7Days} />
+              <Mini label="Overdue" value={data.forecast.overdue} />
+            </div>
+          </div>
+        )}
+      </div>
+    </details>
+  );
+}
+
 function Card({ title, subtitle, children }) {
   return (
     <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6">
@@ -387,7 +446,7 @@ function ItemLabel({ item }) {
           onClick={() => speak(ko)}
           aria-label="Play Korean pronunciation"
           title="Play pronunciation"
-          className="inline-flex items-center justify-center w-6 h-6 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors flex-shrink-0"
+          className="inline-flex items-center justify-center w-11 h-11 rounded-full text-gray-400 hover:text-primary-600 hover:bg-primary-50 transition-colors flex-shrink-0"
         >
           <span aria-hidden>🔊</span>
         </button>

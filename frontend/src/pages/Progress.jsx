@@ -48,9 +48,11 @@ export default function Progress() {
     .slice(0, 3);
   const hasFocus = overview.totals.attempts > 0 && (focusSkills.length > 0 || topErrorTags.length > 0);
   const doneToday = overview.totals.attempts > 0 && dueCount === 0 && focusSkills.length === 0;
+  const lowData = overview.totals.attempts < 3 || skills.length === 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
+      {lowData && <LowDataPanel attempts={overview.totals.attempts} />}
       {hasFocus && (
         <FocusPanel focusSkills={focusSkills} topErrorTags={topErrorTags} />
       )}
@@ -200,6 +202,43 @@ function DonePanel() {
         >
           Extra practice →
         </a>
+      </div>
+    </div>
+  );
+}
+
+function LowDataPanel({ attempts }) {
+  const started = attempts > 0;
+  return (
+    <div
+      data-testid="progress-low-data-panel"
+      className="bg-white rounded-xl shadow-card border border-primary-200 p-6"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-gray-900 mb-1">
+            Create your first progress signal
+          </h3>
+          <p className="text-sm text-gray-600">
+            {started
+              ? 'You have a first answer saved. Do a few more cards so skills, weak areas, and review timing become useful.'
+              : 'Answer a short round first. Progress turns into a real report after the first few cards.'}
+          </p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
+          <a
+            href="#/practice"
+            className="inline-flex items-center justify-center bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all no-underline whitespace-nowrap"
+          >
+            Do 5 cards →
+          </a>
+          <a
+            href="#/"
+            className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-5 rounded-lg transition-all no-underline whitespace-nowrap"
+          >
+            Back to Today
+          </a>
+        </div>
       </div>
     </div>
   );
