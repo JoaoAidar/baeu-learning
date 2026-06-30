@@ -28,7 +28,8 @@ directory `backend`, so normal backend pushes autodeploy. Manual deploys with
    ```
    NODE_ENV=production
    DATABASE_URL=<the same Neon pooled string>
-   JWT_SECRET=<32+ random bytes — `openssl rand -hex 32`>
+   BETTER_AUTH_SECRET=<32+ random bytes — `openssl rand -hex 32`>
+   BETTER_AUTH_URL=https://baeu-backend-production.up.railway.app
    ADMIN_TOKEN=<long random>
    CORS_ORIGIN=<your Vercel URL, set after Vercel deploy>
    LLM_API_KEY=<openrouter key, optional but admin generation needs it>
@@ -92,5 +93,6 @@ Total: ~$5/mo until you have real traffic.
 - [ ] Move rate-limit buckets to Redis if Railway scales beyond 1 instance.
 - [x] Add forgot-password/reset-password flow. Resend is wired; production email delivery still requires `RESEND_API_KEY`.
 - [x] Link Railway `baeu-backend` to GitHub so backend deploys are no longer manual.
-- [ ] Set Google OAuth credentials or hide/label the Google sign-in button until configured.
+- [x] Hide/label Google sign-in until configured. The button is flag-gated by `VITE_GOOGLE_SIGN_IN_ENABLED`.
+- [ ] Set Google OAuth credentials and run the targeted browser smoke if Google login becomes a real requirement.
 - [ ] Prove observability in Grafana/OTEL, or explicitly mark Baeu as not instrumented.

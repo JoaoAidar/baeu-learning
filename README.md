@@ -1,204 +1,143 @@
-# Aplicativo de Aprendizado de Coreano
+# Baeu Learning
 
-## Visão Geral
-Este aplicativo ajuda os usuários a aprenderem coreano através de lições e exercícios interativos. Possui autenticação de usuários, acompanhamento de progresso nas lições e design responsivo para todos os dispositivos.
+Korean-learning web app for TOPIK 1 practice. The learner first-value path is:
 
-## Estrutura do Projeto
-```
-├── assets/           # Arquivos estáticos (imagens, fontes, etc.)
-├── config/          # Configurações do projeto
-├── controllers/     # Controladores da aplicação
-├── documentos/      # Documentação do projeto
-│   ├── db_schema.drawio  # Diagrama editável do banco de dados
-│   ├── db_diagram.png    # Imagem do diagrama do banco de dados
-│   └── schema.sql        # Script SQL do banco de dados
-├── frontend/        # Código do frontend
-├── lib/            # Bibliotecas e utilitários
-├── middleware/     # Middlewares do Express
-├── models/         # Modelos do banco de dados
-├── routes/         # Rotas da aplicação
-├── scripts/        # Scripts utilitários
-├── services/       # Serviços da aplicação
-├── tests/          # Testes automatizados
-├── views/          # Templates EJS
-├── .env            # Variáveis de ambiente
-├── package.json    # Dependências e scripts
-└── server.js       # Ponto de entrada da aplicação
+```txt
+signup/login -> practice question -> answer feedback -> progress update
 ```
 
-## Modelo do Banco de Dados
-O banco de dados utiliza PostgreSQL e possui quatro tabelas principais:
+Strategic status: lifestyle/passion project, not a broad B2C GTM bet. The
+current commercial gate is retention/WTP proof for a real learner or small
+cohort, not more landing-page polish.
 
-### Tabela de Usuários
-- `id`: UUID (Chave Primária)
-- `username`: VARCHAR(255) (Único)
-- `email`: VARCHAR(255) (Único)
-- `password_hash`: VARCHAR(255)
-- `role`: VARCHAR(50) ('user' ou 'admin')
-- `created_at`: TIMESTAMP
-- `updated_at`: TIMESTAMP
+## Production
 
-### Tabela de Lições
-- `id`: UUID (Chave Primária)
-- `title`: VARCHAR(255)
-- `description`: TEXT
-- `order_index`: INTEGER
-- `created_at`: TIMESTAMP
-- `updated_at`: TIMESTAMP
+- Frontend: `https://baeu-learning.vercel.app`
+- Backend: `https://baeu-backend-production.up.railway.app`
+- Health: `GET https://baeu-backend-production.up.railway.app/api/v1/health`
+- Deprecated backend aliases such as `baeu-learning-api` are stale and should
+  not be used as proof.
 
-### Tabela de Exercícios
-- `id`: UUID (Chave Primária)
-- `lesson_id`: UUID (Chave Estrangeira)
-- `type`: VARCHAR(50)
-- `difficulty`: VARCHAR(20)
-- `prompt`: TEXT
-- `choices`: JSONB
-- `correct_answer`: TEXT
-- `explanation`: TEXT
-- `order_index`: INTEGER
-- `created_at`: TIMESTAMP
-- `updated_at`: TIMESTAMP
+Latest open-closure audit: `audit-smokes/2026-06-29-open-closure/OPEN_CLOSURE_AUDIT.md`.
 
-### Tabela de Progresso do Usuário
-- `id`: UUID (Chave Primária)
-- `user_id`: UUID (Chave Estrangeira)
-- `lesson_id`: UUID (Chave Estrangeira)
-- `exercise_id`: UUID (Chave Estrangeira)
-- `completed`: BOOLEAN
-- `correct`: BOOLEAN
-- `attempts`: INTEGER
-- `last_attempt_at`: TIMESTAMP
-- `created_at`: TIMESTAMP
-- `updated_at`: TIMESTAMP
+## Stack
 
-![Diagrama do Banco de Dados](documentos/db_diagram.png)
+- Backend: Node.js + Express ESM, Better Auth, PostgreSQL via `pg`, Helmet,
+  OpenTelemetry instrumentation, Resend email service, OpenRouter-backed admin
+  content generation.
+- Frontend: React 18 + Vite, Tailwind, hash-router, Playwright e2e.
+- Database: Neon Postgres in production; in-memory store for many local tests.
 
-## Requisitos
-- Node.js 14.x ou superior
-- PostgreSQL 12.x ou superior
-- NPM ou Yarn
-- Conta Supabase
+## Main Paths
 
-## Configuração do Ambiente
-1. Clone o repositório:
+```txt
+backend/src/app.js                 Express app, routes, health, error handler
+backend/src/auth.js                Better Auth config
+backend/src/services/PracticeService.js
+backend/src/services/SrsService.js
+backend/src/services/ExerciseSelector.js
+backend/src/services/ProgressService.js
+backend/src/db/schema.sql
+backend/src/db/topik1Content.js
+backend/src/db/grammarLessons.js
+frontend/src/App.jsx               hash router and shell
+frontend/src/pages/Auth.jsx
+frontend/src/pages/EndlessPractice.jsx
+frontend/src/pages/Progress.jsx
+frontend/src/pages/Results.jsx
+frontend/src/pages/Admin.jsx
+frontend/e2e/
+```
+
+## Local Development
+
+Backend:
+
 ```bash
-git clone [URL_DO_REPOSITÓRIO]
-cd korean-learning-app
-```
-
-2. Instale as dependências:
-```bash
-# Instalar dependências do backend
+cd backend
 npm install
+npm run dev
+```
 
-# Instalar dependências do frontend
+Frontend:
+
+```bash
 cd frontend
 npm install
+npm run dev
 ```
 
-3. Configure as variáveis de ambiente:
-Crie um arquivo `.env` na raiz do projeto:
-```env
-# Servidor
-PORT=3000
-JWT_SECRET=sua-chave-secreta
-SESSION_SECRET=sua-chave-de-sessao
+For local frontend development, Vite can proxy to the local backend when
+`VITE_API_BASE_URL` is empty. For production builds, set:
 
-# Banco de Dados
-DATABASE_URL=sua-string-de-conexao-supabase
-
-# Frontend
-# Dev can leave VITE_API_BASE_URL empty when using the Vite proxy.
-# Production backend:
+```txt
 VITE_API_BASE_URL=https://baeu-backend-production.up.railway.app
 ```
 
-4. Configure o banco de dados:
-```bash
-node scripts/reset-db.js
-```
-Este script irá:
-- Criar todas as tabelas necessárias
-- Configurar os relacionamentos
-- Criar usuários de teste (admin/test)
+## API Map
 
-## Executando o Projeto
-1. Inicie o servidor em modo desenvolvimento:
+Better Auth is mounted outside the versioned API:
+
+- `POST /api/auth/sign-up/email`
+- `POST /api/auth/sign-in/email`
+- `POST /api/auth/sign-out`
+- `POST /api/auth/forget-password`
+- `POST /api/auth/reset-password`
+- `POST /api/auth/delete-user`
+
+Versioned app API:
+
+- `GET /api/v1/health`
+- `POST /api/v1/practice/sessions`
+- `GET /api/v1/practice/next`
+- `POST /api/v1/practice/answer`
+- `GET /api/v1/practice/sessions/:id/summary`
+- `GET /api/v1/progress/overview`
+- `GET /api/v1/progress/skills`
+- `GET /api/v1/modules`
+- `GET /api/v1/lessons`
+- `GET /api/v1/exercises`
+- `GET /api/v1/analytics/results`
+- `GET|POST|PATCH /api/v1/admin/*` with `ADMIN_TOKEN`
+- `GET|POST /api/v1/chat/*`
+
+## Tests And Smokes
+
+Backend:
+
 ```bash
-# Iniciar servidor backend
 cd backend
-npm run dev
-
-# Iniciar servidor frontend (do diretório frontend)
-cd frontend
-npm run dev
+npm test
+npm run migrate
+npm run seed
+npm run cleanup:test-users
 ```
 
-## Produção Atual
+Frontend:
 
-- Frontend: `https://baeu-learning.vercel.app`
-- Backend canônico: `https://baeu-backend-production.up.railway.app`
-- Health: `GET https://baeu-backend-production.up.railway.app/api/v1/health`
-- Backend antigo/deprecado: removido; use o backend canônico acima.
+```bash
+cd frontend
+npm run build
+npm run e2e
+npm run e2e:prod-smoke
+npm run e2e:prod-idor-smoke
+```
 
-O frontend atual usa `VITE_API_BASE_URL` no build. Para produção, esse valor
-deve apontar para `https://baeu-backend-production.up.railway.app`.
+Provider or cost-bearing smokes are opt-in:
 
-## Endpoints da API
+- `npm run e2e:prod-admin-smoke` requires `E2E_ADMIN_TOKEN`.
+- `npm run e2e:prod-chat-smoke` spends OpenRouter.
+- Google OAuth and password-reset delivery require provider configuration.
 
-### Autenticação
-- `POST /api/v1/auth/login` - Login do usuário
-- `POST /api/v1/auth/signup` - Cadastro do usuário
-- `GET /api/v1/auth/me` - Obter usuário atual
+## Current Open Gates
 
-### Acompanhamento de Progresso
-- `GET /api/v1/progress/overview` - Obter progresso agregado
-- `GET /api/v1/progress/skills` - Obter progresso por habilidade
+- Market-first-value/retention: prove a real learner or sponsor values the
+  daily loop enough to keep using or take a next step.
+- Google OAuth: provider credentials/manual Google Cloud setup.
+- Resend delivery: real inbox smoke after provider config.
+- Admin production smoke: requires sanctioned `E2E_ADMIN_TOKEN`.
+- Pedagogy/native review: newer Korean grammar lessons are still draft until
+  reviewed.
 
-### Lições
-- `GET /api/v1/lessons` - Obter todas as lições
-- `GET /api/v1/lessons/:slug` - Obter lição por slug
-
-### Exercícios
-- `POST /api/v1/practice/sessions` - Iniciar sessão de prática
-- `GET /api/v1/practice/next` - Obter próximo exercício
-- `POST /api/v1/practice/answer` - Enviar resposta
-
-## Usuários de Teste
-
-O script de inicialização do banco de dados cria dois usuários de teste:
-
-1. Usuário Admin:
-   - Usuário: admin
-   - Senha: admin
-   - Função: admin
-
-2. Usuário Teste:
-   - Usuário: test
-   - Senha: test123
-   - Função: user
-
-## Melhorias Recentes
-- **Correções de Bugs:**
-  - Corrigida navegação e passagem de parâmetros para exercícios
-  - Resolvidos avisos de chaves React nas listas de exercícios
-  - Melhorado tratamento de erros para parâmetros ausentes ou inválidos
-  - Adicionadas mensagens de erro robustas
-  - Removido o wrapper Layout duplicado em LessonsPage para evitar renderização recursiva
-  - Corrigido o redirecionamento catch-all para a tela inicial
-  - Garantido que cada lição possui um array de exercícios, evitando erros de renderização
-  - Adicionados logs para depuração dos dados recebidos da API
-  - Ajustada a navegação para evitar loops de renderização ao clicar em 'Lições' no cabeçalho
-
-## Suporte a Dispositivos Móveis
-- O aplicativo é totalmente responsivo
-- Páginas de exercícios e lições se adaptam a diferentes tamanhos de tela
-- Fontes e espaçamentos são ajustados automaticamente
-
-## Solução de Problemas
-- Se encontrar erro 404 ou /undefined na URL ao navegar para um exercício, verifique se `exercise.exercise_id` está sendo usado corretamente
-- Se houver avisos de chave React, verifique se a prop key está definida como `exercise.exercise_id`
-- Para erros de parâmetros ausentes, verifique se as rotas e uso de useParams correspondem à estrutura esperada
-
-## Licença
-MIT
+See `project-state.md`, `gaps-live.md`, `DEPLOY.md`, and `RUNBOOK.md` before
+changing deploy/provider behavior.

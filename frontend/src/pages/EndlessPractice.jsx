@@ -309,7 +309,7 @@ function QuestionCard({ question, answer, setAnswer, submit, loading }) {
 
       {(question.skill_tags || []).length > 0 && (
         <div className="flex flex-wrap gap-1.5 mt-4">
-          {question.skill_tags.map((t) => <Tag key={t}>{t}</Tag>)}
+          {question.skill_tags.map((t) => <Tag key={t}>{TAG_LABELS[t] || t.replace(/_/g, ' ')}</Tag>)}
         </div>
       )}
 
@@ -395,12 +395,28 @@ function Feedback({ feedback, onNext }) {
         </div>
       )}
 
-      <button
-        onClick={onNext}
-        className="mt-2 bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all"
-      >
-        Continue →
-      </button>
+      <div className="mt-4 rounded-lg bg-white/60 border border-white/70 p-3">
+        <div className="text-sm font-semibold text-gray-900">Progress saved</div>
+        <p className="text-xs text-gray-600 mt-0.5">
+          Your review queue and skill mastery update after every answer. Check
+          Progress when you stop, or continue for the next card.
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2 mt-3">
+        <button
+          onClick={onNext}
+          className="bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2.5 px-6 rounded-lg transition-all"
+        >
+          Continue →
+        </button>
+        <a
+          href="#/progress"
+          className="inline-flex items-center justify-center bg-white/80 hover:bg-white text-gray-800 font-semibold py-2.5 px-5 rounded-lg transition-all no-underline border border-white"
+        >
+          See progress
+        </a>
+      </div>
     </div>
   );
 }

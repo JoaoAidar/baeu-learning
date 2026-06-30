@@ -74,15 +74,13 @@ test('prod lifecycle: signup → theme → empty results → practice → result
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(password);
   await page.locator('form').getByRole('button', { name: /^sign up$/i }).click();
-  await expect(
-    page.getByRole('heading', { name: /endless practice|module practice/i })
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('today-panel')).toBeVisible({ timeout: 15_000 });
 
   // 3) Results empty states — fresh account shows the intentional panels, not
   //    blank cards (the "features não 100% nas telas" regression).
   await page.goto('/#/results');
+  await expect(page.getByTestId('results-low-data-summary')).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText(/no activity in this window yet/i)).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText(/no timing data yet/i)).toBeVisible();
 
   // 4) Practice one question. If it's free-text, the placeholder must be one of
   //    the intentional variants — guards the romanize/Korean placeholder fix.

@@ -102,19 +102,37 @@ function Picker({ personas, loadErr, starting, onPick }) {
         </div>
       )}
 
+      <div
+        data-testid="chat-guide"
+        className="bg-white rounded-xl shadow-card border border-primary-200 p-5 mb-4"
+      >
+        <h2 className="font-heading text-lg font-bold text-gray-900 mb-1">
+          Start with a short, low-stakes chat
+        </h2>
+        <p className="text-sm text-gray-600">
+          Pick the recommended scenario first, write 3-5 short replies, then end
+          the chat. Feedback is generated after the conversation, so it may take
+          a moment and should be treated as practice guidance, not native review.
+        </p>
+      </div>
+
       {!personas && !loadErr && (
         <div className="text-gray-500 text-sm">Loading scenarios…</div>
       )}
 
       <div className="grid sm:grid-cols-2 gap-4">
-        {(personas || []).map((p) => (
+        {(personas || []).map((p, idx) => {
+          const recommended = idx === 0;
+          return (
           <button
             key={p.slug}
             type="button"
             disabled={starting}
             onClick={() => onPick(p)}
             data-testid={`persona-${p.slug}`}
-            className="text-left bg-white rounded-xl shadow-card border border-gray-100 p-5 hover:border-primary-300 hover:shadow-md transition disabled:opacity-60"
+            className={`text-left bg-white rounded-xl shadow-card border p-5 hover:border-primary-300 hover:shadow-md transition disabled:opacity-60 ${
+              recommended ? 'border-primary-300' : 'border-gray-100'
+            }`}
           >
             <div className="flex items-center gap-3 mb-2">
               <span className="text-3xl" aria-hidden>{p.emoji}</span>
@@ -122,7 +140,9 @@ function Picker({ personas, loadErr, starting, onPick }) {
                 <div className="font-heading font-bold text-gray-900 leading-tight">
                   <span lang="ko">{p.name}</span>
                 </div>
-                <div className="text-xs text-gray-500">{p.scenario}</div>
+                <div className="text-xs text-gray-500">
+                  {p.scenario}{recommended ? ' · recommended first' : ''}
+                </div>
               </div>
               <span className={`ml-auto text-xs px-2 py-0.5 rounded-full border ${ACCENTS[p.accent] || ACCENTS.blue}`}>
                 <span lang="ko">{p.register}</span>
@@ -130,7 +150,8 @@ function Picker({ personas, loadErr, starting, onPick }) {
             </div>
             <p className="text-sm text-gray-600">{p.blurb}</p>
           </button>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

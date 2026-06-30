@@ -47,12 +47,14 @@ export default function Progress() {
     .sort((a, b) => b[1] - a[1])
     .slice(0, 3);
   const hasFocus = overview.totals.attempts > 0 && (focusSkills.length > 0 || topErrorTags.length > 0);
+  const doneToday = overview.totals.attempts > 0 && dueCount === 0 && focusSkills.length === 0;
 
   return (
     <div className="max-w-3xl mx-auto space-y-4">
       {hasFocus && (
         <FocusPanel focusSkills={focusSkills} topErrorTags={topErrorTags} />
       )}
+      {doneToday && <DonePanel />}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <Stat label="Streak" value={`${overview.streakDays}d`} accent />
@@ -90,7 +92,7 @@ export default function Progress() {
               .sort((a, b) => b[1] - a[1])
               .map(([t, n]) => (
                 <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                  {t} · {n}
+                  {labelFor(t)} · {n}
                 </span>
               ))}
           </div>
@@ -143,7 +145,7 @@ function FocusPanel({ focusSkills, topErrorTags }) {
               {focusSkills.map((s) => (
                 <li key={s.skill} className="flex items-center gap-2 text-sm">
                   <span className="w-2 h-2 rounded-full bg-primary-500 flex-shrink-0" aria-hidden />
-                  <strong className="text-gray-900">{s.skill}</strong>
+                  <strong className="text-gray-900">{labelFor(s.skill)}</strong>
                   <span className="text-gray-500">
                     {Math.round((s._acc || 0) * 100)}%{s.recentAttempts > 0 ? ' recent' : ''} · {LEVEL_LABELS[s.level]}
                   </span>
@@ -161,7 +163,7 @@ function FocusPanel({ focusSkills, topErrorTags }) {
             <div className="flex flex-wrap gap-1.5">
               {topErrorTags.map(([t, n]) => (
                 <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                  {t} · {n}
+                  {labelFor(t)} · {n}
                 </span>
               ))}
             </div>
@@ -173,6 +175,30 @@ function FocusPanel({ focusSkills, topErrorTags }) {
           className="inline-flex items-center justify-center gap-2 bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover whitespace-nowrap no-underline flex-shrink-0"
         >
           Drill these →
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function DonePanel() {
+  return (
+    <div className="bg-white rounded-xl shadow-card border border-green-200 p-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-gray-900 mb-1">
+            Done for now
+          </h3>
+          <p className="text-sm text-gray-600">
+            No weak or due skills are calling for attention. Come back tomorrow
+            or keep practicing if you want extra reps.
+          </p>
+        </div>
+        <a
+          href="#/practice"
+          className="inline-flex items-center justify-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all shadow-card hover:shadow-card-hover whitespace-nowrap no-underline"
+        >
+          Extra practice →
         </a>
       </div>
     </div>
@@ -194,6 +220,11 @@ const SIGNAL_LABELS = {
   vocabulary: 'vocabulary',
   unknown: 'unclassified',
 };
+
+function labelFor(value) {
+  if (!value) return 'unclassified';
+  return SIGNAL_LABELS[value] || String(value).replace(/_/g, ' ');
+}
 
 function LearningSignals({ a }) {
   const rt = a.responseTime;
@@ -234,7 +265,7 @@ function LearningSignals({ a }) {
           <div className="flex flex-wrap gap-1.5" data-testid="progress-sentence-errors">
             {sentenceTags.map(([t, n]) => (
               <span key={t} className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium">
-                {SIGNAL_LABELS[t] || t} · {n}
+                {labelFor(t)} · {n}
               </span>
             ))}
           </div>
@@ -275,7 +306,7 @@ function SkillRow({ skill }) {
     <div>
       <div className="flex items-baseline justify-between mb-1.5">
         <div className="flex items-center gap-2">
-          <strong className="text-gray-900">{skill.skill}</strong>
+          <strong className="text-gray-900">{labelFor(skill.skill)}</strong>
           <span className="text-xs text-gray-500">{LEVEL_LABELS[skill.level]}</span>
           {skill.due && skill.level < 5 && (
             <span className="px-1.5 py-0.5 rounded text-xs bg-primary-100 text-primary-700 font-medium">

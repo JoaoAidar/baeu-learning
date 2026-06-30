@@ -3,7 +3,7 @@ import { signup, answerOne } from './_helpers.js';
 
 test('global endless practice: start → answer → continue', async ({ page }) => {
   await signup(page);
-  await page.getByRole('link', { name: /start practice/i }).click();
+  await page.goto('/#/practice');
   await expect(page.getByRole('heading', { name: /endless practice/i })).toBeVisible();
   await page.getByRole('button', { name: /^start$/i }).click();
 
@@ -16,14 +16,14 @@ test('practice weak areas entry point drops straight into a question', async ({ 
   // Dedicated "Practice weak areas" link auto-starts a focused session; for a
   // fresh user with no weak-skill history it falls back to normal selection and
   // must still reach a graded question (no start screen, no error).
-  await page.getByRole('link', { name: /practice weak areas/i }).click();
+  await page.goto('/#/practice?focus=weak');
   await expect(page.getByTestId('question-card')).toBeVisible();
 });
 
 test('module-scoped practice only pulls from that module', async ({ page }) => {
   await signup(page);
 
-  await page.getByRole('link', { name: /Hangul & Reading/i }).click();
+  await page.locator('a[href="#/module/hangul"]').last().click();
   await expect(page.getByRole('heading', { name: /Hangul & Reading/i })).toBeVisible();
 
   await page.getByTestId('practice-cta').click();

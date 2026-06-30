@@ -63,11 +63,9 @@ test('prod: fresh learner gets feedback and progress survives relogin', async ({
   await page.locator('input[type="password"]').fill(password);
   await page.locator('form').getByRole('button', { name: /^sign up$/i }).click();
 
-  await expect(
-    page.getByRole('heading', { name: /endless practice|module practice/i })
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('today-panel')).toBeVisible({ timeout: 15_000 });
 
-  await page.getByRole('link', { name: /Hangul & Reading/i }).click();
+  await page.locator('a[href="#/module/hangul"]').last().click();
   await page.getByTestId('practice-cta').click();
 
   await expect(page.getByRole('heading', { name: /module practice/i })).toBeVisible();
@@ -85,7 +83,7 @@ test('prod: fresh learner gets feedback and progress survives relogin', async ({
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(password);
   await page.getByRole('button', { name: /^log in$/i }).click();
-  await expect(page.getByRole('heading', { name: /endless practice|module practice/i })).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('today-panel')).toBeVisible({ timeout: 15_000 });
 
   await page.getByRole('link', { name: /^progress$/i }).click();
   await expect(page.getByTestId('stat-total')).toContainText('1', { timeout: 15_000 });

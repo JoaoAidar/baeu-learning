@@ -1,0 +1,24 @@
+{
+  "email": "visual-1782781213098@test.local",
+  "cleanup": {
+    "ok": true,
+    "status": 200,
+    "body": {
+      "success": true,
+      "message": "User deleted"
+    }
+  },
+  "screenshots": [
+    "01-public-landing.png",
+    "02-about-sponsor-trust.png",
+    "03-home-authenticated.png",
+    "04-practice-start.png",
+    "05-practice-question.png",
+    "06-practice-feedback.png",
+    "07-progress-after-one.png",
+    "08-results-after-one.png",
+    "09-chat-picker.png",
+    "10-mobile-progress.png",
+    "11-mobile-practice-start.png"
+  ]
+}

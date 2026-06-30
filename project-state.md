@@ -1,11 +1,11 @@
 ---
 project: Baeu Learning
 repo_path: /Users/joaoadair/Documents/AI/Baeu_Learning
-generated_at: 2026-06-13T20:08:00-03:00 (refresh pós-sprint 06-13)
+generated_at: 2026-06-29T21:54:00-03:00 (open-closure refresh)
 source_branch: main
 source_commit: 3e732dd (2026-06-13, PR #7)
-freshness: doc-reconcile 2026-06-13 — reflete fechamento dos PRs #2–#7 (merged em main, CI verde, deployados)
-confidence: high (código + git log + gaps-live PR proofs)
+freshness: open-closure audit 2026-06-29 — reflete smokes prod learner + IDOR e testes locais verdes
+confidence: high (código + smokes prod + testes locais; provider/admin gates ainda separados)
 ---
 
 # Project State — Baeu Learning
@@ -16,6 +16,13 @@ confidence: high (código + git log + gaps-live PR proofs)
 > `gaps-live.md`.
 
 ## Verified Runtime State (2026-06-13)
+
+**Refresh 2026-06-29:** backend health prod voltou `200 {"ok":true,"store":"pg"}`;
+frontend prod voltou `200`; `backend npm test` passou `128/128`; `frontend npm run build`
+passou; `frontend npm run e2e` passou `20` e pulou `5` specs opt-in; `npm run
+e2e:prod-smoke -- --workers=1` passou com cleanup; `npm run e2e:prod-idor-smoke
+-- --workers=1` passou com duas contas sintéticas e cleanup. Evidence:
+`audit-smokes/2026-06-29-open-closure/OPEN_CLOSURE_AUDIT.md`.
 
 - Frontend prod: `https://baeu-learning.vercel.app` → SPA Vite hash-router. Sprint 06-13
   corrigiu `lang` (`en` + spans `lang="ko"`), meta/OG, título dinâmico por rota.
@@ -98,15 +105,21 @@ Ver `AGENTS.md` → Safe Commands. Health read-only:
 Os sprints de 13/06 (PRs #2–#7, deployados) fecharam quase tudo — UX, demo SRS na
 landing, sinais de aprendizado, observabilidade, hard tier, índice /modules.
 
-**Backlog atual (decisão 2026-06-13: eixos 2 + 3 + smoke):**
-1. **IDOR live (2 contas)** — prova no boundary deployado que o User B não lê a sessão
-   do User A. Código já cobre via `backend/tests/practiceRoutes.test.js`; falta o smoke
-   prod. → `frontend/e2e/prod-idor-smoke.spec.js` (branch `feat/idor-smoke-and-content-pedagogy`).
-2. **Conteúdo/pedagogia** — reduzir dominância de `translation` (~75%) com tipos
+**Backlog atual (refresh 2026-06-30T01:15Z: brutal visual remediation shipped):**
+0. **Visual/product-intent remediation shipped** — production deploy
+   `dpl_FvzFUVqEeJfqXyo3bkgcXdpnkdBS` is live at `https://baeu-learning.vercel.app`.
+   Prod proof: learner first-value smoke passed, lifecycle smoke passed, public route
+   deploy-smoke passed. Evidence: `audit-smokes/2026-06-29-brutal-visual-audit/DEPLOY_PROOF.md`.
+1. **Market-first-value / retenção** — learner loop está provado, mas ainda falta
+   validação real ou demo assistida de retorno diário/WTP: card corrigido + progresso
+   persistido + próxima tarefa + confirmação de próximo passo.
+2. **Provider/admin gates manuais** — Google OAuth e Resend delivery dependem de
+   credenciais/configuração; admin prod smoke depende de `E2E_ADMIN_TOKEN` sancionado.
+3. **Conteúdo/pedagogia** — reduzir dominância de `translation` (~75%) com tipos
    discriminantes: conjugação `fill_blank`, contraste de partículas `multiple_choice`,
    reconhecimento por áudio (TTS ko-KR já existe), + hard de gramática. Lote aditivo
    via `npm run seed:new`.
-3. **Manutenção viva:** NSM pessoal = dias com prática SRS. Soft-kill datado 2026-09-07
+4. **Manutenção viva:** NSM pessoal = dias com prática SRS. Soft-kill datado 2026-09-07
    se uso = 0. Não abrir GTM B2C sem sinal orgânico (regra 2-de-3, ver `gaps-live.md`).
 
 **Sem pendências de higiene de deploy abertas:** PRs #2–#7 commitados + merged + deployados.

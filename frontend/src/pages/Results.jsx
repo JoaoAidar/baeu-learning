@@ -36,6 +36,8 @@ export default function Results() {
 
   const acc = Math.round((data.totals.accuracy || 0) * 100);
   const maxDaily = Math.max(1, ...data.daily.map((d) => d.attempts));
+  const lowData = data.totals.attempts < 3;
+  const dueNow = data.forecast?.dueNow || 0;
 
   return (
     <div className="max-w-4xl mx-auto space-y-4" data-testid="results-page">
@@ -59,6 +61,8 @@ export default function Results() {
         <Stat label="Accuracy" value={`${acc}%`} />
         <Stat label="Tough items" value={data.toughestExercises.length} />
       </div>
+
+      {lowData && <LowDataSummary attempts={data.totals.attempts} dueNow={dueNow} />}
 
       <Card title="Daily activity" subtitle={`Last ${days} days`}>
         {data.totals.attempts === 0 ? (
@@ -92,7 +96,7 @@ export default function Results() {
         )}
       </Card>
 
-      {data.retention && (
+      {!lowData && data.retention && (
         <Card title="Habit" subtitle="Consistency drives spaced repetition">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="results-retention">
             <Mini label="Active days" value={data.retention.activeDays} />
@@ -103,6 +107,7 @@ export default function Results() {
         </Card>
       )}
 
+      {!lowData && (
       <Card title="Response time" subtitle="Average ms per correct answer">
         {data.responseTimeTrend.length === 0 ? (
           <EmptyHint>
@@ -113,8 +118,9 @@ export default function Results() {
           <ResponseTrend rows={data.responseTimeTrend} />
         )}
       </Card>
+      )}
 
-      {data.responseTime && data.responseTime.count > 0 && (
+      {!lowData && data.responseTime && data.responseTime.count > 0 && (
         <Card
           title="Pace & automaticity"
           subtitle={`Fast = ≤${Math.round(data.responseTime.fastThresholdMs / 1000)}s`}
@@ -154,7 +160,7 @@ export default function Results() {
         </Card>
       )}
 
-      {data.forgetting && data.forgetting.trackedItems > 0 && (
+      {!lowData && data.forgetting && data.forgetting.trackedItems > 0 && (
         <Card title="Forgetting & leeches" subtitle="From your spaced-repetition schedule">
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4" data-testid="results-forgetting">
             <Mini label="Tracked items" value={data.forgetting.trackedItems} />
@@ -185,7 +191,7 @@ export default function Results() {
         </Card>
       )}
 
-      {data.responseBySkill && data.responseBySkill.length > 0 && (
+      {!lowData && data.responseBySkill && data.responseBySkill.length > 0 && (
         <Card title="Pace by skill" subtitle="Where recall is slow vs fluent">
           <ul className="space-y-1.5" data-testid="results-pace-by-skill">
             {data.responseBySkill.map((s) => (
@@ -201,6 +207,7 @@ export default function Results() {
         </Card>
       )}
 
+      {!lowData && (
       <Card title="Toughest exercises" subtitle="Lowest accuracy among items you've seen ≥2 times">
         {data.toughestExercises.length === 0 ? (
           <p className="text-gray-500 text-sm">Not enough repetitions yet to spot patterns.</p>
@@ -223,7 +230,9 @@ export default function Results() {
           </ul>
         )}
       </Card>
+      )}
 
+      {!lowData && (
       <Card title="Mastery distribution" subtitle="Skills by current level">
         <div className="flex gap-2" data-testid="results-mastery">
           {data.masteryByLevel.map((m) => (
@@ -234,8 +243,9 @@ export default function Results() {
           ))}
         </div>
       </Card>
+      )}
 
-      {data.sentenceErrors && data.sentenceErrors.textAttempts > 0 && (
+      {!lowData && data.sentenceErrors && data.sentenceErrors.textAttempts > 0 && (
         <Card
           title="Sentence errors"
           subtitle={`Free-text answers · ${data.sentenceErrors.textWrong}/${data.sentenceErrors.textAttempts} missed`}
@@ -261,7 +271,7 @@ export default function Results() {
         </Card>
       )}
 
-      {Object.keys(data.errorTagCounts).length > 0 && (
+      {!lowData && Object.keys(data.errorTagCounts).length > 0 && (
         <Card title="All errors (incl. multiple choice)" subtitle={`Last ${days} days`}>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(data.errorTagCounts)
@@ -298,6 +308,35 @@ function EmptyHint({ children }) {
   return (
     <div className="rounded-lg bg-gray-50 border border-dashed border-gray-200 px-4 py-6 text-center text-sm text-gray-500">
       {children}
+    </div>
+  );
+}
+
+function LowDataSummary({ attempts, dueNow }) {
+  const hasStarted = attempts > 0;
+  return (
+    <div
+      data-testid="results-low-data-summary"
+      className="bg-white rounded-xl shadow-card border border-primary-200 p-6"
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h3 className="font-heading text-xl font-bold text-gray-900 mb-1">
+            Keep it simple for now
+          </h3>
+          <p className="text-sm text-gray-600">
+            {hasStarted
+              ? `You have ${attempts} attempt${attempts === 1 ? '' : 's'} in this window. Do a few more cards before the deeper charts become useful.`
+              : 'No attempts in this window yet. Start with one short practice round and this page will turn into a report.'}
+          </p>
+        </div>
+        <a
+          href={dueNow > 0 ? '#/practice?focus=weak' : '#/practice'}
+          className="inline-flex items-center justify-center bg-secondary-500 hover:bg-secondary-600 text-white font-semibold py-3 px-6 rounded-lg transition-all no-underline whitespace-nowrap"
+        >
+          {dueNow > 0 ? `Review ${dueNow} due now` : 'Do 5 cards'} →
+        </a>
+      </div>
     </div>
   );
 }

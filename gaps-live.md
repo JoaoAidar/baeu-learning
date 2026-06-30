@@ -1079,11 +1079,11 @@ Empty. Every remaining item depends on user action in an external provider (Goog
 ---
 
 <!-- deployed-brutal-audit:baeu-learning:start -->
-## Brutal Audit Deploy - 2026-06-06
+## Brutal Audit Deploy - 2026-06-29
 
 Source: `/Users/joaoadair/Documents/Obsidian Vault/70-analysis/brutal-audits/daily/latest.md`.
 
-**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=50.2ms, api_health 5/5 [200] p95=365.3ms.
+**Runner verdict:** LIMITED READY, score 6.0. Live probes: web 5/5 [200] p95=41.1ms, api_health 5/5 [200] p95=389.0ms.
 
 | Priority | Finding | Evidence | Closure gate |
 | --- | --- | --- | --- |
@@ -1788,3 +1788,848 @@ Source: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0711-deployed-heav
 | P0 | Production home/login were captured stuck in `Loading...`, so prior learner first-value evidence cannot be treated as current without a fresh browser smoke. | Screenshots: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-06-0711-deployed-heavy-audit/evidence/browser-persona/screen-baeu-home.png` and `screen-baeu-learning-vercel-app-login.png`. | Fresh prod smoke proves landing/login boot, signup/login -> practice -> feedback -> progress -> relogin persistence -> cleanup. |
 
 False-green path: older successful learner smoke remains valuable history, but current browser boot failure outranks it for morning readiness.
+
+## Full E2E Product/GTM/Deploy Audit — 2026-06-16
+
+- **Veredito**: SELL_AS_PILOT
+- **Fonte**: Run `2026-06-16-1809-full-portfolio-e2e` em `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-16-1809-full-portfolio-e2e`.
+- **Evidência inspecionada**: provider union Vercel/Railway/Neon/Supabase/Grafana/OpenRouter/GitHub auth-checks; `provider-inventory.md`; `scope-map.md`; `public-url-http-probes.tsv`; `api-health-probes.tsv`; sidecars `repo-runtime`, `customer-pain-gtm`, `brutal-false-green`.
+- **O que está provado**: Frontend/backend vivos; store pg; browser public shell.
+- **O que é falso-verde**: Demo deck/local SRS nao prova learner lifecycle, admin/cohort, IDOR e conteudo real.
+- **Customer pain / ICP / GTM**: Cohorts/cursos/estudantes de coreano que precisam pratica guiada e progresso. Decisão GTM: `SELL_AS_PILOT`. First value alvo: Learner -> practice deck -> resposta/feedback -> SRS/progresso persistido -> admin/cohort insight.
+- **Deploy/runtime/auth/data truth**: Frontend 200; backend health 200 {ok:true, store:pg}; Railway baeu-backend SUCCESS; Tempo service baeu-backend observado. Auth, tenant boundary e data freshness end-to-end: `NAO OBSERVADO` salvo quando explicitamente citado acima.
+- **Cost/unit economics**: Custo LLM/chat se usado precisa quotas; cohort pode monetizar melhor que app individual.
+- **Observability**: Tempo service exists, mas trace de learner first-value nao observado.
+- **P0/P1/P2 findings**:
+  - P0: Rerun prod learner lifecycle/admin/IDOR smoke com artifact.
+  - P1: Cohort/admin export e progresso real.
+  - P2: Pacote piloto curso/turma.
+- **Acceptance gates**: nao promover `READY` sem runtime + browser/auth first-value + tenant/data truth + cost attribution/cap + Tempo/Loki trace da jornada + cleanup.
+- **Próximo dono/ação**: Joao escolhe piloto/dogfood/park; agente executa smoke/negative matrix/runbook no repo canonico `/Users/joaoadair/Documents/AI/Baeu_Learning`.
+
+## Deep Multi-Skill Audit — 2026-06-17 (2026-06-17-1825-deep)
+
+**Fonte:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-17-1825-deep`
+**Skills:** `heavy-audit-all`, `persona-browser-audit`, `brutal-audit`, `customer-persona-pain-audit`, `gtm-sales-readiness-audit`
+**Status:** append-only audit promotion; no code/config changes.
+
+### Customer, Persona & Pain Audit — 2026-06-17
+
+- **ICP primario:** Korean learners/tutors in a tiny supervised beta, not broad B2C yet
+- **Dor principal:** Practice and spaced repetition need feedback/progress without manual Anki work
+- **Pain Score:** 160/625
+- **Evidencia:** [LIVE]/[REPO]/[COPY] from public probes, repo/gaps and run artifacts; [INFERENCIA]/[VALIDAR COM CLIENTE] where customer interviews are still missing.
+- **Alternativa atual:** spreadsheet/WhatsApp/manual workflow/generic tool/consulting depending on product context.
+- **Buyer/User split:** buyer is the economic owner of the painful workflow; user is the operator who must reach first value without Joao narrating.
+- **Dor -> Feature -> Valor:** first-value proof, export/report/demo data, trust/provenance, onboarding and observability are sales-enabling features, not polish.
+- **Principal validacao com cliente:** prove the customer would trade current workaround for the offer below and define the first result they would pay for.
+
+### GTM & Sales Readiness Audit — 2026-06-17
+
+- **Decisao GTM:** `PAUSE`
+- **Sales Readiness Score:** 18/60
+- **Oferta recomendada:** Free/small-cohort learner tool until retention proof exists
+- **Principal bloqueio comercial:** Production learner first-value and content/depth differentiation
+- **Sales motion recomendado:** founder-led / assisted pilot unless `DO_NOT_SELL_YET` or `PAUSE`.
+- **Demo gate:** no sales claim without current browser/runtime first-value evidence, proof/trust artifact, and explicit cleanup/cost/tenant boundary when applicable.
+
+### Brutal / Persona Browser Audit Delta — 2026-06-17
+
+- **Verdict:** no `READY` claim from this run. Public 200 and provider health are liveness only.
+- **False green:** landing/API health without authenticated journey, generated output/export, tenant/auth, data truth, observability and cost cap.
+- **Closure gate:** future agent must attach fresh evidence path for first-value journey plus trace/log/cost evidence before raising readiness.
+
+---
+
+## Kairos Heavy Audit - 2026-06-21-1733
+
+**Status**: OPEN
+**Fonte**: heavy-audit-all + persona-browser-audit + bounded load
+**Evidencia**: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-21-1733/_HEAVY-SYNTHESIS.md`, `projects/baeu-learning.md`, `browser/baeu-learning/`
+
+| Severidade | Achado | Gate de fechamento |
+|---|---|---|
+| P1 | `WATCH`: frontend e backend canonico responderam 200, mas lesson/practice first-value autenticado nao foi observado. | Smoke com conta segura: signup/login -> due-card/practice queue -> feedback -> progress; registrar screenshot e cleanup. |
+| P1 | URL registry drift: bounded load ainda bateu alias antigo `baeu-learning-api-production` e recebeu 404, enquanto `baeu-backend-production` estava verde. | Corrigir probes/docs para URL canonica e rerodar load/health sem 404 de alias antigo. |
+| P1 | Habit loop depende de sessao persistente + deep link para fila, ainda sem prova em browser. | Email/deep link abre usuario logado direto na due-card queue ou mostra bloqueio claro sem perder contexto. |
+| P2 | Warm load do frontend teve cauda `p95=1037.1ms`, sem falha mas com delta. | Repetir com browser/e2e e logs Vercel antes de transformar em incidente. |
+
+## Google OAuth local candidate recheck - 2026-06-22 19:23 -03
+
+- Varredura redigida em `.env*` relevantes confirmou `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` vazios/exemplo em Baeu, DashOP, NicolaOS e Arquitetos.
+- Ambiente shell tambem nao tem `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` setados.
+- Conclusao: nao ha client OAuth local reaproveitavel/sancionado para Baeu. O caminho correto segue sendo criar um OAuth Web client especifico no Google Cloud com origin/redirect do Baeu, aplicar Railway/Vercel e depois habilitar o botao.
+
+## Credential refresh - 2026-06-23 00:33 -03
+
+- Run artifact: `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-23-0030-credential-refresh/`.
+- Google wrapper segue com `accounts_count=1`, `active_accounts_count=0`; nao ha Google Console/Gmail autenticado para criar client daqui.
+- Scan local redigido encontrou zero candidatos `present_like` para `GOOGLE_CLIENT_ID` ou `GOOGLE_CLIENT_SECRET`.
+
+**Gate mantido:** criar OAuth Web client especifico no Google Cloud para Baeu e aplicar em Railway/Vercel; nao habilitar botao antes do smoke de login.
+
+## Credential apply helper update - 2026-06-23 00:56 -03
+
+- Helper seguro atualizado: `/Users/joaoadair/Documents/Codex/2026-06-22/roda/outputs/key-intake-and-apply.sh`.
+- Quando o OAuth Web Client Baeu existir, o helper pede `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` em prompt oculto, aplica ambos no Railway `baeu-backend`, grava os GitHub secrets do repo `JoaoAidar/baeu-learning`, e só então habilita `VITE_GOOGLE_SIGN_IN_ENABLED=true` no frontend Vercel.
+- Sintaxe validada com `bash -n`; nenhum valor de segredo foi registrado.
+
+**Gate mantido:** gerar/colar o OAuth Web Client no console Google, rodar o helper, redeploy/restart se necessario e provar login Google com usuario teste sancionado.
+
+## OpenRouter cap/rotation boundary — 2026-06-24
+
+- **Fonte:** `/Users/joaoadair/Documents/AI/Audits/runs/2026-06-23-2324/openrouter-unblock/_OPENROUTER-CAP-ROTATION.md` e `_OPENROUTER-GAP-WRITEBACK.md`.
+- **Achado:** existe key dedicada `Baeu_Learning` com limite `10` e restante `10.00`; Railway `baeu-backend` tem `OPENROUTER_API_KEY` por nome, mas env-name nao prova que o valor instalado e a key dedicada.
+- **Impacto:** mesmo pausado/pequena coorte, feedback/progress LLM sem key verificada mistura custo com chave compartilhada e atrapalha medir custo por sessao/pratica.
+- **Gate:** com aprovacao explicita, aplicar/verificar `Baeu_Learning` em `baeu-backend`, manter cap e rodar uma acao bounded de learning/feedback com `cost_event`. OAuth Google continua gate separado para login.
+
+## Product Audit — 2026-06-25
+
+### 1. Resumo executivo
+
+**Produto:** Baeu Learning
+**URL pública:** https://baeu-learning.vercel.app
+**Categoria:** language learning/habit loop
+**Cliente ideal:** aluno autodidata `[INFERÊNCIA]/[REPO]`
+**Usuário principal:** B2C/prosumer ou escola pequena `[INFERÊNCIA]`
+**Comprador provável:** não manter prática recorrente nem feedback útil `[INFERÊNCIA]/[VALIDAR COM CLIENTE]`
+**Promessa de valor em uma frase:** Baeu Learning ajuda aluno autodidata a resolver `` sem depender de `Duolingo, Anki, YouTube, professor, caderno`.
+**Status de maturidade de produto:** `MVP inicial`
+
+#### Diagnóstico curto
+
+Produto classificado como `APOSTA` nesta rodada. A dor parece `Forte` porque o workaround atual é `Duolingo, Anki, YouTube, professor, caderno` e o resultado vendável depende de `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão`. A evidência pública/repo é suficiente para hipótese de produto, mas ainda não prova venda recorrente sem validação com cliente. Principal gate: loop diário persistente com deep link/email de retorno. `[VALIDAR COM CLIENTE]`
+
+### 2. Evidências analisadas
+
+| Fonte | O que foi analisado | Status |
+|---|---|---|
+| App público | `https://baeu-learning.vercel.app -> 200 title=Baeu — Korean Practice ok=True; https://baeu-learning-1f0939o8b-joaoaidars-projects.vercel.app -> 200 title=Login – Vercel ok=True; https://baeu-backend-production.up.railway.app/api/v1/health -> 200 title= ok=True` | `[LIVE] parcial` |
+| Provider | `Vercel + Railway + Neon` | `[LIVE] inventário/probe` |
+| Repo/docs/gaps | `/Users/joaoadair/Documents/AI/Baeu_Learning` | `[REPO] observado` |
+| APIs/health | `https://baeu-backend-production.up.railway.app/api/v1/health` | `[LIVE] liveness apenas` |
+
+### 3. Produto em uma frase
+
+> Baeu Learning ajuda aluno autodidata a alcançar `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão` sem `Duolingo, Anki, YouTube, professor, caderno`.
+
+### 4. ICP e personas
+
+#### ICP primário
+
+- Segmento: aluno autodidata
+- Situação que gera demanda:
+- Dor principal:
+- Urgência: Forte
+- Alternativa atual: Duolingo, Anki, YouTube, professor, caderno
+- Critério de compra: confiança no output, economia/risco reduzido e setup baixo.
+- Disposição provável a pagar: Média/Incerta; hipótese de preço: validar por ROI/risco/tempo economizado.
+- Sinais de bom cliente: já usa planilha/serviço manual, tem dor frequente, aceita piloto assistido.
+- Sinais de mau cliente: espera automação self-serve sem dados, sem orçamento ou sem dono do processo.
+
+#### Personas
+
+##### Persona 1 — Usuário principal
+- Papel: B2C/prosumer ou escola pequena
+- Objetivo: alcançar `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão`
+- Dor:
+- Medo/objeção: não confiar no dado/output ou setup ser pesado.
+- O que considera sucesso: card corrigido + progresso persistido + próxima tarefa
+- Frequência de uso: depende do evento operacional; validar.
+- Funcionalidades críticas: onboarding guiado, dados demo/real rotulados, export/prova, histórico.
+
+##### Persona 2 — Comprador/decisor
+- Papel: não manter prática recorrente nem feedback útil
+- Objetivo: justificar ROI, risco reduzido ou receita/oportunidade.
+- Dor: pagar por ferramenta que não entra no fluxo real.
+- Medo/objeção: segurança, integração, preço, prova social e confiabilidade.
+- O que considera sucesso: prova antes/depois ou relatório exportável.
+- Frequência de uso: semanal/mensal conforme domínio.
+- Funcionalidades críticas: demo assistida, relatório/export, limites/custos, trilha de fonte.
+
+### 5. Jobs To Be Done
+
+```txt
+Quando ,
+eu quero diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão,
+para conseguir card corrigido + progresso persistido + próxima tarefa,
+sem precisar Duolingo, Anki, YouTube, professor, caderno.
+```
+
+#### Jobs principais
+1. Resolver a dor operacional principal com menos retrabalho. `[INFERÊNCIA]`
+2. Produzir prova/export que o comprador consiga avaliar. `[INFERÊNCIA]`
+3. Reduzir risco de erro, custo ou decisão ruim. `[INFERÊNCIA]`
+
+#### Jobs emocionais
+- Sentir controle e confiança no processo em vez de improviso.
+
+#### Jobs sociais
+- Parecer profissional diante de equipe, cliente, investidor ou gestor.
+
+### 6. Value Proposition Canvas
+
+#### Cliente
+
+## **Tarefas**
+- Executar rotina ligada a ``.
+- Reportar resultado para comprador/gestor.
+
+## **Dores**
+- ``.
+- Setup pesado, dados dispersos, baixa confiança e ausência de prova.
+
+## **Ganhos esperados**
+- `card corrigido + progresso persistido + próxima tarefa`.
+- Economia de tempo, redução de risco ou aumento de receita/oportunidade.
+
+#### Produto
+
+## **Pain relievers**
+- `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão`.
+- Export/prova de valor.
+
+## **Gain creators**
+- Histórico, relatório, automação assistida e decisão mais rápida.
+
+#### Fit atual
+
+`Médio`
+
+## Justificativa:
+Fit baseado em evidência pública/repo e inferência de domínio; precisa validação real de comprador. `[VALIDAR COM CLIENTE]`
+
+### 7. Fluxos de usuário
+
+#### Fluxo observado
+
+```txt
+Entrada pública/protegida → promessa/login/demo → diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão → card corrigido + progresso persistido + próxima tarefa
+```
+
+#### Fluxo ideal de first value
+
+```txt
+Entrada → Entendimento imediato → Setup mínimo ou demo data → Resultado útil → Export/prova → CTA de venda/piloto
+```
+
+#### Fricções
+
+| Fricção | Severidade | Evidência | Impacto |
+|---|---:|---|---|
+| First value não totalmente provado em browser real nesta rodada | 4 | https://baeu-learning.vercel.app -> 200 title=Baeu — Korean Practice ok=True; https://baeu-learning-1f0939o8b-joaoaidars-projects.vercel.app -> 200 title=Login – Vercel ok=True; https://baeu-backend-production.up.railway.app/api/v1/health -> 200 title= ok=True | Reduz confiança comercial |
+| Comprador e preço ainda são hipótese | 3 | `[INFERÊNCIA]/[VALIDAR COM CLIENTE]` | Pode virar produto sem venda |
+
+### 8. First value e aha moment
+
+**Aha moment esperado:** diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão
+**First value real:** card corrigido + progresso persistido + próxima tarefa ou `not_observed` quando login/provedor bloqueia.
+**Tempo estimado até first value:** 5-30 min em demo assistida; validar self-serve.
+**Evento de ativação recomendado:** `first_value_reached`
+
+| Critério | Nota 0–5 | Evidência |
+|---|---:|---|
+| Clareza da promessa | 3 | `[LIVE]/[COPY]` quando URL responde; validar copy por produto |
+| Facilidade de começar | 2 | muitos produtos protegidos por login/setup |
+| Tempo até valor | 2 | first value geralmente exige dados ou fluxo assistido |
+| Estado vazio | 2 | não observado de forma completa |
+| Confiança percebida | 2 | falta prova/fonte/export em vários produtos |
+
+#### Como reduzir tempo até valor
+1. Demo data rotulada por persona.
+2. Fluxo guiado até `card corrigido + progresso persistido + próxima tarefa`.
+3. Export/relatório como prova antes de cadastro pesado quando possível.
+
+### 9. Requisitos funcionais
+
+#### RFs existentes
+| ID | Requisito funcional | Evidência | Status |
+|---|---|---|---|
+| RF-001 | Superfície pública/deploy/provider mapeado | `Vercel + Railway + Neon` | Parcial |
+| RF-002 | Fluxo de first value esperado | `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão` | Parcial/not_observed |
+
+#### RFs esperados/faltantes
+| ID | Requisito funcional | Por que importa | Severidade |
+|---|---|---|---|
+| RF-GAP-001 | Prova explícita de first value por persona | Venda depende de output confiável | Alta |
+| RF-GAP-002 | Export/relatório/histórico rastreável | Comprador precisa avaliar ROI/confiança | Média |
+
+#### Entidades principais
+- Usuário/tenant/cliente
+- Input/domínio
+- Resultado/relatório
+- Histórico/prova
+
+#### Papéis e permissões esperados
+| Papel | Permissões esperadas | Existe? |
+|---|---|---|
+| Admin | configurar conta, dados, billing, usuários | not_observed |
+| Operador | executar fluxo core | parcial |
+| Cliente/usuário final | ver resultado/export | parcial |
+
+### 10. Feature map
+
+#### Core
+- Fluxo `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão`.
+- Prova `card corrigido + progresso persistido + próxima tarefa`.
+
+#### Suporte
+- Onboarding guiado, demo data, ajuda contextual.
+
+#### Admin/operação
+- Tenant, permissões, auditoria e recuperação de erro.
+
+#### Analytics/relatórios
+- `first_value_reached`, export, retorno recorrente, conversão demo->piloto.
+
+#### Integrações
+- Dependem do domínio; não vender integração sem prova provider.
+
+#### Billing/monetização
+- Definir por ROI/risco/volume.
+
+### 11. Kano
+| Feature | Categoria Kano | Justificativa |
+|---|---|---|
+| First value guiado | Básica | Sem isso o usuário não entende valor |
+| Export/prova rastreável | Performance | Aumenta confiança e venda |
+| Demo data por persona | Básica | Reduz setup e ansiedade |
+| Automação avançada sem validação | Reversa | Pode aumentar risco/custo antes da dor validada |
+
+### 12. AARRR e métricas
+| Etapa | Evento esperado | Gap atual | Métrica recomendada |
+|---|---|---|---|
+| Acquisition | visitante qualificado | canal/ICP incerto em parte | source_to_demo |
+| Activation | `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão` | first value parcial | first_value_reached |
+| Retention | retorno por alerta/relatório | loop não provado | weekly_active_value |
+| Referral | export compartilhado | prova social não observada | report_shared |
+| Revenue | piloto pago | WTP precisa validação | paid_pilot_started |
+
+#### North Star Metric sugerida
+`validated_value_outputs_per_customer`
+
+## Justificativa:
+Mede o número de outputs que uma persona/comprador consegue usar, não só logins.
+
+#### Eventos analytics recomendados
+- `user_signed_up`
+- `user_completed_onboarding`
+- `first_value_reached`
+- `value_output_exported`
+- `paid_pilot_started`
+
+### 13. Comercialização
+
+#### Pitch curto
+> Baeu Learning entrega `card corrigido + progresso persistido + próxima tarefa` para aluno autodidata, reduzindo ``.
+
+#### Demo flow ideal
+1. Mostrar dor/workaround atual.
+2. Entrar com demo data realista.
+3. Gerar `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão`.
+4. Exportar `card corrigido + progresso persistido + próxima tarefa`.
+5. Fechar próximo passo: piloto pago ou entrevista de validação.
+
+#### Objeções prováveis
+| Objeção | Resposta necessária do produto |
+|---|---|
+| Não confio nos dados/output | fonte, metodologia, histórico e export |
+| Já faço isso em planilha/processo manual | antes/depois com tempo/dinheiro/risco |
+| Não tenho tempo para configurar | demo data e setup assistido |
+| Quanto custa? | preço ancorado em ROI/risco/volume |
+
+#### Pricing/packaging hipotético
+| Plano | Cliente-alvo | Limite/benefício | Racional |
+|---|---|---|---|
+| Piloto assistido | primeiro ICP | 1 caso/conta/projeto | valida dor e WTP |
+| Pro | cliente recorrente | volume mensal de outputs | alinha custo/valor |
+| Business | operação maior | usuários, export, suporte | expande conta |
+
+### 14. Riscos de produto
+| Risco | Tipo | Severidade | Mitigação |
+|---|---|---:|---|
+| First value não observado fim a fim | Valor/UX | 5 | smoke/browser com persona e output |
+| Comprador/WTP hipotético | Comercial | 4 | entrevista + piloto pago |
+| Provider/deploy verde confundido com readiness | Operação | 4 | manter gates separados |
+
+### 15. Backlog priorizado
+
+#### Must have
+| Item | Tipo | Impacto | Evidência |
+|---|---|---:|---|
+| sem retenção/hábito, vira vitamina educacional | Produto/Trust | 5 | [LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE] |
+
+#### Should have
+| Item | Tipo | Impacto | Evidência |
+|---|---|---:|---|
+| email/deep link para fila de cards vencidos | Produto/Comercial | 4 | [LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE] |
+
+#### Could have
+| Item | Tipo | Impacto | Evidência |
+|---|---|---:|---|
+| pricing B2C só depois de retenção | Evolução | 2 | [LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE] |
+
+#### Won’t do for now
+| Item | Motivo |
+|---|---|
+| Construir automação avançada antes de validação | risco de overengineering |
+
+### 16. RICE
+| Oportunidade | Reach | Impact | Confidence | Effort | Score | Observação |
+|---|---:|---:|---:|---:|---:|---|
+| Provar first value com demo data/export | 4 | 5 | 0.8 | 2 | 8.0 | maior destravador comercial |
+| Entrevistas/piloto pago com ICP | 3 | 5 | 0.5 | 2 | 3.75 | valida WTP |
+| Analytics de ativação | 3 | 3 | 0.8 | 2 | 3.6 | mede retenção |
+
+### 17. Opportunity Solution Tree
+```txt
+Outcome: cliente entende, usa, paga e recomenda
+├── Oportunidade: reduzir setup
+│   ├── Solução: demo data por persona
+│   └── Solução: onboarding guiado
+├── Oportunidade: aumentar confiança
+│   ├── Solução: export/prova rastreável
+│   └── Solução: fonte/metodologia/caveats
+└── Oportunidade: validar monetização
+    ├── Solução: piloto assistido pago
+    └── Solução: entrevista com comprador
+```
+
+### 18. Product Readiness Score
+| Dimensão | Nota 0–5 | Comentário |
+|---|---:|---|
+| Clareza de proposta | 3 | hipótese clara, copy precisa validar |
+| ICP/persona | 3 | específico mas inferido |
+| Fluxo até first value | 2 | parcial/not_observed em browser real |
+| Cobertura funcional | 2 | depende do produto |
+| UX e confiança | 2 | prova/export/caveat faltam |
+| Retenção | 2 | loop recorrente não provado |
+| Monetização | 3 | varia por dor; WTP precisa cliente |
+| Demo readiness | 2 | assistida antes de self-serve |
+| Operação/admin | 2 | auth/tenant/admin não observado completo |
+| Diferenciação | 3 | domínio/assistido pode diferenciar |
+
+**Nota média:** 2.4
+**Leitura:** Não vender como self-serve amplo; priorizar piloto assistido/first-value.
+
+### 19. Perguntas para validar com cliente
+1. Como você resolve `` hoje?
+2. Quanto tempo/dinheiro isso consome por semana/mês?
+3. Que prova faria você confiar em `card corrigido + progresso persistido + próxima tarefa`?
+4. Quem aprovaria pagar por isso?
+5. Qual output faria você voltar toda semana?
+
+### 20. Próximo ciclo recomendado
+
+#### Objetivo do ciclo
+`Provar first value vendável para B2C/prosumer ou escola pequena`
+
+#### Escopo recomendado
+1. Demo data/output exportável.
+2. Entrevista com 3-5 clientes do ICP.
+3. Métrica `first_value_reached`.
+
+#### Fora de escopo
+- Automação complexa antes de validação.
+- Integrações caras sem comprador.
+
+#### Critério de aceite de produto
+- Persona chega a `card corrigido + progresso persistido + próxima tarefa`.
+- Comprador entende ROI/risco reduzido.
+- Gate `loop diário persistente com deep link/email de retorno` fechado.
+
+### 21. Conclusão
+
+Baeu Learning tem direção de produto quando tratado como resposta a `` para `B2C/prosumer ou escola pequena`. A próxima verdade não é mais deploy: é provar `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão` com uma persona real, medir confiança e converter em piloto pago ou decisão explícita de park.
+
+
+
+## Customer, Persona & Pain Audit — 2026-06-25
+
+### 1. Resumo executivo
+
+**Produto:** Baeu Learning
+**URL:** https://baeu-learning.vercel.app
+**Categoria:** language learning/habit loop
+**ICP primário:** aluno autodidata
+**Persona principal:** B2C/prosumer ou escola pequena
+**Comprador provável:** não manter prática recorrente nem feedback útil
+**Dor principal:**
+**Alternativa atual:** Duolingo, Anki, YouTube, professor, caderno
+**Status da dor:** `Forte`
+**Chance de monetização:** `Média/Incerta`
+**Principal risco de adoção:** loop diário persistente com deep link/email de retorno
+
+#### Diagnóstico curto
+Quem sofre é `B2C/prosumer ou escola pequena` em contexto de `aluno autodidata`. A dor é concreta quando ``, mas a força comercial ainda precisa de validação real. A alternativa atual é `Duolingo, Anki, YouTube, professor, caderno`, então o produto precisa ser mais confiável, rápido ou mensurável do que o improviso. `[INFERÊNCIA]/[VALIDAR COM CLIENTE]`
+
+### 2. ICP
+
+#### ICP primário
+- Segmento: aluno autodidata
+- Tamanho/tipo de cliente: pequeno/médio ou operação assistida, conforme domínio.
+- Maturidade operacional: já sente dor e usa workaround.
+- Situação que gera demanda:
+- Dor principal:
+- Alternativa atual: Duolingo, Anki, YouTube, professor, caderno
+- Orçamento provável: Média/Incerta; validar.
+- Urgência: Forte
+- Frequência da dor: recorrente/event-driven; validar por entrevista.
+- Sinais de cliente bom: dor atual, dados disponíveis, dono do processo, aceita piloto.
+- Sinais de cliente ruim: sem dados, sem dono, só curiosidade, espera solução mágica.
+
+#### ICP secundário
+- consultorias/agências/operadores que entregam o serviço para terceiros.
+
+#### Anti-ICP
+- clientes sem processo atual, sem orçamento, ou que precisam enterprise completo antes do primeiro valor.
+
+### 3. ICP Fit Matrix
+| Critério | Nota 0–5 | Evidência |
+|---|---:|---|
+| Dor clara | 1 | `` `[DOMÍNIO]/[INFERÊNCIA]` |
+| Dor frequente | 3 | recorrência precisa validar |
+| Dor cara | 3 | custo do workaround `[INFERÊNCIA]` |
+| Orçamento provável | 3 | `Média/Incerta` |
+| Facilidade de alcançar o cliente | 3 | rede/outbound/piloto assistido |
+| Facilidade de vender | 2 | falta prova/WTP |
+| Facilidade de ativar | 2 | setup/dados/login |
+| Retenção provável | 3 | depende de loop recorrente |
+| Expansão possível | 3 | relatórios, usuários, volume |
+| Fit com produto atual | 3 | evidência parcial |
+
+**Score total:** 15
+**Leitura:** ICP fraco/incerto.
+
+### 4. Personas
+
+#### Persona 1 — Usuário principal
+**Tipo:** Usuário / Operador
+**Contexto:** usa processo manual para ``.
+**Objetivo principal:** diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão
+**Dor principal:**
+**Dor emocional:** insegurança de errar, perder dinheiro/tempo ou parecer amador.
+**Alternativa atual:** Duolingo, Anki, YouTube, professor, caderno
+**Critério de sucesso:** card corrigido + progresso persistido + próxima tarefa
+**Objeção provável:** não confiar, setup alto, preço.
+**Frequência de uso:** validar.
+**Funcionalidades críticas:** demo data, fluxo guiado, export, histórico.
+**Mensagem que faria sentido:** "Veja `card corrigido + progresso persistido + próxima tarefa` antes de gastar horas em `Duolingo, Anki, YouTube, professor, caderno`."
+**Evidência:** `[LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE]`
+
+#### Persona 2 — Comprador/decisor
+**Tipo:** Comprador / Decisor
+**Contexto:** aprova orçamento e assume risco.
+**Objetivo principal:** ROI, risco menor ou receita/oportunidade.
+**Dor principal:** pagar ferramenta que não vira processo.
+**Dor emocional:** medo de comprar buzzword.
+**Alternativa atual:** manter manual/consultoria.
+**Critério de sucesso:** prova antes/depois e gate mensurável.
+**Objeção provável:** "quem mais usa?", "isso integra?", "é seguro?"
+**Frequência de uso:** acompanha relatório/resultado.
+**Funcionalidades críticas:** export, segurança, pricing claro, prova social.
+**Mensagem que faria sentido:** "Piloto pago com gate binário: `loop diário persistente com deep link/email de retorno`."
+**Evidência:** `[INFERÊNCIA]/[VALIDAR COM CLIENTE]`
+
+### 5. Buyer/User Split
+| Papel | Quem é | O que quer | Dor | Objeção | Feature necessária |
+|---|---|---|---|---|---|
+| Usuário diário | B2C/prosumer ou escola pequena | diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão |  | setup/confiança | onboarding + output |
+| Comprador econômico | não manter prática recorrente nem feedback útil | ROI/prova | pagar sem resultado | preço/prova | relatório/export |
+| Decisor | dono/gestor | reduzir risco | mudança de processo | confiança | demo/piloto |
+| Admin | operador técnico | segurança | permissões | suporte | RBAC/auditoria |
+| Beneficiário | equipe/cliente final | resultado melhor | atraso/erro | adoção | notificação/export |
+| Bloqueador | financeiro/legal/TI/domínio | reduzir risco | dado sensível | segurança/compliance | fonte/caveat/log |
+
+### 6. Jobs To Be Done
+
+#### Job funcional
+```txt
+Quando ,
+eu quero diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão,
+para conseguir card corrigido + progresso persistido + próxima tarefa,
+sem precisar Duolingo, Anki, YouTube, professor, caderno.
+```
+
+#### Job emocional
+```txt
+Quando preciso justificar uma decisão,
+eu quero me sentir confiante,
+para evitar medo de erro, perda ou constrangimento.
+```
+
+#### Job social
+```txt
+Quando mostro o resultado para equipe/cliente,
+eu quero parecer profissional e preparado,
+para conseguir aprovação e continuidade.
+```
+
+### 7. Mapa de dores
+| Dor | Tipo | Persona | Frequência | Severidade | Custo | Urgência | Confiança | Pain Score |
+|---|---|---|---:|---:|---:|---:|---:|---:|
+|  | Operacional/Financeira/Confiança | B2C/prosumer ou escola pequena | 4 | 4 | 4 | 4 | 0.8 | 120 |
+| Falta de prova confiável | Confiança/Risco | comprador | 3 | 4 | 3 | 3 | 0.8 | 86 |
+| Setup e troca de hábito | Operacional/Coordenação | usuário/admin | 3 | 3 | 3 | 3 | 0.5 | 41 |
+
+#### Dor principal
+*
+* Evidência: https://baeu-learning.vercel.app -> 200 title=Baeu — Korean Practice ok=True; https://baeu-learning-1f0939o8b-joaoaidars-projects.vercel.app -> 200 title=Login – Vercel ok=True; https://baeu-backend-production.up.railway.app/api/v1/health -> 200 title= ok=True; `[DOMÍNIO]/[INFERÊNCIA]`
+* Alternativa atual: Duolingo, Anki, YouTube, professor, caderno
+* Custo de não resolver: tempo, dinheiro, risco ou oportunidade.
+* Por que o usuário trocaria: se `card corrigido + progresso persistido + próxima tarefa` vier rápido e confiável.
+* Por que talvez não trocaria: setup, confiança, preço e hábito.
+
+#### Dores secundárias
+* Falta de export/prova para comprador.
+* Falta de onboarding e dados demo.
+
+### 8. Alternativas atuais
+| Dor | Alternativa atual | Por que é ruim | Por que ainda usam | Custo de troca | Chance de trocar |
+|---|---|---|---|---:|---:|
+|  | Duolingo, Anki, YouTube, professor, caderno | manual, lento, pouco rastreável | familiar e barato no curto prazo | 3 | 3 |
+
+### 9. Four Forces of Progress
+| Força | Análise |
+|---|---|
+| Push da situação atual |  |
+| Pull da nova solução | diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão e card corrigido + progresso persistido + próxima tarefa |
+| Anxiety da nova solução | segurança, fonte, setup, preço |
+| Habit da solução antiga | Duolingo, Anki, YouTube, professor, caderno |
+
+#### Conclusão
+* Força de troca: média
+* Principal ansiedade: confiar no output.
+* Principal hábito concorrente: continuar no manual.
+* O que aumentaria adoção: demo assistida + prova exportável + gate de ROI.
+
+### 10. Jornada do cliente
+```txt
+Antes do produto
+→ Gatilho de busca
+→ Primeiro contato
+→ Entendimento da promessa
+→ Cadastro/login
+→ Setup
+→ First value
+→ Uso recorrente
+→ Expansão
+→ Indicação
+```
+
+| Etapa | O que o usuário sente | Dor | Risco de abandono | O que o produto deveria fazer |
+|---|---|---|---|---|
+| Antes do produto | fricção/ansiedade |  | baixo | mostrar diagnóstico da dor |
+| Gatilho de busca | urgência | erro/custo/oportunidade | médio | prometer resultado específico |
+| Primeiro contato | curiosidade | falta clareza | médio | copy por ICP |
+| Entendimento | ceticismo | confiança | alto | demo/prova |
+| Cadastro/login | impaciência | setup | alto | demo antes de bloqueio |
+| Setup | esforço | dados dispersos | alto | template/import |
+| First value | alívio | output precisa ser útil | alto | card corrigido + progresso persistido + próxima tarefa |
+| Uso recorrente | cobrança por valor | retorno | médio | alertas/relatórios |
+| Expansão | compara ROI | preço | médio | plano por volume |
+
+### 11. Dor → Feature → Valor
+| Dor | Persona afetada | Feature necessária | Valor gerado | Existe hoje? | Prioridade |
+|---|---|---|---|---|---|
+|  | B2C/prosumer ou escola pequena | diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão | Tempo/Dinheiro/Risco/Confiança | Parcial | Alta |
+| Falta de prova | comprador | export/fonte/histórico | Confiança/Venda | Parcial/Não | Alta |
+| Setup pesado | usuário/admin | demo data/onboarding | Ativação | Parcial | Média |
+
+#### Features críticas por dor
+1. diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão
+2. card corrigido + progresso persistido + próxima tarefa
+3. Demo data e onboarding guiado
+
+#### Features sem dor clara
+1. Automação avançada antes de validação
+2. Integração cara sem comprador
+3. UI decorativa sem prova
+
+#### Dores sem feature suficiente
+1. Confiança/fonte/caveat
+2. WTP/preço validado
+3. Retenção recorrente
+
+### 12. Objeções comerciais
+| Objeção | Persona | Tipo | Severidade | Resposta necessária do produto |
+|---|---|---|---:|---|
+| Não confio nos dados | comprador/usuário | Confiança | 5 | fonte, metodologia, export |
+| Já faço isso em planilha | usuário | Troca | 4 | antes/depois e tempo economizado |
+| Não tenho tempo para configurar | usuário/admin | Setup | 4 | demo data/import guiado |
+| Quanto custa? | comprador | Preço | 3 | piloto pago com ROI |
+| Isso é seguro? | bloqueador | Segurança | 4 | tenant/auditoria/compliance |
+
+### 13. Disposição a pagar
+| ICP/Persona | Valor percebido | Base de preço possível | Ticket hipótese | Confiança |
+|---|---|---|---:|---:|
+| aluno autodidata | card corrigido + progresso persistido + próxima tarefa | piloto + mensalidade/volume | validar | 0.5 |
+
+#### Hipótese de monetização
+* Modelo recomendado: piloto assistido antes de self-serve.
+* Por que faz sentido: reduz risco de construir sem dor real.
+* Principal risco: comprador não atribuir valor monetário ao output.
+* O que validar: WTP, frequência, prova necessária e canal.
+
+### 14. Mensagens por persona
+| Persona | Mensagem principal | Prova necessária | CTA ideal |
+|---|---|---|---|
+| B2C/prosumer ou escola pequena | Chegue a `card corrigido + progresso persistido + próxima tarefa` sem `Duolingo, Anki, YouTube, professor, caderno` | demo/output | Ver exemplo |
+| não manter prática recorrente nem feedback útil | Piloto com gate `loop diário persistente com deep link/email de retorno` | ROI/risco | Agendar piloto |
+
+### 15. Hipóteses críticas
+| Hipótese | Tipo | Confiança | Como validar |
+|---|---|---:|---|
+| A dor `` é forte o suficiente para pagar | Dor/Preço | 0.5 | entrevista + piloto pago |
+| `card corrigido + progresso persistido + próxima tarefa` convence comprador | Feature/Retenção | 0.5 | demo com comprador |
+| O canal de aquisição inicial é rede/outbound | Canal | 0.4 | 10 abordagens qualificadas |
+
+### 16. Perguntas para entrevista com cliente
+
+#### Perguntas sobre dor
+1. Como você resolve isso hoje?
+2. O que mais te irrita nesse processo?
+3. Com que frequência isso acontece?
+4. Quanto tempo isso consome?
+5. O que acontece quando dá errado?
+6. Você já pagou por alguma solução parecida?
+7. Por que continuou ou parou de usar?
+
+#### Perguntas sobre compra
+1. Quem aprovaria uma ferramenta dessas?
+2. Isso sairia de qual orçamento?
+3. Qual preço pareceria barato demais?
+4. Qual preço começaria a doer?
+5. Que prova você precisaria ver antes de pagar?
+6. O que te faria dizer não?
+
+#### Perguntas sobre produto
+1. Qual seria o primeiro resultado útil?
+2. Que informação você precisaria ver primeiro?
+3. Que integração seria indispensável?
+4. Que relatório/exportação você precisaria?
+5. O que te faria voltar toda semana?
+6. O que te faria recomendar?
+
+### 17. Backlog orientado por dor
+
+#### Alta prioridade
+| Item | Dor resolvida | Persona | Impacto | Evidência |
+|---|---|---|---:|---|
+| sem retenção/hábito, vira vitamina educacional |  | B2C/prosumer ou escola pequena | 5 | [LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE] |
+
+#### Média prioridade
+| Item | Dor resolvida | Persona | Impacto | Evidência |
+|---|---|---|---:|---|
+| email/deep link para fila de cards vencidos | confiança/compra | comprador | 4 | [LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE] |
+
+#### Baixa prioridade
+| Item | Dor resolvida | Persona | Impacto | Evidência |
+|---|---|---|---:|---|
+| pricing B2C só depois de retenção | expansão | comprador/admin | 2 | [LIVE]/[REPO]/[INFERÊNCIA]/[VALIDAR COM CLIENTE] |
+
+### 18. Veredito
+
+**Dor existe?** `Sim`
+**Dor é forte?** `Parcial`
+**Cliente pagaria?** `Talvez`
+**Produto atual resolve bem?** `Parcial`
+**Principal ajuste necessário:** loop diário persistente com deep link/email de retorno
+
+#### Conclusão
+Produto só deve avançar como resposta específica a `` para `B2C/prosumer ou escola pequena`. O próximo ciclo deve validar first value, confiança e WTP antes de construir mais superfície.
+
+
+
+## [2026-06-25] market-first-value: baeu-learning precisa provar first value vendável
+**Status**: OPEN
+**Severidade**: P1
+**Fonte**: market-first-value-audit / heavy-audit-all `2026-06-25-0927`
+**Achado**: `Baeu Learning` tem hipótese de valor para `aluno autodidata`, mas a venda depende de provar `diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão` com `card corrigido + progresso persistido + próxima tarefa`.
+**Impacto**: sem esse gate, provider/deploy green vira falso positivo comercial.
+**Gate de fechamento**: persona real ou demo assistida chega a `card corrigido + progresso persistido + próxima tarefa` e comprador confirma WTP/próximo passo.
+
+### Oportunidades identificadas
+- **Feature that sells**: diagnóstico/prática em menos de 5 minutos com feedback e próxima revisão -- impacto estimado: alto se o output for confiável.
+  Gate: loop diário persistente com deep link/email de retorno
+- **Trust artifact**: card corrigido + progresso persistido + próxima tarefa -- impacto estimado: reduz objeção de confiança/preço.
+  Gate: export/fonte/histórico visível.
+
+---
+
+## Kairos Full Audit — 2026-06-27-1234
+
+**Auditor:** Claude (Cowork) | **Escopo:** infra+functional+visual — **checked, no new P0**
+
+| Severity | Finding | Status |
+|---|---|---|
+| ✅ | baeu-backend store:pg; FE 200 'Baeu — Korean Practice' | OK |
+| Context | Neon org compute 147% (282h/191.9h) — fleet-wide budget P0, see kairos-audit-2026-06-27-1234.md | Track |
+
+## Open-closure audit — 2026-06-29-2154
+
+**Auditor:** Codex | **Escopo:** repo/test/prod smoke + public sponsor route smoke, no provider secrets, no paid LLM generation.
+
+**Source artifact:** `audit-smokes/2026-06-29-open-closure/OPEN_CLOSURE_AUDIT.md`
+
+### Current proof
+
+| Severity | Surface | Finding | Status |
+|---|---|---|---|
+| OK | Prod liveness | Backend health returned `200 {"ok":true,"store":"pg"}`; frontend returned `200`. | Keep canonical URLs. |
+| OK | Local tests | Backend `npm test` passed `128/128`; frontend `npm run build` passed; local Playwright passed `20`, with `5` opt-in prod specs skipped. | Release base green. |
+| OK | Learner first-value | `npm run e2e:prod-smoke -- --workers=1` passed signup -> feedback -> progress -> relogin persistence -> cleanup. | Learner loop remains production-proven. |
+| OK | IDOR live | `npm run e2e:prod-idor-smoke -- --workers=1` passed with two synthetic users; User B could not read or mutate User A practice session; cleanup ran. | **Closed** previous "IDOR live (2 contas)" gap. |
+| OK | Sponsor/About route | Browser wrapper deploy-smoke passed `/`, `/#/about`, `/#/progress`, and invalid hash route. Screenshot captured at `audit-smokes/2026-06-29-open-closure/about-sponsor-trust.png`. | Trust surface exists and renders. |
+| P1 | Market-first-value / retention | Product proof is stronger than commercial proof: no real learner/sponsor validation of daily return value or WTP in this run. | Persona real or demo assistida reaches card corrigido + progresso persistido + próxima tarefa and confirms next step. |
+| P1 | Provider flows | Google OAuth and Resend delivery still require provider-owner config/smoke; no secret hunt performed. | Configure/smoke Google OAuth and password-reset email delivery. |
+| P1 | Admin prod smoke | `E2E_ADMIN_TOKEN` was absent in this shell, so prod admin import/archive was not run. | Run `npm run e2e:prod-admin-smoke` with sanctioned token. |
+| P2 | Pedagogy/native review | Six newer lessons remain draft/native-review gated per `RUNBOOK.md`. | Korean reviewer signs off before marketing/buyer collateral. |
+| OK | Docs drift | `project-state.md`, `README.md`, `route-map.md`, and `DEPLOY.md` were reconciled in this closure pass so agents stop reopening closed gaps. | Keep docs aligned with this audit artifact. |
+
+## Brutal visual audit — 2026-06-29-2201
+
+**Auditor:** Codex using `brutal-visual-audit` | **Escopo:** production screenshots, visual/product intent, no code changes.
+
+**Source artifact:** `audit-smokes/2026-06-29-brutal-visual-audit/BRUTAL_VISUAL_AUDIT.md`
+
+| Severity | Surface | Finding | Closure gate |
+|---|---|---|---|
+| P1 | Results | Results is an analytics warehouse before it is a learner decision screen; after one attempt it renders many sections and only one concrete action. | Gate advanced analytics until data thresholds; show one summary, one recommendation, one action for low-data users. |
+| P1 | About / sponsor trust | Sponsor copy exists, but the page has no ending: no sample report, request-pilot action, latest proof date, or explicit contact path. | Add sponsor proof block with sample report/progress, latest smoke date, caveats, and request cohort setup CTA. |
+| P2 | Home | Authenticated home is clean but generic; it asks the learner to choose "Endless practice" vs "weak areas" instead of telling them today's job. | Replace hero with a "Today" work queue: due count, weak skill, recommended module, done state. |
+| P2 | Progress | Progress is the best cockpit, but raw tags and early red severity overstate one synthetic mistake. | Humanize skill/error labels and add done/next-review state. |
+| P2 | Practice | Feedback explains the error but does not show next review timing or an exit-with-progress action. | Add "save and view progress" plus next-review note on feedback. |
+| P2 | Chat | Scenario picker is useful but lacks duration, generated-feedback caveat, and a recommended first scenario. | Add guided first scenario and "3-5 turns, then feedback" expectation. |
+
+**Recommended next slice:** implement the `Home.jsx` "Today" cockpit first; move module browsing below it and add e2e for fresh and due-work states.
+
+## Brutal visual remediation pass — 2026-06-29-2210
+
+**Executor:** Codex | **Escopo:** frontend intent fixes from the brutal visual audit, local validation only.
+
+| Severity | Surface | Remediation | Evidence |
+|---|---|---|---|
+| P1 | Results | Low-data users now see a simple summary/recommendation/action before advanced analytics; deeper charts are gated until enough attempts exist. | `frontend/src/pages/Results.jsx`; `npm run build`; `npm run e2e` = `20 passed`, `5 skipped`. |
+| P1 | About / sponsor trust | Cohort/sponsor section now includes latest proof signals, explicit caveat, learner-flow CTA, and progress-report CTA. | `frontend/src/pages/About.jsx`; local build/e2e green. |
+| P2 | Home | Authenticated Home now starts with a "Today" cockpit: due count, attempts, weak focus, first-module recommendation, done state. | `frontend/src/pages/Home.jsx`; e2e signup waits on `today-panel`. |
+| P2 | Progress | Progress now humanizes skill/error labels and shows a done-for-now state when no weak/due queue is active. | `frontend/src/pages/Progress.jsx`; local e2e green. |
+| P2 | Practice | Feedback now states progress was saved and offers a Progress exit action after each answered card. | `frontend/src/pages/EndlessPractice.jsx`; practice e2e green. |
+| P2 | Chat | Scenario picker now sets expected duration, generated-feedback caveat, and marks a recommended first scenario. | `frontend/src/pages/Chat.jsx`; build green. |
+
+**Remaining product gates:** live deploy/prod smoke after shipping this frontend, real learner/sponsor validation of daily return/WTP, Google OAuth/Resend provider configuration, admin prod smoke with sanctioned `E2E_ADMIN_TOKEN`, native review for draft lessons.
+
+## Brutal visual remediation deploy — 2026-06-30T01:15Z
+
+**Executor:** Codex | **Deployment:** `dpl_FvzFUVqEeJfqXyo3bkgcXdpnkdBS` | **Alias:** `https://baeu-learning.vercel.app`
+
+**Source artifact:** `audit-smokes/2026-06-29-brutal-visual-audit/DEPLOY_PROOF.md`
+
+| Surface | Evidence | Status |
+|---|---|---|
+| Vercel production | `vercel deploy --prod --yes` returned `READY`; alias completed for canonical domain. | OK |
+| Learner first-value | `npm run e2e:prod-smoke -- --workers=1` passed signup -> feedback -> progress -> relogin persistence -> cleanup. | OK |
+| Lifecycle / Results remediation | `npm run e2e:prod-lifecycle -- --workers=1` passed signup -> theme -> low-data Results -> practice -> results-with-data -> delete. | OK |
+| Public routes | Browser wrapper deploy-smoke passed `/`, `/#/about`, `/#/progress`, `/#/results`, `/#/chat`, and invalid-route recovery with `bad_count=0`. | OK |
+
+**Still open:** real learner/sponsor validation of daily return/WTP; Google OAuth/Resend provider configuration; prod admin smoke with sanctioned `E2E_ADMIN_TOKEN`; native review for draft lessons.

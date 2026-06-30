@@ -51,6 +51,25 @@ export default function About() {
           review their Progress screen as a lightweight report. It is not yet a
           school LMS, placement test, certificate, or payment product.
         </p>
+        <div className="grid sm:grid-cols-3 gap-3 mt-4">
+          <ProofItem label="Latest learner smoke" value="Passed 2026-06-29" />
+          <ProofItem label="Account safety smoke" value="Passed IDOR check" />
+          <ProofItem label="Native review" value="Draft grammar still flagged" />
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 mt-5">
+          <a
+            href="#/"
+            className="inline-flex items-center justify-center bg-primary-500 hover:bg-primary-600 text-white font-semibold py-3 px-5 rounded-lg transition-all no-underline"
+          >
+            Try learner flow →
+          </a>
+          <a
+            href="#/progress"
+            className="inline-flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-800 font-semibold py-3 px-5 rounded-lg transition-all no-underline"
+          >
+            View progress report
+          </a>
+        </div>
       </Section>
 
       <Section title="Pedagogy scope">
@@ -86,6 +105,15 @@ function Section({ title, children }) {
     <div className="bg-white rounded-xl shadow-card border border-gray-100 p-6">
       <h2 className="font-heading text-xl font-bold text-gray-900 mb-2">{title}</h2>
       {children}
+    </div>
+  );
+}
+
+function ProofItem({ label, value }) {
+  return (
+    <div className="rounded-lg bg-gray-50 border border-gray-100 p-3">
+      <div className="text-xs text-gray-500 font-medium uppercase tracking-wide">{label}</div>
+      <div className="text-sm font-semibold text-gray-900 mt-1">{value}</div>
     </div>
   );
 }

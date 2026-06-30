@@ -21,9 +21,7 @@ export async function signup(page, { email, password = 'e2etest123', displayName
   // Wait for home (any post-auth page state) before returning. Better Auth's
   // useSession may take a tick longer than the old localStorage-write to
   // resolve, so the timeout is bumped slightly.
-  await expect(
-    page.getByRole('heading', { name: /endless practice|module practice/i })
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('today-panel')).toBeVisible({ timeout: 15_000 });
   return { email, password, displayName };
 }
 

@@ -48,9 +48,7 @@ test('prod: learner can chat with a persona and get feedback', async ({ page }) 
   await page.locator('input[type="password"]').fill(password);
   await page.locator('form').getByRole('button', { name: /^sign up$/i }).click();
 
-  await expect(
-    page.getByRole('heading', { name: /endless practice|module practice/i })
-  ).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId('today-panel')).toBeVisible({ timeout: 15_000 });
 
   // Open the conversation simulator.
   await page.getByRole('link', { name: /^chat$/i }).click();

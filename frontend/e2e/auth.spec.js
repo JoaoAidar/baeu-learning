@@ -37,7 +37,7 @@ test('signup → home shows modules', async ({ page }) => {
   await page.locator('input[type="password"]').fill('e2etest123');
   await page.getByTestId('auth-submit').click();
 
-  await expect(page.getByRole('heading', { name: /endless practice/i })).toBeVisible();
+  await expect(page.getByTestId('today-panel')).toBeVisible();
   await expect(page.getByRole('heading', { name: /^modules$/i })).toBeVisible();
   await expect(page.getByText(/Hangul & Reading/i).first()).toBeVisible();
 });
